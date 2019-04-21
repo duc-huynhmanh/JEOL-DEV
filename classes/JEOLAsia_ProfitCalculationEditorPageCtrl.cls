@@ -541,11 +541,67 @@ System.debug('@@@:' + e.getStackTraceString());
     private Map<String, Set<String>> getMapSeriesCountry(){
         Map<String, Set<String>> mapResult = new Map<String, Set<String>>();
 
-        List<Sharing_Rule__c> rules = [SELECT Series__c, Series_Group__r.Series__c, Country__c, Country_Group__r.Countries__c FROM Sharing_Rule__c WHERE User__c = :UserInfo.getUserId()];
+        List<Sharing_Rule__c> rules = [SELECT Series_Name__c, Series_Group__c, Series_Group__r.Is_All__c, Country_Name__c, Country_Group__c, Country_Group__r.Is_All__c FROM Sharing_Rule__c WHERE User__c = :UserInfo.getUserId()];
+
+        List<Id> groupIds = new List<Id>();
+        for (Sharing_Rule__c rule : rules){
+            groupIds.add(rule.Country_Group__c);
+            groupIds.add(rule.Series_Group__c);
+        }
+        List<Group_Data__c> groups = [SELECT Group_Type__c, Is_All__c, (SELECT Name__c FROM Country_Members__r), (SELECT Name__c FROM Series_Members__r) FROM Group_Data__c WHERE Id IN :groupIds];
+        Map<Id, String> groupMap = new Map<Id, String>();
+
+        for(Group_Data__c g : groups){
+            if(g.Is_All__c){
+                continue;
+            }
+            if(g.Group_Type__c == 'Country' && g.Country_Members__r != null && g.Country_Members__r.size() > 0){
+                String countries = '';
+                for(Integer i = 0; i < g.Country_Members__r.size(); i++){
+                    countries = countries + g.Country_Members__r[i].Name__c + ',';
+                }
+                groupMap.put(g.Id, countries);
+            }
+            if(g.Group_Type__c == 'Series' && g.Series_Members__r != null && g.Series_Members__r.size() > 0){
+                String series = '';
+                for(Integer i = 0; i < g.Series_Members__r.size(); i++){
+                    series = series + g.Series_Members__r[i].Name__c + ',';
+                }
+                groupMap.put(g.Id, series);
+            }
+        }
+
         if(rules != null && rules.size() > 0){
             for (Sharing_Rule__c rule : rules) {
-                String series = String.isBlank(rule.Series_Group__r.Series__c) ? convertNullToEmptyString(rule.Series__c) : (rule.Series_Group__r.Series__c + ',' + convertNullToEmptyString(rule.Series__c));
-                String countries = String.isBlank(rule.Country_Group__r.Countries__c) ? convertNullToEmptyString(rule.Country__c) : (rule.Country_Group__r.Countries__c + ',' + convertNullToEmptyString(rule.Country__c));
+                String countries, series;
+                if(rule.Series_Group__c != null && rule.Series_Group__r.Is_All__c){
+                    series = 'ALL';
+                } else {
+                    if(rule.Series_Group__c != null){
+                        if(groupMap.containsKey(rule.Series_Group__c)){
+                            series = groupMap.get(rule.Series_Group__c);
+                        }
+                    }
+                    if(!String.isBlank(rule.Series_Name__c)){
+                        series = String.isBlank(series) ? rule.Series_Name__c : (series + rule.Series_Name__c);
+                        series = series.removeEnd(',');
+                    }
+                }
+
+                if(rule.Country_Group__c != null && rule.Country_Group__r.Is_All__c){
+                    countries = 'ALL';
+                } else {
+                    if(rule.Country_Group__c != null){
+                        if(groupMap.containsKey(rule.Country_Group__c)){
+                            countries = groupMap.get(rule.Country_Group__c);
+                        }
+                    }
+                    
+                    if(!String.isBlank(rule.Country_Name__c)){
+                        countries = String.isBlank(countries) ? rule.Country_Name__c : (countries + rule.Country_Name__c);
+                        countries = countries.removeEnd(',');
+                    }
+                }
 
                 List<String> seriesList = series.split(',');
                 Set<String> seriesSet = new Set<String>(seriesList);
@@ -3757,7 +3813,7 @@ system.debug('2.Quantity__c:'+rec.Quantity__c + '|' + curRow2SP.qty);
                 if(companyCustSettings.Company__c == 'ASIA'){
                     //if martket is for THAILAND
                     if(qdm.parentRec.TargetMarket__c == '1'){
-                        companyCustSettings = CompanyName__c.getValues('ASIA-THAILAND');
+                        companyCustSettings = CompanyName__c.getValues('THAILAND');
                     }
                     //TODO: handle for other countries
                 }
@@ -3818,7 +3874,7 @@ system.debug('2.Quantity__c:'+rec.Quantity__c + '|' + curRow2SP.qty);
     public List<SelectOption> getTargetMarketOptions(){
         list<SelectOption> options = new list<SelectOption>();
         for (Schema.PicklistEntry f : AsiaProfitCalculation__c.TargetMarket__c.getDescribe().getPicklistValues()) {
-            if(currentUser.AvailableMarket__c.indexOf(f.getValue()) >= 0){
+            if(!String.isBlank(currentUser.AvailableMarket__c) && currentUser.AvailableMarket__c.indexOf(f.getValue()) >= 0){
                 options.add(new SelectOption(f.getValue(), f.getLabel()));
             }
         }       

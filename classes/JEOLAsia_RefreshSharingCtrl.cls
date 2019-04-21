@@ -6,9 +6,9 @@ public with sharing class JEOLAsia_RefreshSharingCtrl {
 	}
 
 	private void removeExistingShareRecords(){
-		List<AsiaProfitCalculation__share> removingShareRecords1 = [SELECT Id FROM AsiaProfitCalculation__share WHERE RowCause = :Schema.AsiaProfitCalculation__share.RowCause.Manually_Sharing__c];
-		if(removingShareRecords1 != null && removingShareRecords1.size() > 0){
-			delete removingShareRecords1;
+		List<AsiaProfitCalculation__share> removingShareRecords = [SELECT Id FROM AsiaProfitCalculation__share WHERE RowCause = :Schema.AsiaProfitCalculation__share.RowCause.Manually_Sharing__c];
+		if(removingShareRecords != null && removingShareRecords.size() > 0){
+			delete removingShareRecords;
 		}
 	}
 
@@ -16,7 +16,7 @@ public with sharing class JEOLAsia_RefreshSharingCtrl {
 		//TODO: check if jobs are running then prevent users to continue running batch
 		List<ApexClass> apList = [Select Id from ApexClass where Name = 'JEOLAsia_SharingRecordsToUser'];
 		List<AsyncApexJob> jobs = [SELECT Status FROM AsyncApexJob 
-                                    WHERE JobType = 'BatchApex' AND Status NOT IN ('Aborted', 'Completed', 'Failed')
+                                    WHERE JobType = 'BatchApex' //AND Status NOT IN ('Aborted', 'Completed', 'Failed')
                                     AND ApexClassID =: apList[0].Id];
         for (AsyncApexJob job : jobs) {
         	system.abortJob(job.Id);
