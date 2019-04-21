@@ -669,7 +669,7 @@
                           <apex:outputText value="&nbsp;" escape="false" />
 
                           <apex:outputText value="{!rec.ProfitCalculation_ProfitCalculatioDetail__r[0].ModelType__c}"
-                                           rendered="{!rec.ProfitCalculation_ProfitCalculatioDetail__r.size > 0}"/>
+                                           rendered="{!rec.ProfitCalculation_ProfitCalculatioDetail__r != null && rec.ProfitCalculation_ProfitCalculatioDetail__r.size > 0}"/>
 <!--
                           <apex:repeat value="{!rec.ProfitCalculation_ProfitCalculatioDetail__r}"
                                        var="detail">

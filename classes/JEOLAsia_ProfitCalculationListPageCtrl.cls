@@ -39,6 +39,8 @@ public with sharing class JEOLAsia_ProfitCalculationListPageCtrl {
     public String RegisteredDateTo { get; set;}         //登録日to
     public List<OptionDetail> SeriesOptions{get; set;}  //選択系列
 
+    private User currentUser = [SELECT CompanyName, AvailableMarket__c FROM User WHERE id = :UserInfo.getUserId()];
+
     //保持項目有無判定
     private static final String COOKIE_LABEL_QT_NO = 'QTNo';
     private static final String COOKIE_LABEL_NAME = 'name';
@@ -275,7 +277,8 @@ system.debug('コンストラクタ:this.seriesOptions = ' + this.seriesOptions)
     private String getContditions() {
         errFlg = false;
         List<String> conditions = new List<String>();
-
+        //List<String> availableMarkets = String.isBlank(currentUser.AvailableMarket__c) ? new List<String>() : currentUser.AvailableMarket__c.split(';');
+        //conditions.add(JEOLUtil.appendInText('TargetMarket__c', availableMarkets));
         conditions.add(JEOLUtil.appendInText('RecordTypeID', getListRecordTypeID()));
 
 

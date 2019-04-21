@@ -964,11 +964,13 @@
           }
         
         .field.toggle .department,
+        .field.toggle .targetMarket,
         .field.toggle .quotationType {
           width: 79px;
         }
         .department,
-        .quotationType {
+        .quotationType,
+        .targetMarket {
           width: 108px;
         }
         .departmentView {
@@ -1718,7 +1720,6 @@
             var $this = $j(this);
             $j('.EibunText').val($this.attr('title'));
         });
-        
 
         $j(function(){
             var windwTransitions = (function(e){
@@ -5978,8 +5979,7 @@ alert (salesPriceByUser);
                   <!-- BUTTON PRINT OUT QT -->
                   <li class=" navi-item">
                     <apex:outputPanel layout="none" >
-
-                        <button type="button" class="customButton" data-toggle="modal" data-target="#OutputPrintView">{!IF(qdm.parentRec.Status__c == '3', 'Print Out QT', 'Print Preview')}</button>
+                      <button type="button" class="customButton" data-toggle="modal" data-target="#OutputPrintView">{!IF(qdm.parentRec.Status__c == '3', 'Print Out QT', 'Print Preview')}</button>
                     </apex:outputPanel>
                   </li>
 
@@ -6174,6 +6174,15 @@ alert (salesPriceByUser);
                                 </apex:facet>
                               </apex:actionStatus>
                             </div>
+
+                            <!-- Target Market DUC created-->
+                            <apex:outputPanel layout="block" id="targetMarketField" styleClass="field" html-data-type="dropdown" style="min-width: 200px;">
+                              <Label for="targetMarketField" html-data-type="label" class="requireField field-label" style="float: left;">Company</label>
+                              <apex:SelectList id="targetMarket" value="{!qdm.parentRec.TargetMarket__c}" styleClass="targetMarket field-value" size="1" html-data-compare-value="{!qdm.baseParentRec.TargetMarket__c}" onblur="safetyLockCheck(this);" required="true" style="color: #000000;" onkeypress="return disableEnterKey(event)">
+                                <apex:selectOptions value="{!TargetMarketOptions}" />
+                                <apex:actionSupport event="onchange" action="{!reloadDataSourceAccordingMarket}" rerender="paymentConditionSection, rateGroup1, rateGroup2, productCurrency, organizationInformation, detailAreaA" immediate="false" status="ajaxPageStatus"/>
+                              </apex:SelectList>
+                            </apex:outputPanel>
 
                             <!-- PROFIT CALCULATION TYPE -->
                             <apex:outputPanel layout="block" id="quotationTypeField" styleClass="field" html-data-type="dropdown" style="min-width: 200px;">
@@ -6708,7 +6717,12 @@ alert (salesPriceByUser);
                           <!-- PAYMENT TERMS -->
                           <div class="field" style="width: 400px;">
                             <apex:outputLabel value="Payment Terms" for="paymentConditionSection" styleClass="field-label" />
-                            <apex:inputField rendered="{!!isReadOnly}" id="paymentConditionSection" styleClass="field-value paymentConditionSection" value="{!qdm.parentRec.PaymentConditionSection__c}" html-data-compare-value="{!qdm.baseParentRec.PaymentConditionSection__c}" onblur="safetyLockCheck(this);" style="width: auto; max-width: 300px;" onkeypress="return disableEnterKey(event)"/>
+                            <!--apex:inputField rendered="{!!isReadOnly}" id="paymentConditionSection" styleClass="field-value paymentConditionSection" value="{!qdm.parentRec.PaymentConditionSection__c}" html-data-compare-value="{!qdm.baseParentRec.PaymentConditionSection__c}" onblur="safetyLockCheck(this);" style="width: auto; max-width: 300px;" onkeypress="return disableEnterKey(event)"/-->
+                            <apex:outputPanel rendered="{!!isReadOnly}" id="paymentConditionSection">
+                              <apex:SelectList value="{!qdm.parentRec.PaymentConditionSection__c}" styleClass="field-value paymentConditionSection" size="1" html-data-compare-value="{!qdm.baseParentRec.PaymentConditionSection__c}" onblur="safetyLockCheck(this);" style="width: auto; max-width: 300px;" onkeypress="return disableEnterKey(event)">
+                                <apex:selectOptions value="{!PaymentTermOptions}" />
+                              </apex:SelectList>
+                            </apex:outputPanel>
                             <apex:outputText rendered="{!isReadOnly}" id="paymentConditionSectionView" styleClass="deliveryLocationSectionView" value="{!qdm.parentRec.PaymentConditionSection__c}" />
                           </div>
 
@@ -6740,9 +6754,9 @@ alert (salesPriceByUser);
                         <div class="quotation-item rate-area">
                           <div class="quotation-item-header clearfix" style="height: 38px;">
                             <div class="header-title">{!$Label.JEOLAsia_ProfitCalculation_RateInformations}</div>
-                            <apex:commandLink rendered="{!!(isReadOnly || isQTRestricted)}" value="Refresh" styleClass="customButton updateRateButton" oncomplete="calcurate();lockSafety();" action="{!refreshListRate}" status="ajaxPageStatus" rerender="rateGroup1, rateGroup2" />
+                            <apex:commandLink rendered="{!!(isReadOnly || isQTRestricted)}" value="Refresh" styleClass="customButton updateRateButton" oncomplete="calcurate();lockSafety();" action="{!refreshListRate}" status="ajaxPageStatus" rerender="rateGroup1, rateGroup2, detailAreaA" />
                           </div>
-                          <div style="float: left;width: 58%;overflow: auto;">
+                          <div style="float: left; overflow: auto; margin-right: 2%;">
 <apex:panelGroup id="rateGroup1">
                             <table style="width:95%;">
                               <tr>
@@ -6777,7 +6791,7 @@ alert (salesPriceByUser);
 </apex:panelGroup>
                           </div>
 
-                          <div style="float: left;width: 42%;overflow: auto;">
+                          <div style="float: left; margin-top: 20px; overflow: auto;">
 <apex:panelGroup id="rateGroup2">
                             <table style="width:95%">
                               <tr>
@@ -6838,7 +6852,7 @@ alert (salesPriceByUser);
                       <div style="overflow: hidden;width: 100%;">
                         <div class="optionArea clearfix" style="float: right;">
 
-
+                          <apex:outputPanel id="productCurrency">
                           <div class="field">
                             <apex:outputLabel style="width: 150px;" value="J-Prod cost currency" for="currencyCostIsoCode" styleClass="field-label" />
 
@@ -6863,6 +6877,7 @@ alert (salesPriceByUser);
 
                             <apex:outputField rendered="{!(isReadOnly || qdm.parentRec.Status__c == '2' || qdm.parentRec.Status__c == '3' || qdm.parentRec.Status__c == '5')}" id="currencySalesIsoCodeView" styleClass="field-value currencySalesIsoCode" value="{!qdm.parentRec.SalesCurrency__c}" html-data-compare-value="{!qdm.baseParentRec.SalesCurrency__c}" />
                           </div>
+                          </apex:outputPanel>
 
                           <!-- CONTENTS REFRESH BUTTON -->
                           <apex:outputPanel layout="block" styleClass="field" style="margin-right: 8px;" rendered="{!(hasDetails && !isReadOnly && !isQTRestricted)}">

@@ -1,0 +1,67 @@
+<apex:page controller="JEOLAsia_RefreshSharingCtrl" showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0">
+<html>
+    <head>
+        <style>
+        .default{
+            display: block; 
+            text-align: center; 
+            width: 100%;
+        }
+        .default p{
+            font-size: 30px;
+        }
+        .show{
+            display: block;
+        }
+        .hidden{
+            display: none;
+        }
+        </style>
+    </head>
+    <body>
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+    <apex:form >
+    <apex:outputPanel id="sharing" styleClass="default {!IF(sharingStatus == null, 'show', 'hidden')}">
+        <img width="160px" src="{!URLFOR($Resource.SPAElements,'/elements/loading.gif')}"/>
+        <p>Sharing...</p>
+    </apex:outputPanel>
+    <apex:outputPanel id="successful" styleClass="default {!IF(sharingStatus == 1, 'show', 'hidden')}">
+        <p>Data was shared successfully</p>
+    </apex:outputPanel>
+    <apex:outputPanel id="errorHappen" styleClass="default {!IF(sharingStatus == 0, 'show', 'hidden')}">
+        <p>Error happened: {!errorMessage}</p>
+    </apex:outputPanel>
+    <script type="text/javascript">
+        $('document').ready(function(){
+            startSharing();
+        });
+    </script>
+    <apex:outputPanel id="script">
+    <apex:actionFunction rendered="{!sharingStatus == null}" name="startSharing" action="{!sharingRecords}" reRender="sharing, errorHappen" oncomplete="callCheckBatch()"/>
+    <apex:actionFunction rendered="{!sharingStatus == null}" name="CheckBatch" action="{!getBatchResult}" reRender="sharing, successful, errorHappen, script" oncomplete="preCallCheckBatch()"/>
+    <script>
+        var count = 0;
+        function callCheckBatch(){
+            console.log('callCheckBatch: ' + count);
+            count++;
+            //time-out: 45s
+            if(count < 15){
+                setTimeout(CheckBatch, 3000);
+                console.log('status: ' + '{!sharingStatus}');
+            }
+        }
+        function preCallCheckBatch(){
+            console.log('preCallCheckBatch');
+            if('{!sharingStatus}' == '1' || '{!sharingStatus}' == '0'){
+                console.log('FINISH');
+                console.log('status: ' + '{!sharingStatus}');
+            } else {
+                callCheckBatch();
+            }
+        }
+    </script>
+    </apex:outputPanel>
+    </apex:form>
+    </body>
+</html>
+</apex:page>

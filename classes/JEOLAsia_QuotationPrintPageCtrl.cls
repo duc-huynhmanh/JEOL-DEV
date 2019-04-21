@@ -11,14 +11,14 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
     // PDFに一行に各文字の出力数(Detail)
     private Map<String, Integer> mapCharWidthDetail = new Map<String, Integer>{
-        '™' => 48 ,//48
+        '™' => 48 ,
         '©' => 61 ,
-        ' ' => 186,//186
+        ' ' => 186,
         ' ' => 186,
         'a' => 106,
-        'A' => 65 ,//65
-        'b' => 94 ,//94
-        'B' => 70 ,//70
+        'A' => 65 ,
+        'b' => 94 ,
+        'B' => 70 ,
         'c' => 106,
         'C' => 70 ,
         'd' => 94 ,
@@ -108,7 +108,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         '?' => 106,
         '_' => 94 ,
         'default' => 50 };
-        
+
     // PDFに一行に各文字の出力数(Terms)
     private Map<String, Integer> mapCharWidthTerms = new Map<String, Integer>{
         '™' => 41 ,
@@ -208,7 +208,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         '?' => 91 ,
         '_' => 81 ,
         'default' => 40 };
-        
+
     // Control variable
     public String outputType {get; set;}
     public String renderTarget {get; set;}
@@ -234,9 +234,9 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
     //
     // - 本質的にはレンダリングされるまで最大ページ数は分からない。
     public Integer totalPageNumber {get;set;}
-    
+
     /** Constant variable*/
-    
+
     // This is THE Magic Number
     // - スペック情報における1ページにおける最大行数を表す
     // - 実際にはレンダリングされるまで何行表示できるかは分からないので
@@ -272,12 +272,11 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
     private static final Integer ROWLENGHT = 80;
 
     /**Page block　variable group*/
-    
+
     // base parent
     public AsiaProfitCalculation__c quotation {get; set;}
 
     // Terms And Conditions Of sale
-    public AsiaTermsAndConditons__c termsAndConditions {get; set;}
     public List<AsiaTermsAndConditons__c> lsTermsAndConditions {get; set;}
 
     // base parent's first child: no recommend
@@ -297,7 +296,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
     public String productName {get; set;}
     public String modelType {get; set;}
-    
+
     // User Sing Img URL
     public String imgURL {get; set;}
     public String userSignURL {get; set;}
@@ -325,35 +324,8 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             this.section2LastPageNo = 0;
             this.section3row = 0;
             this.forcePageBreakCount = 0;
-            
-            // sign info
-            String userId;
-            Map<String, CompanyName__c> companyNameMap = CompanyName__c.getAll();
-            for(String key:companyNameMap.keyset()){
-                CompanyName__c cnm = companyNameMap.get(key);
-                if(userId == null || userId == ''){
-                    userId = cnm.QuotationPrintSignUserID__c;
-                }
-            }
-            this.userDetail = [SELECT Id, Name, Title, UserSign__c FROM User WHERE Id =:userId];
-            User targetUser = [SELECT Id, Name, Division FROM User WHERE Id =:userId];
-            if(targetUser != null){
-                this.userName = targetUser.Name;
-                this.userTitle = targetUser.Division;
-            }else {
-                this.userName = '';
-                this.userTitle = '';
-            }
 
-            // User Sign
-            if(this.userDetail != null && 
-                String.isNotEmpty(this.userDetail.UserSign__c) && this.userDetail.UserSign__c.indexOf('" src="') > 0){
-                //tableに表示させる画像URL
-                Integer startpo = this.userDetail.UserSign__c.indexOf('" src="') + 7;
-                Integer endpo = this.userDetail.UserSign__c.indexOf('"', startpo);
-
-                this.userSignURL = this.userDetail.UserSign__c.substring(startpo, endpo);
-            }
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 1');
 
             Map<String, String> params = Apexpages.currentPage().getParameters();
             String quotationId = params.get(PARAM_ID);
@@ -369,6 +341,8 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 return;
             }
 
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 2');
+
             // get base parent's third child record
             List<String> quotTCFieldList = new List<String>();
             String queryquotTC = getSelectAllQuery('AsiaQuotationTermsConditions__c',
@@ -381,6 +355,8 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             if (this.outputType == 'print') {
                 this.renderTarget = 'pdf';
             }
+
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 3');
 
             // Quotation(Base Parent record)
             List<String> qutationFieldList = new List<String>();
@@ -405,6 +381,10 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             qutationFieldList.add('RecordType.DeveloperName');
             String queryQ = getSelectAllQuery('AsiaProfitCalculation__c', 'WHERE Id=\''+ quotationId + '\'', false, qutationFieldList);
             this.quotation = this.getQuotationRecord(queryQ);
+            system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 4');
+            // DUC
+            getUserSignId();
+            system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 5');
             // From here is parent record's child record List(First is no recommend, Second is rocommend)
             // QuotationDetail
             List<String> quotationDetailFieldList = new List<String>();
@@ -417,6 +397,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             quotationDetailFieldList.add('WHERE IsSelected__c = true ORDER BY PartNumber__c) withoutComma ');
             // From here is First: no recommend parent's child list and child's child record
             // Query
+            system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 6');
             String condition = 'WHERE Parent__c=\''+ quotationId + '\'' + ' AND Category__c IN (\'A\', \'B\')' + 'ORDER BY Category__c, SortNo__c ASC';
             String noRecommendedQueryQD = getSelectAllQuery('AsiaProfitCalculationDetail__c',
                                                             condition,
@@ -436,11 +417,12 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             } else if (quotation.TitleRow1__c != NULL && quotation.TitleRow1__c.length() > 0) {
                 this.productName = CR + CR + CR + CR + quotation.TitleRow1__c.escapeHtml4();
             } else {
-                this.productName = CR + CR + CR + CR + CR;          
+                this.productName = CR + CR + CR + CR + CR;
             }
 
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 7');
             if(noRecommendedQuotationDetailList != null && noRecommendedQuotationDetailList.size() > 0){
-                
+
                 // Model Type
                 this.modelType = quotation.ModelTypeScreen__c;
 
@@ -449,24 +431,24 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 List<String> modelType1List = textToList(noRecommendedQuotationDetailList[0].ModelType__c, mapCharWidthDetail, Decimal.valueOf(20) / Decimal.valueOf(95));
                 List<String> modelType2List = textToList(noRecommendedQuotationDetailList[0].ModelType__c, mapCharWidthDetail, Decimal.valueOf(35) / Decimal.valueOf(95));
                 List<String> modelType3List = textToList(noRecommendedQuotationDetailList[0].ModelType__c, mapCharWidthDetail, Decimal.valueOf(35) / Decimal.valueOf(95));
-				this.modelTypeDisplay1List = new List<String>();
-				if (modelType1List.size() > 0){
-					this.modelTypeDisplay1List.add(modelType1List.get(0));
-				}
-				if (modelType1List.size() > 1){
-					this.modelTypeDisplay1List.add(modelType1List.get(1));
-				}
-				this.modelTypeDisplay2 = '';
-				if (modelType2List.size() > 0){
-					this.modelTypeDisplay2 = modelType2List.get(0);
-				}
-				this.modelTypeDisplay3 = '';
-				if (modelType3List.size() > 0){
-					this.modelTypeDisplay3 = modelType3List.get(0);
-				}
-				
+                this.modelTypeDisplay1List = new List<String>();
+                if (modelType1List.size() > 0){
+                    this.modelTypeDisplay1List.add(modelType1List.get(0));
+                }
+                if (modelType1List.size() > 1){
+                    this.modelTypeDisplay1List.add(modelType1List.get(1));
+                }
+                this.modelTypeDisplay2 = '';
+                if (modelType2List.size() > 0){
+                    this.modelTypeDisplay2 = modelType2List.get(0);
+                }
+                this.modelTypeDisplay3 = '';
+                if (modelType3List.size() > 0){
+                    this.modelTypeDisplay3 = modelType3List.get(0);
+                }
+
                 // AsiaProductItemSpecificationからProduct ImgのＵＲＬを取得する
-                List<AsiaProductItemSpecification__c> productImgList = 
+                List<AsiaProductItemSpecification__c> productImgList =
                     [select id, Product_Img__c from AsiaProductItemSpecification__c where ModelType__c = :modelType];
                 if (productImgList.size() > 0){
                     if (productImgList.get(0).Product_Img__c != null) {
@@ -481,14 +463,15 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 this.itemSpecificationMap = JEOLAsia_QuotationSpecificationCtrl.getItemSpecification();
 
                 Apexpages.currentPage().getHeaders().put('content-disposition', 'inline; filename=' + quotation.Name + '.pdf');
-                
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 8');
             }else{
                 this.modelType = '';
                 this.modelTypeDisplay1List = new List<String>();
                 this.modelTypeDisplay2 = '';
                 this.modelTypeDisplay3 = '';
             }
-            
+
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 9');
             // From here is Second : recommend parent's child list and child's child record
             // Query
             condition = 'WHERE Parent__c=\''+ quotationId + '\'' + ' AND Category__c = \'G\'' + 'ORDER BY Category__c, SortNo__c ASC';
@@ -507,6 +490,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             //----------------------------------------------------------------------------------------------------
             this.noRecommendedSpecPageBlockList = new List<PageBlock>();
             this.recommendedSpecPageBlockList = new List<PageBlock>();
+            system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 10');
             if (this.quotation.PrintQuotationSpecificationsPage__c) {
 
                 // おすすめ機器以外
@@ -526,18 +510,23 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 }
             }
 
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 11');
             // TERMS AND CONDITIONS OF SALE
+            String target = quotation.Company__c;
+            if(quotation.TargetMarket__c == '1') {
+                target = 'THAILAND';
+            }
             this.lsTermsAndConditions = new List<AsiaTermsAndConditons__c>();
             if (this.quotation.PrintJeolTerms__c) {
-                this.lsTermsAndConditions = [SELECT Company__c, 
-                                                    SortNo__c, 
-                                                    TermsAndConditions__c 
+                this.lsTermsAndConditions = [SELECT Company__c,
+                                                    SortNo__c,
+                                                    TermsAndConditions__c
                                              FROM AsiaTermsAndConditons__c
-                                             WHERE Company__c = :this.quotation.Company__c
+                                             WHERE Company__c = :target
                                              ORDER BY SortNo__c
                                             ];
             }
-            
+system.debug('JEOLAsia_QuotationPrintPageCtrl CheckPoint 12');
             //----------------------------------------------------------------------------------------------------
             // トータルページ番号設定
             //----------------------------------------------------------------------------------------------------
@@ -552,6 +541,53 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         }
     }
 
+    // DUC added
+    public void getUserSignId(){
+        // sign info
+        String userId;
+        User usr = [SELECT CompanyName FROM User WHERE id = :UserInfo.getUserId()];
+        String sCompanyNameProfile = usr.CompanyName;
+
+        system.debug( usr );
+        system.debug( sCompanyNameProfile );
+        system.debug(  CompanyName__c.getAll().values() );
+
+        for (CompanyName__c companyCustSettings : CompanyName__c.getAll().values()) {
+            //if company matched and is Thai's or ASIA
+            if(companyCustSettings.Company__c == 'ASIA' &&
+                (
+                    (quotation.TargetMarket__c == '1' && companyCustSettings.Name.indexOf('THAILAND') >= 0 )||
+                    ((quotation.TargetMarket__c == '0' || String.isBlank(quotation.TargetMarket__c)) && companyCustSettings.Name.indexOf('-') < 0 && companyCustSettings.Name.indexOf('ASIA') >= 0)
+                )
+              ){
+                userId = companyCustSettings.QuotationPrintSignUserID__c;
+                break;
+            }
+        }
+
+        system.debug( userId );
+
+        this.userDetail = [SELECT Id, Name, Title, UserSign__c FROM User WHERE Id =:userId];
+        User targetUser = [SELECT Id, Name, Division FROM User WHERE Id =:userId];
+        if(targetUser != null){
+            this.userName = targetUser.Name;
+            this.userTitle = targetUser.Division;
+        }else {
+            this.userName = '';
+            this.userTitle = '';
+        }
+
+        // User Sign
+        if(this.userDetail != null &&
+            String.isNotEmpty(this.userDetail.UserSign__c) && this.userDetail.UserSign__c.indexOf('" src="') > 0){
+            //tableに表示させる画像URL
+            Integer startpo = this.userDetail.UserSign__c.indexOf('" src="') + 7;
+            Integer endpo = this.userDetail.UserSign__c.indexOf('"', startpo);
+
+            this.userSignURL = this.userDetail.UserSign__c.substring(startpo, endpo);
+        }
+    }
+
     public String getQuotationNoFirstPage() {
 
         String sReturn = '';
@@ -559,9 +595,9 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         if (!quotation.PrintProformaInvoice__c) {
             sReturn = quotation.ProfitCalculationNo__c + '_' + quotation.BranchNo__c;
         } else {
-            sReturn = quotation.ProfitCalculationNo__c.replace('QT', 'OA') + '_' + quotation.BranchNo__c;            
+            sReturn = quotation.ProfitCalculationNo__c.replace('QT', 'OA') + '_' + quotation.BranchNo__c;
         }
-		System.debug('sReturnsReturnsReturnsReturn'+ sReturn);
+
         return sReturn;
     }
 
@@ -572,7 +608,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         if (!quotation.PrintProformaInvoice__c) {
             sReturn = quotation.ProfitCalculationNo__c + '_' + quotation.BranchNo__c;
         } else {
-            sReturn = quotation.ProfitCalculationNo__c.replace('QT', 'PI') + '_' + quotation.BranchNo__c;            
+            sReturn = quotation.ProfitCalculationNo__c.replace('QT', 'PI') + '_' + quotation.BranchNo__c;
         }
 
         return sReturn;
@@ -589,11 +625,11 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         } else if (quotation.QuoteValidityPeriodDays__c != null && quotation.QuoteValidityPeriodDays__c > 0) {
 
             sReturn = sReturn + 'for ' + quotation.QuoteValidityPeriodDays__c + ' day' + (quotation.QuoteValidityPeriodDays__c <= 1 ? '' : 's');
-            
+
         } else {
 
             sReturn = sReturn + 'for ' + quotation.QuoteValidityPeriod__c + ' month' + (quotation.QuoteValidityPeriod__c <= 1 ? '' : 's');
-            
+
         }
 
         return sReturn;
@@ -621,7 +657,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 result = '';
             }
         }
-        
+
         return result;
     }
 
@@ -692,7 +728,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
     public String getContractName() {
         String result = '';
-        
+
         if (String.isNotEmpty(quotation.ContractName1__c) || String.isNotEmpty(quotation.ContractName2__c)){
             String strBR ='';
             if (String.isNotEmpty(quotation.ContractName1__c)) {
@@ -707,12 +743,12 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 result = quotation.ContractName__c;
             }
         }
-        
+
         return result;
     }
     public Boolean getShipmentNameDispFlg() {
-        if (quotation.ShipmentName__c == quotation.ContractName__c && 
-            quotation.ShipmentName1__c == quotation.ContractName1__c && 
+        if (quotation.ShipmentName__c == quotation.ContractName__c &&
+            quotation.ShipmentName1__c == quotation.ContractName1__c &&
             quotation.ShipmentName2__c == quotation.ContractName2__c){
             return false;
         }
@@ -735,7 +771,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 result = quotation.ShipmentName__c;
             }
         }
-        
+
         return result;
     }
 
@@ -833,7 +869,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             if (soql != '' && fieldName.contains('withoutComma') && !fieldName.contains('withComma')) {
                 soql += fieldName.replace('withoutComma', ' ');
             }
-            
+
         }
         soql = 'SELECT ' + soql + ' FROM ' + tableName + ' ' + whereCondition;
         return soql;
@@ -872,7 +908,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
      * @return                     [PageBlock List]
      */
     private List<PageBlock> createDescriptionPageBlock(List<AsiaProfitCalculationDetail__c> quotationDetailList){
-        
+
         // PageBlock List
         List<PageBlock> pages = new List<PageBlock>();
 
@@ -880,7 +916,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         if(quotationDetailList == null || quotationDetailList.isEmpty()){
             return pages;
         }
-        
+
         // init per page block
         PageBlock page = new PageBlock();
         String recordRowKey;
@@ -911,7 +947,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 // - ProductSpecification__cはレコードから直接取得するのではなく、
                 // - AsiaProductItemSpecification__cの<ModelType__c, Specification__c>マッピングから取得する
                 description = new AsiaQuotationDescription__c();
-                description.ProductSpecification__c = this.itemSpecificationMap.get(quotationDetail.ModelType__c);        
+                description.ProductSpecification__c = this.itemSpecificationMap.get(quotationDetail.ModelType__c);
             }else{
                 description = descriptionList[0];
             }
@@ -926,19 +962,19 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             // - この時点では、ModelTypeとBodyの行数のうち大きいほうの値と、レコード自身の値を1として追加している
             List<String> pdcModelTypeList = textToList(quotationDetail.ModelType__c, mapCharWidthDetail, Decimal.valueOf(22) / Decimal.valueOf(95));
             List<String> bodyList = textToList(quotationDetail.Body__c, mapCharWidthDetail, Decimal.valueOf(33) / Decimal.valueOf(95));
-            
+
             Integer rowPlusCount = 0;
             if (pdcModelTypeList.size() > bodyList.size()) {
-            	rowPlusCount = pdcModelTypeList.size();
+                rowPlusCount = pdcModelTypeList.size();
             } else {
-            	rowPlusCount = bodyList.size();
+                rowPlusCount = bodyList.size();
             }
 
             page.rowCounter += rowPlusCount + 1;
 
 
             // 概要情報をオブジェクトとして保存
-            page.recordRowMapDescription.put(recordRowKey, description); 
+            page.recordRowMapDescription.put(recordRowKey, description);
 
             // プレーンテキスト化
             List<String> plainTextSpecList = new List<String>();
@@ -998,7 +1034,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             pages.add(page);
             page = new PageBlock();
         }
-        
+
         return pages;
     }
 
@@ -1019,13 +1055,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 this.section2row = this.section2row + 1;
             }
         }
-        
+
         for (AsiaProfitCalculationDetail__c detailRecommend : recommend){
             if (detailRecommend.Depth__c == 0 && detailRecommend.Type__c == '1') {
                 this.section3row = this.section3row + 1;
             }
         }
-        
+
         List<FirstPageBlock> pageList = new List<FirstPageBlock>();
         // init page block
         FirstPageBlock judgeBreak = new FirstPageBlock();
@@ -1042,14 +1078,14 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 currentHeight += S1B_1_PER_ROW_HEIGHT;
                 currentHeight += DETAIL_HEIGHT;
             }
-            
+
             if(!quot.PrintQuotationFirstPage__c){
                 // + Contract Address
                 Integer contractAddressHeight = 0;
                 if (String.isNotBlank(quot.ContractAddress__c)) {
                     contractAddressHeight = S1B_1_PER_ROW_HEIGHT;
                 }
-                
+
                 // + Contact
                 Integer contactHeight = 0;
                 // contact name
@@ -1073,7 +1109,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     quot.SalesAssistant__r.Email != '')){
                     contactHeight += DETAIL_HEIGHT;
                 }
-                
+
                 if (contractAddressHeight > contactHeight){
                     currentHeight += contractAddressHeight;
                 } else {
@@ -1081,12 +1117,12 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 }
                 currentHeight += DETAIL_HEIGHT;
             }
-            
+
             // set section1
             judgeBreak.pageQuotation = quot;
             judgeBreak.section1AppearTime = 1;
         }
-        
+
         //----------------------------------------------------------------------------------------------------
         // section2
         //----------------------------------------------------------------------------------------------------
@@ -1099,29 +1135,28 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             judgeBreak.pageQuotation = quot;
             for(AsiaProfitCalculationDetail__c noRe :noRecommend){
                 Integer maxRows = 0;
-                
+
                 // noRecommendBody　Model Typeの取得
                 List<String> modelTypeRows = textToList(noRe.ModelType__c, mapCharWidthDetail, Decimal.valueOf(22) / Decimal.valueOf(95));
                 if (noRecommendModelTypeMap == null) {
                     noRecommendModelTypeMap = new map<Id, List<String>>();
                 }
                 noRecommendModelTypeMap.put(noRe.id, modelTypeRows);
-                
+
                 // noRecommend　Descriptionの取得
                 List<String> bodyRows = textToList(noRe.Body__c, mapCharWidthDetail, Decimal.valueOf(33) / Decimal.valueOf(95));
-                system.debug('zhzhzh'+bodyRows);
                 if (noRecommendBodyMap == null) {
                     noRecommendBodyMap = new map<Id, List<String>>();
                 }
                 noRecommendBodyMap.put(noRe.id, bodyRows);
-                
+
                 // Model TypeとDescriptionを比較して、最大Rowsを取得する
                 if (modelTypeRows.size() > bodyRows.size()){
                     maxRows = modelTypeRows.size();
                 } else {
                     maxRows = bodyRows.size();
                 }
-                
+
                 // 最大RowsからHeightを取得する
                 Integer rowsHeight = 0;
                 if (maxRows == 0){
@@ -1129,7 +1164,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 } else {
                     rowsHeight = maxRows * 4;
                 }
-                
+
                 // + detail height
                 if( (currentHeight + rowsHeight) >= PER_PAGE_REMAIN_HEIGHT){
                     currentPageNo++;
@@ -1158,7 +1193,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             judgeBreak.pageQuotation = quot;
         }
         currentHeight = currentHeight + 5;
-        
+
         // + subtotal height margin-top and bottom
         if( (currentHeight + 4) > PER_PAGE_REMAIN_HEIGHT){
             currentPageNo++;
@@ -1171,132 +1206,132 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         }
         currentHeight = currentHeight + 4;
         //// 2017/06/07
-		this.section2LastPageNo = currentPageNo + 1;
-        
+        this.section2LastPageNo = currentPageNo + 1;
+
         //----------------------------------------------------------------------------------------------------
         // section3
         //----------------------------------------------------------------------------------------------------
         // subtotal table row1 height
         if(quotation.CustomReductionAmount1__c != null &&
            quotation.CustomReductionAmount1__c != 0){
-	        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
         }
         // subtotal table row2 height
         if(quotation.OutputSubtotalReduction1__c){
-            if((quotation.SubtotalReductionName1__c != null && 
+            if((quotation.SubtotalReductionName1__c != null &&
                 quotation.SubtotalReductionName1__c != '') ||
-                (quotation.SubtotalReductionAmount1__c != null && 
+                (quotation.SubtotalReductionAmount1__c != null &&
                 quotation.SubtotalReductionAmount1__c != 0)){
-		        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-		            currentPageNo++;
-		            judgeBreak.pageNo = currentPageNo;
-		            judgeBreak.pageBreak = true;
-		            pageList.add(judgeBreak);
-		            judgeBreak = new FirstPageBlock();
-		            currentHeight = 0;
-		            judgeBreak.pageQuotation = quot;
-		        }
+                if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                    currentPageNo++;
+                    judgeBreak.pageNo = currentPageNo;
+                    judgeBreak.pageBreak = true;
+                    pageList.add(judgeBreak);
+                    judgeBreak = new FirstPageBlock();
+                    currentHeight = 0;
+                    judgeBreak.pageQuotation = quot;
+                }
                 currentHeight = currentHeight + 5;
             }
         }
         // subtotal table row3 height
-        if(quotation.CustomReductionAmount2__c != null && 
+        if(quotation.CustomReductionAmount2__c != null &&
            quotation.CustomReductionAmount2__c != 0){
-	        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
         }
         // subtotal table row4 height
         if(quotation.OutputSubtotalReduction2__c){
-            if((quotation.SubtotalReductionName2__c != null && 
-                quotation.SubtotalReductionName2__c != '') || 
-                (quotation.SubtotalReductionAmount2__c != null && 
+            if((quotation.SubtotalReductionName2__c != null &&
+                quotation.SubtotalReductionName2__c != '') ||
+                (quotation.SubtotalReductionAmount2__c != null &&
                 quotation.SubtotalReductionAmount2__c != 0)){
-		        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-		            currentPageNo++;
-		            judgeBreak.pageNo = currentPageNo;
-		            judgeBreak.pageBreak = true;
-		            pageList.add(judgeBreak);
-		            judgeBreak = new FirstPageBlock();
-		            currentHeight = 0;
-		            judgeBreak.pageQuotation = quot;
-		        }
+                if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                    currentPageNo++;
+                    judgeBreak.pageNo = currentPageNo;
+                    judgeBreak.pageBreak = true;
+                    pageList.add(judgeBreak);
+                    judgeBreak = new FirstPageBlock();
+                    currentHeight = 0;
+                    judgeBreak.pageQuotation = quot;
+                }
                 currentHeight = currentHeight + 5;
-            }  
+            }
         }
         // subtotal table row5 height
-        if(quotation.CustomReductionAmount3__c != null && 
+        if(quotation.CustomReductionAmount3__c != null &&
            quotation.CustomReductionAmount3__c != 0){
-	        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
         }
         // subtotal table row6 height
-        if(quotation.OutputTotalAmount__c == true && 
-            quotation.TotalAmount__c != null && 
+        if(quotation.OutputTotalAmount__c == true &&
+            quotation.TotalAmount__c != null &&
             quotation.TotalAmount__c != 0){
-	        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
         }
         // subtotal table row7 height
-        if(quotation.OutputConsumptionTaxAmount__c == true && 
+        if(quotation.OutputConsumptionTaxAmount__c == true &&
             quotation.ConsumptionTaxAmount__c != null &&
             quotation.ConsumptionTaxAmount__c != 0){
-	        if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 5) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
         }
-        // subtotal table row8 height                                                               
-        if(quotation.OutputTotalTaxAmount__c == true && 
-            quotation.TotalTaxAmount__c != null && 
+        // subtotal table row8 height
+        if(quotation.OutputTotalTaxAmount__c == true &&
+            quotation.TotalTaxAmount__c != null &&
             quotation.TotalTaxAmount__c != 0){
-	        if( (currentHeight + 10) > PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( (currentHeight + 10) > PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 10;
         }
         // + all prices.... sentence height
@@ -1311,7 +1346,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         }
         currentHeight = currentHeight + 5;
         judgeBreak.section3AppearTime = 1;
-        
+
         //----------------------------------------------------------------------------------------------------
         // section 4
         //----------------------------------------------------------------------------------------------------
@@ -1328,28 +1363,28 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             for(AsiaProfitCalculationDetail__c reco :recommend){
 
                 Integer maxRows = 0;
-                
+
                 // noRecommendBody　Model Typeの取得
                 List<String> modelTypeRows = textToList(reco.ModelType__c, mapCharWidthDetail, Decimal.valueOf(22) / Decimal.valueOf(95));
                 if (recommendModelTypeMap == null) {
                     recommendModelTypeMap = new map<Id, List<String>>();
                 }
                 recommendModelTypeMap.put(reco.id, modelTypeRows);
-                
+
                 // Recommend　Descriptionの取得
                 List<String> bodyRows = textToList(reco.Body__c, mapCharWidthDetail, Decimal.valueOf(33) / Decimal.valueOf(95));
                 if (recommendBodyMap == null) {
                     recommendBodyMap = new map<Id, List<String>>();
                 }
                 recommendBodyMap.put(reco.id, bodyRows);
-                
+
                 // Model TypeとDescriptionを比較して、最大Rowsを取得する
                 if (modelTypeRows.size() > bodyRows.size()){
                     maxRows = modelTypeRows.size();
                 } else {
                     maxRows = bodyRows.size();
                 }
-                
+
                 // 最大RowsからHeightを取得する
                 Integer rowsHeight = 0;
                 if (maxRows == 0){
@@ -1357,7 +1392,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 } else {
                     rowsHeight = maxRows * 4;
                 }
-                
+
                 // + detail height
                 if( (currentHeight + rowsHeight) >= PER_PAGE_REMAIN_HEIGHT){
                     currentPageNo++;
@@ -1369,8 +1404,8 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight += HEADER_HEIGHT;
                     judgeBreak.pageQuotation = quot;
                 }
-                
-            	judgeBreak.section4TitleAppearTime = 1;
+
+                judgeBreak.section4TitleAppearTime = 1;
                 judgeBreak.recommendList.add(reco);
                 currentHeight = currentHeight + rowsHeight;
             }
@@ -1382,78 +1417,78 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         // + Freight terms above blank height
         currentHeight = currentHeight + 2;
         if(String.isNotEmpty(quotation.DeliveryCondition3__c)){
-	        // + Freight Terms height
-	        if( currentHeight + 5 >= PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            // + Freight Terms height
+            if( currentHeight + 5 >= PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
-	        judgeBreak.section5_Freight_AppearTime++;
+            judgeBreak.section5_Freight_AppearTime++;
         }
-        
+
         // + Estimated Delivery height
         currentHeight = currentHeight + 5;
         if(quot.DeliveryDeadline__c != null || String.isNotEmpty(quot.DeliveryDate_Arbitrarily__c) || String.isNotEmpty(quot.DeliveryDate_ArbitrarilyTitle__c)){
-	        if( currentHeight + 5 >= PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
+            if( currentHeight + 5 >= PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
             currentHeight = currentHeight + 5;
-	        judgeBreak.section5_Estimated_AppearTime++;
+            judgeBreak.section5_Estimated_AppearTime++;
         }
-        
+
         // + Payment Terms height
         if(String.isNotEmpty(getPaymentTermsLabel())){
-	        List<String> paymentStrL = new List<String>();
-	        if(getPaymentTermsLabel() != null && getPaymentTermsLabel() != ''){
-	            paymentStrL = getPaymentTermsLabel().split('<br/>');
-	        }
-        	
-	        if( (currentHeight + 5 + 4*(paymentStrL.size() - 1)) >= PER_PAGE_REMAIN_HEIGHT){
-	            currentPageNo++;
-	            judgeBreak.pageNo = currentPageNo;
-	            judgeBreak.pageBreak = true;
-	            pageList.add(judgeBreak);
-	            judgeBreak = new FirstPageBlock();
-	            currentHeight = 0;
-	            judgeBreak.pageQuotation = quot;
-	        }
-        	currentHeight = currentHeight + 5 + 4 * (paymentStrL.size() - 1);
+            List<String> paymentStrL = new List<String>();
+            if(getPaymentTermsLabel() != null && getPaymentTermsLabel() != ''){
+                paymentStrL = getPaymentTermsLabel().split('<br/>');
+            }
+
+            if( (currentHeight + 5 + 4*(paymentStrL.size() - 1)) >= PER_PAGE_REMAIN_HEIGHT){
+                currentPageNo++;
+                judgeBreak.pageNo = currentPageNo;
+                judgeBreak.pageBreak = true;
+                pageList.add(judgeBreak);
+                judgeBreak = new FirstPageBlock();
+                currentHeight = 0;
+                judgeBreak.pageQuotation = quot;
+            }
+            currentHeight = currentHeight + 5 + 4 * (paymentStrL.size() - 1);
             judgeBreak.section5_Payment_AppearTime++;
         }
-        
+
         // + others height
         List<String> currentList = this.getOthers(quot.OtherText__c);
         if(currentList != null && currentList.size() > 0){
-        	PER_PAGE_REMAIN_HEIGHT = 220;
+            PER_PAGE_REMAIN_HEIGHT = 220;
             for(Integer i = 0; i < currentList.size(); i++){
-	            if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
-	                currentPageNo++;
-	                judgeBreak.pageNo = currentPageNo;
-	                judgeBreak.pageBreak = true;
-	                pageList.add(judgeBreak);
-	                judgeBreak = new FirstPageBlock();
-	                currentHeight = 0;
-	                judgeBreak.pageQuotation = quot;
-	            }
-	            
-	            currentHeight = currentHeight + 4;
-	            judgeBreak.otherList.add(currentList[i]);
-	            judgeBreak.section5_Others_AppearTime++;
-	            judgeBreak.section5_Others_Title_AppearTime++;
+                if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
+                    currentPageNo++;
+                    judgeBreak.pageNo = currentPageNo;
+                    judgeBreak.pageBreak = true;
+                    pageList.add(judgeBreak);
+                    judgeBreak = new FirstPageBlock();
+                    currentHeight = 0;
+                    judgeBreak.pageQuotation = quot;
+                }
+
+                currentHeight = currentHeight + 4;
+                judgeBreak.otherList.add(currentList[i]);
+                judgeBreak.section5_Others_AppearTime++;
+                judgeBreak.section5_Others_Title_AppearTime++;
             }
         }  else {
-        	PER_PAGE_REMAIN_HEIGHT = 240;
+            PER_PAGE_REMAIN_HEIGHT = 240;
         }
 
         //----------------------------------------------------------------------------------------------------
@@ -1479,7 +1514,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             (this.getOthers(quotTC.Export__c) != null &&
             this.getOthers(quotTC.Export__c).size() > 0) ||
             String.isNotEmpty(this.getQuotationValidityLabel()) ){
-            
+
             judgeBreak.section6_Title_AppearTime++;
         }
 
@@ -1490,22 +1525,22 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Warranty__c);
             for(Integer i = 0; i < currentList.size(); i++){
-	            if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
-	                currentPageNo++;
-	                judgeBreak.pageNo = currentPageNo;
-	                judgeBreak.pageBreak = true;
-	                pageList.add(judgeBreak);
-	                judgeBreak = new FirstPageBlock();
-	                currentHeight = 0;
-	                judgeBreak.pageQuotation = quot;
-	            }
-	            
-	            currentHeight = currentHeight + 4;
-	            judgeBreak.warrantyList.add(currentList[i]);
-	            judgeBreak.section6_Warranty_AppearTime++;
-	            judgeBreak.section6_Warranty_Title_AppearTime++;
+                if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
+                    currentPageNo++;
+                    judgeBreak.pageNo = currentPageNo;
+                    judgeBreak.pageBreak = true;
+                    pageList.add(judgeBreak);
+                    judgeBreak = new FirstPageBlock();
+                    currentHeight = 0;
+                    judgeBreak.pageQuotation = quot;
+                }
+
+                currentHeight = currentHeight + 4;
+                judgeBreak.warrantyList.add(currentList[i]);
+                judgeBreak.section6_Warranty_AppearTime++;
+                judgeBreak.section6_Warranty_Title_AppearTime++;
             }
-    
+
             // + Installation height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Installation__c);
@@ -1519,13 +1554,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.installationList.add(currentList[i]);
-	            judgeBreak.section6_Installation_AppearTime++;
-	            judgeBreak.section6_Installation_Title_AppearTime++;
+                judgeBreak.section6_Installation_AppearTime++;
+                judgeBreak.section6_Installation_Title_AppearTime++;
             }
-    
+
             // + Packing height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Packing__c);
@@ -1539,13 +1574,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.packingList.add(currentList[i]);
                 judgeBreak.section6_Packing_AppearTime++;
                 judgeBreak.section6_Packing_Title_AppearTime++;
             }
-                
+
             // + Training height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Training__c);
@@ -1559,13 +1594,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.trainingList.add(currentList[i]);
                 judgeBreak.section6_Training_AppearTime++;
                 judgeBreak.section6_Training_Title_AppearTime++;
             }
-            
+
             // + Export height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Export__c);
@@ -1579,7 +1614,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.exportList.add(currentList[i]);
                 judgeBreak.section6_Export_AppearTime++;
@@ -1599,13 +1634,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.priceList.add(currentList[i]);
                 judgeBreak.section6_Price_AppearTime++;
                 judgeBreak.section6_Price_Title_AppearTime++;
             }
-            
+
             // + Remarks height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.Remarks__c);
@@ -1619,14 +1654,14 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.remarksList.add(currentList[i]);
                 judgeBreak.section6_Remarks_AppearTime++;
                 judgeBreak.section6_Remarks_Title_AppearTime++;
             }
         }
-        
+
         if (quotation.PrintProformaInvoice__c){
             // + Manufacturer height
             currentList = new List<String>();
@@ -1641,13 +1676,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.section6_Manufacturer_AppearTime++;
                 judgeBreak.section6_Manufacturer_Title_AppearTime++;
                 judgeBreak.manufacturerList.add(currentList[i]);
-        	}
-            
+            }
+
             // + BankDetail height
             currentList = new List<String>();
             currentList = this.getOthers(quotTC.BankDetail__c);
@@ -1661,51 +1696,51 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     currentHeight = 0;
                     judgeBreak.pageQuotation = quot;
                 }
-                
+
                 currentHeight = currentHeight + 4;
                 judgeBreak.bankDetailList.add(currentList[i]);
                 judgeBreak.section6_BankDetail_AppearTime++;
                 judgeBreak.section6_BankDetail_Title_AppearTime++;
-                
+
             }
         } else {
-	        // + Validity height
-	        if(String.isNotEmpty(this.getQuotationValidityLabel())){
-		        if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
-		            currentPageNo++;
-		            judgeBreak.pageNo = currentPageNo;
-		            judgeBreak.pageBreak = true;
-		            pageList.add(judgeBreak);
-		            judgeBreak = new FirstPageBlock();
-		            currentHeight = 0;
-		            judgeBreak.pageQuotation = quot;
-		        } 
-		        
-	        	currentHeight = currentHeight + 4;
-	            judgeBreak.section6_Validity_AppearTime++;
-	            judgeBreak.section6_Validity_Title_AppearTime++;
-	        }
+            // + Validity height
+            if(String.isNotEmpty(this.getQuotationValidityLabel())){
+                if( currentHeight + 4 >= PER_PAGE_REMAIN_HEIGHT){
+                    currentPageNo++;
+                    judgeBreak.pageNo = currentPageNo;
+                    judgeBreak.pageBreak = true;
+                    pageList.add(judgeBreak);
+                    judgeBreak = new FirstPageBlock();
+                    currentHeight = 0;
+                    judgeBreak.pageQuotation = quot;
+                }
+
+                currentHeight = currentHeight + 4;
+                judgeBreak.section6_Validity_AppearTime++;
+                judgeBreak.section6_Validity_Title_AppearTime++;
+            }
         }
-        
+
         // the session 6 last page add
         currentPageNo++;
         judgeBreak.pageNo = currentPageNo;
         judgeBreak.pageBreak = true;
         pageList.add(judgeBreak);
-        
+
         //----------------------------------------------------------------------------------------------------
         // section7
         //----------------------------------------------------------------------------------------------------
         // + section7 userSign
         if(currentHeight + userSignHeight + 12 > PER_PAGE_REMAIN_HEIGHT){
             judgeBreak = new FirstPageBlock();
-		    judgeBreak.pageQuotation = quot;
+            judgeBreak.pageQuotation = quot;
             currentPageNo++;
             judgeBreak.pageNo = currentPageNo;
             judgeBreak.pageBreak = true;
             pageList.add(judgeBreak);
         }
-        
+
         return pageList;
     }
 
@@ -1735,7 +1770,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
         return results;
     }
-    
+
     private List<String> textToList(String targetStr, Map<String, Integer> mapCharWidthDetail, Decimal referenceValue) {
         List<String> results = new List<String>();
 
@@ -1749,13 +1784,13 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         targetStr = targetStr.replace(NT2, NT);
         List<String> lineList = targetStr.split(NT);
         for(String strLine : lineList){
-        	List<String> subLineList = this.stringToTangoList(mapCharWidthDetail, strLine, referenceValue);
+            List<String> subLineList = this.stringToTangoList(mapCharWidthDetail, strLine, referenceValue);
             results.addAll(subLineList);
         }
 
         return results;
     }
-    
+
     private List<SpPageBlock> creatSpPageBlock(List<AsiaProfitCalculationDetail__c> qtDetailList){
         List<SpPageBlock> spPageBlocks = new List<SpPageBlock>();
         Integer currentPageNo = 0;
@@ -1773,7 +1808,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 for(sObject spDetail : qtDetail.Profit_Calculation_2SP_Parts__r){
                     currentCount++;
                     spPageDetailList.add(spDetail);
-                    
+
                     if(currentCount >= 54){
                         sp.spMap.put(qtDetail.Id, spPageDetailList);
                         sp.parent = qtDetail;
@@ -1798,32 +1833,32 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                 spPageDetailList = new List<sObject>();
             }
         }
-        
+
         return spPageBlocks;
     }
 
     /**
      * [stringToTangoList]
-     * @param  charWidthMap 
+     * @param  charWidthMap
      * @param  oldLine [targe row]
      * @return         [List<String>]
      */
     private List<String> stringToTangoList(Map<String, Integer> charWidthMap, String oldLine, Decimal referenceValue){
-    	// 基準値は未指定の場合、Default：Decimal.valueOf(1)に設定する。
-    	if (referenceValue == null) {
-    		referenceValue = Decimal.valueOf(1);
-    	}
-    	
+        // 基準値は未指定の場合、Default：Decimal.valueOf(1)に設定する。
+        if (referenceValue == null) {
+            referenceValue = Decimal.valueOf(1);
+        }
+
         List<String> newLineList = new List<String>();
         if (String.isEmpty(oldLine)) {
             newLineList.add('<br/>');
             return newLineList;
         }
-        
+
         String newLine = '';
         Decimal sum = Decimal.valueOf(0);
         List<String> wordList = oldLine.split(' ');
-        
+
         for(String  strWord : wordList){
             Decimal wordSum = Decimal.valueOf(0);
             String strChars = '';
@@ -1843,24 +1878,24 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
                     } else {
                         charWidth = (Decimal.valueOf(1) / Decimal.valueOf(charWidthMap.get('default')));
                     }
-                    
+
                     if ((wordSum + charWidth) > referenceValue){
                         newLineList.add(strChars);
-                        
-                    	strChars = '';
-                    	wordSum	= Decimal.valueOf(0);
+
+                        strChars = '';
+                        wordSum = Decimal.valueOf(0);
                     } else if ((sum + wordSum + charWidth) > referenceValue){
                         newLineList.add(newLine);
-                        
+
                         newLine = '';
                         sum = Decimal.valueOf(0);
                     }
-                
+
                     strChars = strChars + strChar;
                     wordSum = wordSum + charWidth;
                 }
             }
-            
+
             if ((sum + wordSum) > referenceValue){
                 newLineList.add(newLine);
                 newLine = '';
@@ -1869,11 +1904,11 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             newLine = newLine + strChars;
             sum = sum + wordSum;
         }
-        
+
         if (String.isNotEmpty(newLine)){
             newLineList.add(newLine);
         }
-        
+
         return newLineList;
     }
 
@@ -1947,34 +1982,34 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
         public Integer section6_Warranty_AppearTime {get; set;}
         public Integer section6_Warranty_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Installation_AppearTime {get; set;}
         public Integer section6_Installation_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Packing_AppearTime {get; set;}
         public Integer section6_Packing_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Training_AppearTime {get; set;}
         public Integer section6_Training_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Export_AppearTime {get; set;}
         public Integer section6_Export_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Manufacturer_AppearTime {get; set;}
         public Integer section6_Manufacturer_Title_AppearTime {get; set;}
-        
+
         public Integer section6_BankDetail_AppearTime {get; set;}
         public Integer section6_BankDetail_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Price_AppearTime {get; set;}
         public Integer section6_Price_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Remarks_AppearTime {get; set;}
         public Integer section6_Remarks_Title_AppearTime {get; set;}
-        
+
         public Integer section6_Validity_AppearTime {get; set;}
         public Integer section6_Validity_Title_AppearTime {get; set;}
-        
+
         public List<String> otherList {get; set;}
         public List<String> warrantyList {get; set;}
         public List<String> installationList {get; set;}
@@ -2002,21 +2037,21 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
             this.pageQuotation = new AsiaProfitCalculation__c();
             this.pageBreak = false;
             this.pageNo = 1;
-            
+
             this.section1AppearTime = 0;
-            
+
             this.section3AppearTime = 0;
-            
+
             this.section4TitleAppearTime = 0;
-            
+
             this.section5_Freight_AppearTime = 0;
             this.section5_Estimated_AppearTime = 0;
             this.section5_Payment_AppearTime = 0;
             this.section5_Others_AppearTime = 0;
             this.section5_Others_Title_AppearTime = 0;
-            
+
             this.section6_Title_AppearTime = 0;
-            
+
             this.section6_Warranty_Title_AppearTime = 0;
             this.section6_Warranty_AppearTime = 0;
 
@@ -2025,25 +2060,25 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
 
             this.section6_Packing_Title_AppearTime = 0;
             this.section6_Packing_AppearTime = 0;
-            
+
             this.section6_Training_AppearTime = 0;
             this.section6_Training_Title_AppearTime = 0;
-            
+
             this.section6_Export_Title_AppearTime = 0;
             this.section6_Export_AppearTime = 0;
-            
+
             this.section6_Manufacturer_AppearTime = 0;
             this.section6_Manufacturer_Title_AppearTime = 0;
-            
+
             this.section6_BankDetail_AppearTime = 0;
             this.section6_BankDetail_Title_AppearTime = 0;
-            
+
             this.section6_Price_Title_AppearTime = 0;
             this.section6_Price_AppearTime = 0;
-            
+
             this.section6_Remarks_Title_AppearTime = 0;
             this.section6_Remarks_AppearTime = 0;
-            
+
             this.section6_Validity_Title_AppearTime = 0;
             this.section6_Validity_AppearTime = 0;
         }
@@ -2064,7 +2099,7 @@ public with sharing class JEOLAsia_QuotationPrintPageCtrl {
         public Map<String, AsiaProfitCalculationDetail__c> recordRowMapPCD {get; set;}
         public Map<String, AsiaQuotationDescription__c> recordRowMapDescription {get; set;}
         public Map<String, List<String>> recordRowMapSpec {get; set;}
-        
+
         // page break flag
         public Boolean isBreak {get; set;}
         // page No.

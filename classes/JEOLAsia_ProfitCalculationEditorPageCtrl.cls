@@ -25,6 +25,10 @@ public with sharing class JEOLAsia_ProfitCalculationEditorPageCtrl {
 
     private static final String QUOTATION_COMPANY_ASIA = 'ASIA';
 
+    private Boolean isViewAllUser;
+    //private static final String QUOTATION_COMPANY_ASIA1 = 'ASIA';
+    //private static final String QUOTATION_COMPANY_ASIA2 = 'THAILAND';
+
     public String quotationRecordtypeLabelUnit{
         get {
             return QUOTATION_RECORDTYPE_UNIT;
@@ -37,6 +41,7 @@ public with sharing class JEOLAsia_ProfitCalculationEditorPageCtrl {
 //    public String getQuotationRecordtypeLabelUnit() {return QUOTATION_RECORDTYPE_UNIT;}
 
     public Boolean isValid{get; set;}
+    // DUC added 0: Thailand; 1: ASIA
     public QuotationDetailManage qdm{get; set;}
     public Boolean isNew{get; set;}
     public Boolean isCopy{get; set;}
@@ -54,7 +59,7 @@ public with sharing class JEOLAsia_ProfitCalculationEditorPageCtrl {
     public String language{get; set;}
     public String userCompany{get; set;}
     public String userCompanyCode{get; set;}
-    public Static String quotationCompany{get; set;}
+    //public Static String quotationCompany{get; set;}
     public Decimal defaultCoef{get; set;}
 
     public Boolean isApproverSales{get; set;}
@@ -71,6 +76,8 @@ public with sharing class JEOLAsia_ProfitCalculationEditorPageCtrl {
 
     public Map<String, List<AsiaProfitCalculationRate__c>> rateListJprod{get; set;}
     public Map<String, List<AsiaProfitCalculationRate__c>> rateListOther{get; set;}
+
+    private Map<String, Set<String>> seriesCountryMap;
 
     private List<SelectOption> modelTypeScreenOpt;
 /*
@@ -152,9 +159,8 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
     }
 
     public boolean getIsAsia() {
-
         return qdm.parentRec.Company__c == QUOTATION_COMPANY_ASIA;
-
+        //return qdm.parentRec.Company__c == QUOTATION_COMPANY_ASIA1 || qdm.parentRec.Company__c == QUOTATION_COMPANY_ASIA2;
     }
 
     public String getDetailType() {
@@ -247,7 +253,7 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
     }
 
 
-
+    private User currentUser = [SELECT CompanyName, AvailableMarket__c FROM User WHERE id = :UserInfo.getUserId()];
 
 
     
@@ -258,6 +264,19 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
     public static final Integer ASIAPROFITCALC_NO_PREFIX_LENGTH = 2;
     public static final String URL_PARAM_NAME_ISBRANCH = 'isBranch';
     public static final String URL_PARAM_NAME_ISCOPY = 'isCopy';
+
+    private Boolean checkPermissionViewAll(){
+        List<PermissionSetAssignment> lstcurrentUserPerSet =    [   SELECT Id, PermissionSet.Name,AssigneeId
+                                                                FROM PermissionSetAssignment
+                                                                WHERE AssigneeId = :Userinfo.getUserId() ];
+        for ( PermissionSetAssignment psa : lstcurrentUserPerSet ) {
+            System.debug('##psa.PermissionSet.Name' + psa.PermissionSet.Name);
+            if ( psa.PermissionSet.Name.equals('JEOL_Asia_Quotation') ) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     public JEOLAsia_ProfitCalculationEditorPageCtrl() {
         this.isValid = false;
@@ -271,7 +290,14 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
         scrollTopValue = 0;
         currentScrollValue = 0;
         language = '';
-
+        isViewAllUser = checkPermissionViewAll();
+        if(isViewAllUser){
+            seriesCountryMap = new Map<String, Set<String>>();
+            seriesCountryMap.put('ALL', new Set<String>{'ALL'});
+        } else {
+            seriesCountryMap = getMapSeriesCountry();
+        }
+        system.debug('seriesCountryMap: ' + seriesCountryMap);
         try {
 
             current2SPItems = new List<Obj2SPItem>();
@@ -282,8 +308,9 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
             String userCompanyAddress = '';
             String userPhone = '';
             String userFax = '';
-            User usr = [SELECT CompanyName FROM User WHERE id = :UserInfo.getUserId()];
-            String sCompanyNameProfile = usr.CompanyName;
+            String orgName = '';
+            
+            String sCompanyNameProfile = currentUser.CompanyName;
             for (CompanyName__c companyCustSettings : CompanyName__c.getAll().values()) {
                 if (companyCustSettings.CompanyName__c == sCompanyNameProfile) {
                     userCompany = companyCustSettings.Company__c;
@@ -291,6 +318,8 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
                     userCompanyAddress = companyCustSettings.OrgAddress__c;
                     userPhone = companyCustSettings.OrgPhone__c;
                     userFax = companyCustSettings.OrgFax__c;
+                    orgName = companyCustSettings.CompanyName__c;
+                    break;
                 }
             }
             if (userCompany == '') {
@@ -308,6 +337,7 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
                 String targetId = params.get(PARAM_ID);
 System.debug('@@@@PARAMID: ' + targetId);
                 rec = getTargetRecord(targetId);
+
                                 
                 if (params.containsKey(URL_PARAM_NAME_ISCOPY) && params.get(URL_PARAM_NAME_ISCOPY) == 'true') {
                     isCopy = true;
@@ -319,9 +349,8 @@ System.debug('@@@@PARAMID: ' + targetId);
                     this.isNew = false;
                 }
             } else {
-System.debug('@@@@PARAMID: NONE');
+                
                 rec = createNewRecord();
-
                 rec.IssueDate__c = system.today();
 
                 this.isNew = true;
@@ -368,10 +397,26 @@ System.debug('@@@@PARAMID: NONE');
                 qdm.parentRec.OutputTotalAmount__c = true;
                 qdm.parentRec.OutputSubtitle__c = true;
 
+                
+                //if quotation is for ASIA
+                if(userCompany == 'ASIA'){
+                    //if quotation is for Thailand market thgen update company information
+                    if(qdm.parentRec.TargetMarket__c == '1'){
+                        CompanyName__c company = CompanyName__c.getValues('ASIA-THAILAND');
+                        userCompanyCode = company.CompanyLabel__c;
+                        userCompanyAddress = company.OrgAddress__c;
+                        userPhone = company.OrgPhone__c;
+                        userFax = company.OrgFax__c;
+                        orgName = company.CompanyName__c;
+                    }
+                    //TODO: handle for other countries here
+                }
+                
                 // Set the value of the quotation company
-                quotationCompany = userCompany;
-                qdm.parentRec.Company__c = quotationCompany;
+                //quotationCompany = userCompany;
+                qdm.parentRec.Company__c = userCompany;
                 qdm.parentRec.CompanyName__c = userCompanyCode;
+                qdm.parentRec.OrgName__c = orgName;
                 qdm.parentRec.OrgAddress__c = userCompanyAddress;
                 qdm.parentRec.OrgPhone__c = userPhone;
                 qdm.parentRec.OrgFax__c = userFax;
@@ -425,6 +470,7 @@ System.debug('@@@@PARAMID: NONE');
                                   qdm.parentRec.Status__c == APPROVAL_STATUS_APPROVED;
             this.hasDeletePermission = (qdm.parentRec.SalesPerson__c == UserInfo.getUserId() ||
                                         qdm.parentRec.SalesAssistant__c == UserInfo.getUserId());
+
 
             refreshDateQT();
 
@@ -482,8 +528,71 @@ System.debug('@@@:' + e.getStackTraceString());
     public List<SelectOption> getProfitCalculationTypeOptions() {
         return JEOLUtil.getSelectList(JEOLUtil.REFERENCE_NAME_PROFIT_CALCULATION_TYPE);
     }
+
+    private String convertNullToEmptyString(String item){
+        if (item == null) {
+            return '';
+        }
+        return item;
+    }
+
+
+    //create map between series and country based on Sharing Rule table
+    private Map<String, Set<String>> getMapSeriesCountry(){
+        Map<String, Set<String>> mapResult = new Map<String, Set<String>>();
+
+        List<Sharing_Rule__c> rules = [SELECT Series__c, Series_Group__r.Series__c, Country__c, Country_Group__r.Countries__c FROM Sharing_Rule__c WHERE User__c = :UserInfo.getUserId()];
+        if(rules != null && rules.size() > 0){
+            for (Sharing_Rule__c rule : rules) {
+                String series = String.isBlank(rule.Series_Group__r.Series__c) ? convertNullToEmptyString(rule.Series__c) : (rule.Series_Group__r.Series__c + ',' + convertNullToEmptyString(rule.Series__c));
+                String countries = String.isBlank(rule.Country_Group__r.Countries__c) ? convertNullToEmptyString(rule.Country__c) : (rule.Country_Group__r.Countries__c + ',' + convertNullToEmptyString(rule.Country__c));
+
+                List<String> seriesList = series.split(',');
+                Set<String> seriesSet = new Set<String>(seriesList);
+
+                List<String> countryList = countries.split(',');
+                Set<String> countrySet = new Set<String>(countryList);
+
+                //browse each of series
+                for (String se : seriesSet){
+                    se = se.trim();
+                    if(String.isBlank(se)){
+                        continue;
+                    }
+                    //if map not contain series
+                    if(!mapResult.containsKey(se)){
+                        //then add set of country
+                        mapResult.put(se, countrySet);
+                    } else { //if map already contained series
+                        Set<String> existingSet = mapResult.get(se);
+                        existingSet.addAll(countrySet);
+                        //then add set countries into existing set
+                        mapResult.put(se, existingSet);
+                    }
+                }
+            }
+            
+            system.debug('mapResult: ' + mapResult);
+        }
+
+        return mapResult;
+    }
+
     public List<SelectOption> getSeriesOptions() {
-        return JEOLUtil.getSelectList(JEOLUtil.REFERENCE_NAME_GLOBAL_SERIES);
+        List<SelectOption> returnValues = JEOLUtil.getSelectList(JEOLUtil.REFERENCE_NAME_GLOBAL_SERIES);
+        Integer index = 0;
+        system.debug('returnValues: ' + returnValues);
+        if(seriesCountryMap.containsKey('ALL')){
+            return returnValues;
+        }
+        while (index < returnValues.size()){
+            if(seriesCountryMap.containsKey(returnValues[index].getValue())){
+                index++;
+            } else {
+                returnValues.remove(index);
+            }
+        }
+        return returnValues;
     }
     public List<SelectOption> getUnitOptions() {
         return JEOLUtil.getSelectList(JEOLUtil.REFERENCE_NAME_DEPARTMENT);
@@ -925,7 +1034,12 @@ system.debug('ContractAttachmentFromCode:' + qdm.parentRec.ContractAccount__c);
     }
 
     private AsiaProfitCalculation__c createNewRecord() {
+        system.debug('into createNewRecord');
         AsiaProfitCalculation__c newRecord = new AsiaProfitCalculation__c();
+        //default market: ASIA
+        //Thailand: 1
+        //ASIA: 0
+        newRecord.TargetMarket__c = '0';
         newRecord.TotalAmount__c = 0;
         newRecord.Subtitle__c = 0;
         newRecord.ConsumptionTaxAmount__c = 0;
@@ -946,7 +1060,7 @@ system.debug('ContractAttachmentFromCode:' + qdm.parentRec.ContractAccount__c);
                 id, name, RecordTypeId, RecordType.Name, CurrencyIsoCode, LastModifiedDate, CreatedDateFormula__c, SalesPerson__c, SalesPerson__r.Name,  SalesPersonAsia__c, SalesPersonAsia__r.Name, SalesPersonUS__c, SalesPersonUS__r.Name,
                 TotalAmount__c, ContractCode__c, ContractAddress__c, ContractBelong__c,
                 ContractPersonInCharge__c, ContractPhone__c, ContractEmail__c, ContractFax__c, ContractName__c, ContractName1__c, ContractName2__c, ContractPost__c,
-                Series__c, ProfitCalculationNo__c,
+                Series__c, ProfitCalculationNo__c, TargetMarket__c, 
                 SalesAssistant__c, SalesAssistantAsia__c, SalesAssistantUS__c, 
                 BranchNo__c, ShipmentCode__c, ShipmentAddress__c, ShipmentBelong__c,
                 ShipmentPersonInCharge__c, ShipmentPhone__c, ShipmentEmail__c, ShipmentFax__c, ShipmentName__c, ShipmentName1__c, ShipmentName2__c, ShipmentPost__c, IssueDate__c, CustomerPurchaseOrder__c,
@@ -1477,6 +1591,18 @@ system.debug('ModelTypeForbidden:' + itm.ModelTypeDisplay__c);
                 id idRecordTypeUnit = Schema.SObjectType.AsiaProfitCalculation__c.getRecordTypeInfosByName().get(QUOTATION_RECORDTYPE_UNIT).getRecordTypeId();
                 parentRec.PrintQuantityUnit__c = !(parentRec.RecordTypeId == idRecordTypeUnit);
             }
+
+            //check series matches with country
+            Set<String> countrySet = new Set<String>();
+            if(seriesCountryMap.containsKey('ALL')){
+                countrySet.addAll(seriesCountryMap.get('ALL'));
+            }
+            if(seriesCountryMap.containsKey(parentRec.Series__c)){
+                countrySet.addAll(seriesCountryMap.get(parentRec.Series__c));
+            }
+            if(!countrySet.contains('ALL') && !countrySet.contains(parentRec.ShipmentCountry__c)){
+                throw new JEOLException('Please select other company for End User, you can not create Quotation for country ' + parentRec.ShipmentCountry__c);
+            }
                         
 system.debug('Save: ' + parentRec.ContractAccount__c + ' +++ ' + parentRec);
             upsert parentRec;
@@ -1544,14 +1670,8 @@ system.debug('Save: ' + parentRec.ContractAccount__c + ' +++ ' + parentRec);
                 delete deleteTargets;
             }
 
-
-
-
-
-
             //Update the rates
             List<AsiaProfitCalculationRate__c> lsRate = new List<AsiaProfitCalculationRate__c>();
-
 
             for (List<AsiaProfitCalculationRate__c> val : rateListJprod.values()) {
                 for (AsiaProfitCalculationRate__c rate : val) {
@@ -1569,12 +1689,27 @@ system.debug('Save: ' + parentRec.ContractAccount__c + ' +++ ' + parentRec);
                 }
             }
 
-            for (AsiaProfitCalculationRate__c rate : lsRate) {
+            /*for (AsiaProfitCalculationRate__c rate : lsRate) {
                 if (rate.Profit_Calculation__c == null) {
                     rate.Profit_Calculation__c = parentRec.id;
                 }
             }
-            upsert lsRate;
+            upsert lsRate;*/
+
+            // DUC check whether remove all existing rate records for this quotation
+            // all new rate -> need to insert
+            if(lsRate != null && lsRate[0].Id == null){
+                for (AsiaProfitCalculationRate__c rate : lsRate) {
+                    if (rate.Profit_Calculation__c == null) {
+                        rate.Profit_Calculation__c = parentRec.id;
+                    }
+                }
+                List<AsiaProfitCalculationRate__c> deleteList = [SELECT Id FROM AsiaProfitCalculationRate__c WHERE Profit_Calculation__c = :parentRec.id];
+                delete deleteList;
+                insert lsRate;
+            } else if (lsRate != null){
+                upsert lsRate;
+            }
 
             //Modification-VAIB-Begins(2015/05/29 UAT_QA_List No.64)
             qdm.parentRec = getTargetRecord(parentRec.id);
@@ -1611,15 +1746,21 @@ system.debug('3:' + qdm.parentRec.LastModifiedDate);
     public void doSaveWithPrintDatePart2() {
         Pagereference ref = this.getPrintUrl();
         Blob pdfData;
+        system.debug('CheckPoint 1');
         if (!Test.IsRunningTest()) {
+        system.debug('CheckPoint 2 : ' + this.getPrintUrl());
             pdfData = ref.getContent();
         } else {
+        system.debug('CheckPoint 3');
             pdfData = Blob.valueOf('UNIT.TEST');
-        }        
+        }
+        system.debug('CheckPoint 4');        
         Attachment attachRec = new Attachment();
         attachRec.parentId = qdm.parentRec.id;
         attachRec.name = qdm.parentRec.name + '.pdf';
+        system.debug('CheckPoint 5');
         attachRec.body = pdfData;
+        system.debug('CheckPoint 6');
         insert attachRec;
     }
 
@@ -3075,46 +3216,168 @@ system.debug('AddNo:' + addNo);
             return returnValue;
         }
     }
-    
+
+    private void bindingRateData(List<AsiaProfitCalculationRate__c> lsRate) {
+        system.debug('lsRate: ' + lsRate.size());
+        if (lsRate != null && lsRate.size() > 0) {
+            // Get the list of units available for the quotation company
+            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.SalesCurrency__c.getDescribe().getPicklistValues()) {
+                //THB && PHO Is only for Thailand market
+                if(f.getValue() == 'THB' || f.getValue() == 'PHO'){
+                    //if Quotation is for Thailand market
+                    if(qdm.parentRec.TargetMarket__c == '1'){
+                       rateListOther.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());   
+                    }
+                } else {
+                    rateListOther.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());  
+                }
+            }
+            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.JProdCostCurrency__c.getDescribe().getPicklistValues()) {
+                //THB && PHO Is only for Thailand market
+                if(f.getValue() == 'THB' || f.getValue() == 'PHO'){
+                    //if Quotation is for Thailand market
+                    if(qdm.parentRec.TargetMarket__c == '1'){
+                       rateListJprod.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());   
+                    }
+                } else {
+                    rateListJprod.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());  
+                }
+            }
+
+            for (AsiaProfitCalculationRate__c row : lsRate) {
+                // Firstly, only add the rows that have the same currency (1st row)
+                if (row.CurrencyBase__c == row.CurrencyToConvert__c) {
+
+                    if (row.Type__c == '1') {
+                        if (rateListOther.containsKey(row.CurrencyBase__c)) {
+                            rateListOther.get(row.CurrencyBase__c).add(row);
+                        }
+                    } else if (row.Type__c == '2') {
+                        if (rateListJprod.containsKey(row.CurrencyBase__c)) {
+                            rateListJprod.get(row.CurrencyBase__c).add(row);
+                        }
+                    }
+                }
+            }
+
+            // Remove the rows which have no data
+            targetSalesCurrencyOption = new List<SelectOption>();
+            for (String sKey : rateListOther.keySet()) {
+                //if there is no record CurrencyBase__c = CurrencyToConvert__c
+                if (rateListOther.get(sKey).size() == 0) {
+                    rateListOther.remove(sKey);
+                } else {
+                    targetSalesCurrencyOption.add(new SelectOption(sKey, sKey));
+                }
+            }
+
+            targetCostCurrencyOption = new List<SelectOption>();
+            for (String sKey : rateListJprod.keySet()) {
+                //if there is no record CurrencyBase__c = CurrencyToConvert__c
+                if (rateListJprod.get(sKey).size() == 0) {
+                    rateListJprod.remove(sKey);
+                } else {
+                    targetCostCurrencyOption.add(new SelectOption(sKey, sKey));
+                }
+            }
+
+            listJProdCurrencyOption = new List<SelectOption>();
+            listOtherCurrencyOption = new List<SelectOption>();
+
+            // Secondly, add the rows order like the values of the corresponding picklist
+            for(Schema.PicklistEntry f : AsiaProfitCalculationRate__c.CurrencyToConvert__c.getDescribe().getPicklistValues()) {
+                Boolean otherIncluded = false;
+                Boolean japanIncluded = false;
+                for (AsiaProfitCalculationRate__c row : lsRate) {
+                    if((row.CurrencyToConvert__c == 'THB' || row.CurrencyToConvert__c == 'PHO') && qdm.parentRec.TargetMarket__c != '1' && row.Type__c == '2'){
+                        continue;
+                    }
+                    if (row.CurrencyToConvert__c == f.getValue() && row.CurrencyToConvert__c != row.CurrencyBase__c) {
+                        if (row.Type__c == '1') {
+                            if (rateListOther.containsKey(row.CurrencyBase__c)) {
+                                rateListOther.get(row.CurrencyBase__c).add(row);
+
+                                if(!otherIncluded){
+                                    listOtherCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
+                                    otherIncluded = true;
+                                }
+                            }
+                        } else if (row.Type__c == '2') {
+                            if (rateListJprod.containsKey(row.CurrencyBase__c)) {
+                                rateListJprod.get(row.CurrencyBase__c).add(row);
+
+                                if (!japanIncluded){
+                                    listJProdCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
+                                    japanIncluded = true;
+                                }
+                            }
+                        }
+                    }
+                }       
+            }
+        }
+
+        // Make the list of the same size
+        integer iSize = 0;
+
+        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
+            if (lsls != null && lsls.size() > iSize) {
+                iSize = lsls.size();
+            }
+        }
+        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
+            if (iSize > lsls.size()) {
+                for (integer i = lsls.size(); i < iSize; i++) {
+                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
+                }
+            }
+        }
+
+        iSize = 0;
+        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
+            if (lsls != null && lsls.size() > iSize) {
+                iSize = lsls.size();
+            }
+        }
+        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
+            if (iSize > lsls.size()) {
+                for (integer i = lsls.size(); i < iSize; i++) {
+                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
+                }
+            }
+        }
+
+    }
     private void InitializeListRate(boolean isCopy) {
 
-system.debug('InitializeListRate start');        
+        system.debug('into InitializeListRate');        
+        
         rateListJprod = new Map<String, List<AsiaProfitCalculationRate__c>>();
         rateListOther = new Map<String, List<AsiaProfitCalculationRate__c>>();
-/*
-        rateJprodSGD = new List<AsiaProfitCalculationRate__c>();
-        rateJprodUSD = new List<AsiaProfitCalculationRate__c>();
-        rateOtherSGD = new List<AsiaProfitCalculationRate__c>();
-        rateOtherUSD = new List<AsiaProfitCalculationRate__c>();
-        rateOtherAUD = new List<AsiaProfitCalculationRate__c>();   
-*/
-system.debug('InitializeListRate id:' + qdm.parentRec.id);        
+
+        system.debug('InitializeListRate id:' + qdm.parentRec.id);        
 
         List<AsiaProfitCalculationRate__c> lsRate = [SELECT id, Type__c, CurrencyBase__c, CurrencyToConvert__c, Rate__c, ReadOnly__c, Profit_Calculation__c FROM AsiaProfitCalculationRate__c Where Profit_Calculation__c = :qdm.parentRec.id];
 
-system.debug('InitializeListRate id2');        
-
         if (lsRate == null || lsRate.size() == 0) {
-system.debug('InitializeListRate id3:' + isCopy);        
+            system.debug('InitializeListRate isCopy:' + isCopy);        
 
             // Create the rate
             lsRate = new List<AsiaProfitCalculationRate__c>();
+            system.debug('userCompany: ' + userCompany);
 
             if (!isCopy) {                
-                List<AsiaProfitCalculationRateDefault__c> lsRateDefault = [SELECT id, Type__c, CurrencyBase__c, CurrencyToConvert__c, Rate__c, ReadOnly__c FROM AsiaProfitCalculationRateDefault__c WHERE Company__c = :quotationCompany];
+                List<AsiaProfitCalculationRateDefault__c> lsRateDefault = [SELECT id, Type__c, CurrencyBase__c, CurrencyToConvert__c, Rate__c, ReadOnly__c FROM AsiaProfitCalculationRateDefault__c WHERE Company__c = :userCompany];
                 if (lsRateDefault != null && lsRateDefault.size() > 0) {
                     for (AsiaProfitCalculationRateDefault__c row : lsRateDefault) {
                         lsRate.add(new AsiaProfitCalculationRate__c(Type__c = row.Type__c, CurrencyBase__c = row.CurrencyBase__c, CurrencyToConvert__c = row.CurrencyToConvert__c, Rate__c = row.Rate__c, ReadOnly__c = row.ReadOnly__c));
                     }
                 }
             } else {
-
-system.debug('InitializeListRate id5');        
-            
                 if (Apexpages.currentPage().getParameters().containsKey(PARAM_ID)) {
                     String targetId = Apexpages.currentPage().getParameters().get(PARAM_ID);
 
-system.debug('InitializeListRate id6:' + targetId);        
+                    system.debug('InitializeListRate targetId:' + targetId);        
 
                     List<AsiaProfitCalculationRate__c> lsRateDefault = [SELECT id, Type__c, CurrencyBase__c, CurrencyToConvert__c, Rate__c, ReadOnly__c, Profit_Calculation__c FROM AsiaProfitCalculationRate__c Where Profit_Calculation__c = :targetId];
                     if (lsRateDefault != null && lsRateDefault.size() > 0) {
@@ -3123,386 +3386,34 @@ system.debug('InitializeListRate id6:' + targetId);
                         }
                     }
                 }
-            }            
+            }           
         }
-
-
-        if (lsRate != null && lsRate.size() > 0) {
-system.debug('InitializeListRate id4');        
-
-            // Get the list of units available for the quotation company
-            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.SalesCurrency__c.getDescribe().getPicklistValues()) {
-                rateListOther.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());
-            }
-            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.JProdCostCurrency__c.getDescribe().getPicklistValues()) {
-                rateListJprod.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());
-            }
-
-            for (AsiaProfitCalculationRate__c row : lsRate) {
-                // Firstly, only add the rows that have the same currency (1st row)
-                if (row.CurrencyBase__c == row.CurrencyToConvert__c) {
-
-                    if (row.Type__c == '1') {
-/*                        
-                        if (row.CurrencyBase__c == 'SGD') {
-                            rateOtherSGD.add(row);
-                        } else if (row.CurrencyBase__c == 'USD') {
-                            rateOtherUSD.add(row);
-                        } else if (row.CurrencyBase__c == 'AUD') {
-                            rateOtherAUD.add(row);
-                        }
-*/
-                        if (rateListOther.containsKey(row.CurrencyBase__c)) {
-                            rateListOther.get(row.CurrencyBase__c).add(row);
-                        }
-
-
-                    } else if (row.Type__c == '2') {
-/*                        
-                        if (row.CurrencyBase__c == 'SGD') {
-                            rateJprodSGD.add(row);
-                        } else if (row.CurrencyBase__c == 'USD') {
-                            rateJprodUSD.add(row);
-                        }
-*/
-                        if (rateListJprod.containsKey(row.CurrencyBase__c)) {
-                            rateListJprod.get(row.CurrencyBase__c).add(row);
-                        }
-
-                    }
-
-                }
-            }
-
-            // Remove the rows which have no data
-            targetSalesCurrencyOption = new List<SelectOption>();
-            for (String sKey : rateListOther.keySet()) {
-                if (rateListOther.get(sKey).size() == 0) {
-                    rateListOther.remove(sKey);
-                } else {
-                    targetSalesCurrencyOption.add(new SelectOption(sKey, sKey));
-                }
-            }
-
-            targetCostCurrencyOption = new List<SelectOption>();
-            for (String sKey : rateListJprod.keySet()) {
-                if (rateListJprod.get(sKey).size() == 0) {
-                    rateListJprod.remove(sKey);
-                } else {
-                    targetCostCurrencyOption.add(new SelectOption(sKey, sKey));
-                }
-            }
-
-            listJProdCurrencyOption = new List<SelectOption>();
-            listOtherCurrencyOption = new List<SelectOption>();
-
-            // Secondly, add the rows order like the values of the corresponding picklist
-            for(Schema.PicklistEntry f : AsiaProfitCalculationRate__c.CurrencyToConvert__c.getDescribe().getPicklistValues()) {
-                for (AsiaProfitCalculationRate__c row : lsRate) {
-                    if (row.CurrencyToConvert__c == f.getValue() && row.CurrencyToConvert__c != row.CurrencyBase__c) {
-                        if (row.Type__c == '1') {
-/*
-                            if (row.CurrencyBase__c == 'SGD') {
-                                rateOtherSGD.add(row);
-                            } else if (row.CurrencyBase__c == 'USD') {
-                                rateOtherUSD.add(row);
-                            } else if (row.CurrencyBase__c == 'AUD') {
-                                rateOtherAUD.add(row);
-                            }
-*/
-
-                            if (rateListOther.containsKey(row.CurrencyBase__c)) {
-                                rateListOther.get(row.CurrencyBase__c).add(row);
-
-                                boolean fAlreadyExists = false;
-                                for (SelectOption opt : listOtherCurrencyOption) {
-                                    if (opt.getValue() == row.CurrencyToConvert__c) fAlreadyExists = true;
-                                }
-                                if (!fAlreadyExists) listOtherCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
-                            }
-
-                        } else if (row.Type__c == '2') {
-/*
-                            if (row.CurrencyBase__c == 'SGD') {
-                                rateJprodSGD.add(row);
-                            } else if (row.CurrencyBase__c == 'USD') {
-                                rateJprodUSD.add(row);
-                            }
-*/
-
-                            if (rateListJprod.containsKey(row.CurrencyBase__c)) {
-                                rateListJprod.get(row.CurrencyBase__c).add(row);
-
-                                boolean fAlreadyExists = false;
-                                for (SelectOption opt : listJProdCurrencyOption) {
-                                    if (opt.getValue() == row.CurrencyToConvert__c) fAlreadyExists = true;
-                                }
-                                if (!fAlreadyExists) listJProdCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
-                            }
-
-                        }
-                    }
-                }       
-            }
-        }
-
-        // Make the list of the same size
-        integer iSize = 0;
-
-/*
-        if (rateJprodSGD != null && rateJprodSGD.size() > iSize) {
-            iSize = rateJprodSGD.size();
-        }
-        if (rateJprodUSD != null && rateJprodUSD.size() > iSize) {
-            iSize = rateJprodUSD.size();
-        }
-        if (iSize > rateJprodSGD.size()) {
-            for (integer i = rateJprodSGD.size(); i < iSize; i++) {
-                rateJprodSGD.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-            }
-        }
-        if (iSize > rateJprodUSD.size()) {
-            for (integer i = rateJprodUSD.size(); i < iSize; i++) {
-                rateJprodUSD.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-            }
-        }
-
-        iSize = 0;
-        if (rateOtherSGD != null && rateOtherSGD.size() > iSize) {
-            iSize = rateOtherSGD.size();
-        }
-        if (rateOtherUSD != null && rateOtherUSD.size() > iSize) {
-            iSize = rateOtherUSD.size();
-        }
-        if (rateOtherAUD != null && rateOtherAUD.size() > iSize) {
-            iSize = rateOtherAUD.size();
-        }
-        if (iSize > rateOtherSGD.size()) {
-            for (integer i = rateOtherSGD.size(); i < iSize; i++) {
-                rateOtherSGD.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-            }
-        }
-        if (iSize > rateOtherUSD.size()) {
-            for (integer i = rateOtherUSD.size(); i < iSize; i++) {
-                rateOtherUSD.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-            }
-        }
-        if (iSize > rateOtherAUD.size()) {
-            for (integer i = rateOtherAUD.size(); i < iSize; i++) {
-                rateOtherAUD.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-            }
-        }
-*/
-        iSize = 0;
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
-            if (lsls != null && lsls.size() > iSize) {
-                iSize = lsls.size();
-            }
-        }
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
-            if (iSize > lsls.size()) {
-                for (integer i = lsls.size(); i < iSize; i++) {
-                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-                }
-            }
-        }
-
-        iSize = 0;
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
-            if (lsls != null && lsls.size() > iSize) {
-                iSize = lsls.size();
-            }
-        }
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
-            if (iSize > lsls.size()) {
-                for (integer i = lsls.size(); i < iSize; i++) {
-                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-                }
-            }
-        }
-
-system.debug('InitializeListRate end');        
-
+        bindingRateData(lsRate);
+        system.debug('InitializeListRate end');        
     }
 
 
     public void refreshListRate() {
-
-
-
-system.debug('refreshListRate start');        
-//        rateListJprod = new Map<String, List<AsiaProfitCalculationRate__c>>();
-  //      rateListOther = new Map<String, List<AsiaProfitCalculationRate__c>>();
-
-system.debug('refreshListRate id:' + qdm.parentRec.id);
-
-
-system.debug('refreshListRate id2' + qdm.parentRec.Company__c);        
+        system.debug('into refreshListRate');        
+        rateListJprod = new Map<String, List<AsiaProfitCalculationRate__c>>();
+        rateListOther = new Map<String, List<AsiaProfitCalculationRate__c>>();
+        system.debug('qdm.parentRec.id: ' + qdm.parentRec.id);
+        system.debug('qdm.parentRec.Company__c: ' + qdm.parentRec.Company__c);        
 
         // Create the rate
         List<AsiaProfitCalculationRate__c> lsRate = new List<AsiaProfitCalculationRate__c>();
 
         List<AsiaProfitCalculationRateDefault__c> lsRateDefault = [SELECT id, Type__c, CurrencyBase__c, CurrencyToConvert__c, Rate__c, ReadOnly__c FROM AsiaProfitCalculationRateDefault__c WHERE Company__c = :qdm.parentRec.Company__c];
+        system.debug('lsRateDefault: ' + lsRateDefault.size());
+
         if (lsRateDefault != null && lsRateDefault.size() > 0) {
             for (AsiaProfitCalculationRateDefault__c row : lsRateDefault) {
                 lsRate.add(new AsiaProfitCalculationRate__c(Type__c = row.Type__c, CurrencyBase__c = row.CurrencyBase__c, CurrencyToConvert__c = row.CurrencyToConvert__c, Rate__c = row.Rate__c, ReadOnly__c = row.ReadOnly__c));
             }
         }
-
-        for (AsiaProfitCalculationRate__c row : lsRate) {
-
-            if (row.Type__c == '1') {
-                for (List<AsiaProfitCalculationRate__c> val : rateListOther.values()) {
-                    for (AsiaProfitCalculationRate__c rate : val) {
-                        if (rate.CurrencyBase__c == row.CurrencyBase__c && rate.CurrencyToConvert__c == row.CurrencyToConvert__c) {
-                            rate.Rate__c = row.Rate__c;
-                            rate.ReadOnly__c = row.ReadOnly__c;
-                        }
-                    }
-                }
-            } else if (row.Type__c == '2') {
-                for (List<AsiaProfitCalculationRate__c> val : rateListJprod.values()) {
-                    for (AsiaProfitCalculationRate__c rate : val) {
-                        if (rate.CurrencyBase__c == row.CurrencyBase__c && rate.CurrencyToConvert__c == row.CurrencyToConvert__c) {
-                            rate.Rate__c = row.Rate__c;
-                            rate.ReadOnly__c = row.ReadOnly__c;
-                        }
-                    }
-                }
-            }
-
-        }
-
-
-
-
-
-
-
-/*
-        if (lsRate != null && lsRate.size() > 0) {
-system.debug('refreshListRate id4');        
-
-            // Get the list of units available for the quotation company
-            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.SalesCurrency__c.getDescribe().getPicklistValues()) {
-                rateListOther.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());
-            }
-            for(Schema.PicklistEntry f : AsiaProfitCalculation__c.JProdCostCurrency__c.getDescribe().getPicklistValues()) {
-                rateListJprod.put(f.getValue(), new List<AsiaProfitCalculationRate__c>());
-            }
-
-            for (AsiaProfitCalculationRate__c row : lsRate) {
-                // Firstly, only add the rows that have the same currency (1st row)
-                if (row.CurrencyBase__c == row.CurrencyToConvert__c) {
-
-                    if (row.Type__c == '1') {
-                        if (rateListOther.containsKey(row.CurrencyBase__c)) {
-                            rateListOther.get(row.CurrencyBase__c).add(row);
-                        }
-
-
-                    } else if (row.Type__c == '2') {
-                        if (rateListJprod.containsKey(row.CurrencyBase__c)) {
-                            rateListJprod.get(row.CurrencyBase__c).add(row);
-                        }
-                    }
-                }
-            }
-
-            // Remove the rows which have no data
-            targetSalesCurrencyOption = new List<SelectOption>();
-            for (String sKey : rateListOther.keySet()) {
-                if (rateListOther.get(sKey).size() == 0) {
-                    rateListOther.remove(sKey);
-                } else {
-                    targetSalesCurrencyOption.add(new SelectOption(sKey, sKey));
-                }
-            }
-
-            targetCostCurrencyOption = new List<SelectOption>();
-            for (String sKey : rateListJprod.keySet()) {
-                if (rateListJprod.get(sKey).size() == 0) {
-                    rateListJprod.remove(sKey);
-                } else {
-                    targetCostCurrencyOption.add(new SelectOption(sKey, sKey));
-                }
-            }
-
-            listJProdCurrencyOption = new List<SelectOption>();
-            listOtherCurrencyOption = new List<SelectOption>();
-
-            // Secondly, add the rows order like the values of the corresponding picklist
-            for(Schema.PicklistEntry f : AsiaProfitCalculationRate__c.CurrencyToConvert__c.getDescribe().getPicklistValues()) {
-                for (AsiaProfitCalculationRate__c row : lsRate) {
-                    if (row.CurrencyToConvert__c == f.getValue() && row.CurrencyToConvert__c != row.CurrencyBase__c) {
-                        if (row.Type__c == '1') {
-                            if (rateListOther.containsKey(row.CurrencyBase__c)) {
-                                rateListOther.get(row.CurrencyBase__c).add(row);
-
-                                boolean fAlreadyExists = false;
-                                for (SelectOption opt : listOtherCurrencyOption) {
-                                    if (opt.getValue() == row.CurrencyToConvert__c) fAlreadyExists = true;
-                                }
-                                if (!fAlreadyExists) listOtherCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
-                            }
-
-                        } else if (row.Type__c == '2') {
-
-                            if (rateListJprod.containsKey(row.CurrencyBase__c)) {
-                                rateListJprod.get(row.CurrencyBase__c).add(row);
-
-                                boolean fAlreadyExists = false;
-                                for (SelectOption opt : listJProdCurrencyOption) {
-                                    if (opt.getValue() == row.CurrencyToConvert__c) fAlreadyExists = true;
-                                }
-                                if (!fAlreadyExists) listJProdCurrencyOption.add(new SelectOption(row.CurrencyToConvert__c, row.CurrencyToConvert__c));
-                            }
-
-                        }
-                    }
-                }       
-            }
-        }
-
-        // Make the list of the same size
-        integer iSize = 0;
-
-        iSize = 0;
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
-            if (lsls != null && lsls.size() > iSize) {
-                iSize = lsls.size();
-            }
-        }
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListJprod.values()) {
-            if (iSize > lsls.size()) {
-                for (integer i = lsls.size(); i < iSize; i++) {
-                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-                }
-            }
-        }
-
-        iSize = 0;
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
-            if (lsls != null && lsls.size() > iSize) {
-                iSize = lsls.size();
-            }
-        }
-        for (List<AsiaProfitCalculationRate__c> lsls : rateListOther.values()) {
-            if (iSize > lsls.size()) {
-                for (integer i = lsls.size(); i < iSize; i++) {
-                    lsls.add(new AsiaProfitCalculationRate__c(ReadOnly__c = true));
-                }
-            }
-        }
-*/
-system.debug('refreshListRate end');     
-
-
-
-
+        bindingRateData(lsRate);
+        system.debug('refreshListRate end');
     }
-
-
 
     public List<Obj2SPItem> current2SPItems{get; set;}
     public String selectedModelType{get; set;}
@@ -3832,7 +3743,88 @@ system.debug('2.Quantity__c:'+rec.Quantity__c + '|' + curRow2SP.qty);
 
         return options;
     }
+    // DUC added
+
+    private void updateCompanyInfo(){
+        system.debug('into updateCompanyInfo');
+        
+        String sCompanyNameProfile = currentUser.CompanyName;
+
+        for (CompanyName__c companyCustSettings : CompanyName__c.getAll().values()) {
+            //if company matched
+            if(companyCustSettings.CompanyName__c == sCompanyNameProfile){
+                //if company is ASIA
+                if(companyCustSettings.Company__c == 'ASIA'){
+                    //if martket is for THAILAND
+                    if(qdm.parentRec.TargetMarket__c == '1'){
+                        companyCustSettings = CompanyName__c.getValues('ASIA-THAILAND');
+                    }
+                    //TODO: handle for other countries
+                }
+                qdm.parentRec.Company__c = companyCustSettings.Company__c;
+                qdm.parentRec.CompanyName__c = companyCustSettings.CompanyLabel__c;
+                qdm.parentRec.OrgAddress__c = companyCustSettings.OrgAddress__c;
+                qdm.parentRec.OrgPhone__c = companyCustSettings.OrgPhone__c;
+                qdm.parentRec.OrgFax__c = companyCustSettings.OrgFax__c;
+                qdm.parentRec.OrgName__c = companyCustSettings.CompanyName__c;
+                qdm.parentRec.TaxRate__c = companyCustSettings.TaxationRate__c == null ? 0 : companyCustSettings.TaxationRate__c;
+                break;
+            }
+        }
+    }
+
+    public void reloadDataSourceAccordingMarket(){
+        //update target market in record when user change the select list
+        system.debug('after change: ' + qdm.parentRec.TargetMarket__c);
+        //if target is changed to Thai and term payment was in ASIA then change it to Thai
+        if (qdm.parentRec.TargetMarket__c == '1' && qdm.parentRec.PaymentConditionSection__c == '0'){
+            qdm.parentRec.PaymentConditionSection__c = '1';
+        }
+        //if target is changed to ASIA and term payment was in Thai then change it to ASIA
+        if (qdm.parentRec.TargetMarket__c == '0' && qdm.parentRec.PaymentConditionSection__c == '1'){
+            qdm.parentRec.PaymentConditionSection__c = '0';
+        }
+
+        InitializeListRate(isCopy);
+
+        //if target is changed to ASIA and J-Prod cost currency was in THB or PHO then change it to USD
+        if (qdm.parentRec.TargetMarket__c == '0' && (qdm.parentRec.JProdCostCurrency__c == 'THB' || qdm.parentRec.JProdCostCurrency__c == 'PHO')){
+            qdm.parentRec.JProdCostCurrency__c = 'USD';
+        }
+        //if target is changed to ASIA and Sales Currency was in THB or PHO then change it to USD
+        if (qdm.parentRec.TargetMarket__c == '0' && (qdm.parentRec.SalesCurrency__c == 'THB' || qdm.parentRec.SalesCurrency__c == 'PHO')){
+            qdm.parentRec.SalesCurrency__c = 'USD';
+        }
+
+        updateCompanyInfo();
+    }
+
+    public List<SelectOption> getPaymentTermOptions(){
+        list<SelectOption> options = new list<SelectOption>();
+        for (Schema.PicklistEntry f : AsiaProfitCalculation__c.PaymentConditionSection__c.getDescribe().getPicklistValues()) {
+            //if target is Thailand then remove Asia payment method from the list
+            if(qdm.parentRec.TargetMarket__c == '1' && f.getValue() == '0') {
+                continue;
+            }
+            //if target is ASIA then remove Thai payment method from the list
+            if(qdm.parentRec.TargetMarket__c == '0' && f.getValue() == '1') {
+                continue;
+            }
+            options.add(new SelectOption(f.getValue(), f.getLabel()));
+        }       
+        return options;
+    }
     
+    public List<SelectOption> getTargetMarketOptions(){
+        list<SelectOption> options = new list<SelectOption>();
+        for (Schema.PicklistEntry f : AsiaProfitCalculation__c.TargetMarket__c.getDescribe().getPicklistValues()) {
+            if(currentUser.AvailableMarket__c.indexOf(f.getValue()) >= 0){
+                options.add(new SelectOption(f.getValue(), f.getLabel()));
+            }
+        }       
+        return options;
+    }
+
 
     public List<SelectOption> getQuotationTypeOptions(){
 
