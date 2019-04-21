@@ -1,0 +1,47 @@
+<apex:page controller="VoxerEventLogMonitorPlusSettingsCtrl">
+
+	
+	<apex:form >
+		<apex:pageBlock title="Voxer Event Monitoring+ 設定" mode="detail" id="pb_top">
+			<apex:pageMessages />
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton action="{!generateKey}" value="暗号設定初期化" reRender="pb_top" />		
+			</apex:pageBlockButtons>
+		</apex:pageBlock>
+		<apex:pageBlock mode="detail" id="pb_auth">
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton action="{!saveAuth}" value="認証情報の保存" reRender="pb_top, pb_auth" />		
+			</apex:pageBlockButtons>
+			<apex:pageBlockSection title="Voxer Event Monitoring+ 接続認証情報" columns="2" collapsible="false">
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="ユーザID" />
+					<apex:inputText value="{!userid}" />
+				</apex:pageblocksectionitem>
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="パスワード" />
+					<apex:inputText value="{!passwd}" />
+				</apex:pageblocksectionitem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+
+		<apex:pageBlock mode="detail" id="pb_url">
+			<apex:pageBlockButtons location="bottom" >
+				<apex:commandButton action="{!saveURL}" value="接続先URLの保存" reRender="pb_top, pb_url" />	
+			</apex:pageBlockButtons>
+			<apex:pageBlockSection title="Voxer Event Monitoring+ 接続先URL情報" columns="2" collapsible="false">
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="接続先URL" />
+					<apex:inputText value="{!voxerURL}" />
+				</apex:pageblocksectionitem>
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="接続タイプ" />
+					<apex:inputText value="{!accessType}" />
+				</apex:pageblocksectionitem>
+                <apex:pageblocksectionitem >
+					<apex:outputlabel value="Organization Id" />
+					<apex:inputText value="{!organizationId}" />
+				</apex:pageblocksectionitem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

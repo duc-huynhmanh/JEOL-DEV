@@ -1,0 +1,1128 @@
+<apex:page showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" standardController="AsiaCustomerInformations__c" extensions="JEOLAsia_CustomerInformationsCtrl" >
+
+  <apex:outputPanel layout="none" id="contentPage">
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Salesforce - JEOLAsia_CustomerInformations</title>
+
+        <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/css/bootstrap.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_CustomBaseStyle.css')}" />
+
+        <style>
+          .contents .page-header {
+            z-index: 2;
+            position :relative;
+            margin-bottom: 42px;
+          }
+          .contents .contents-body .section .section-body hr {
+            float: left;
+          }
+          .contents .contents-body .button-area .section-body .customButton {
+            float: left;
+          }
+          .contents .contents-body .navi-area {
+            background-color: #7e9bc1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            margin-top: 49px;
+          }
+          .contents .contents-body .navi-area.fixed-top {
+            z-index: 2;
+            position: fixed;
+            margin-top: 0px;
+          }
+          .contents .contents-body .navi-area .section-body {
+            padding: 4px 8px;
+            margin: 0px auto;
+            position: relative;
+            z-index: 1;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons {
+            float: left;
+            margin-right: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons.right {
+            float: right;
+            margin-right: 0px;
+            margin-left: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item {
+            margin-right: -1px;
+            float: left;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item>* {
+            border-radius: 0;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            background-color: #ffffff;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item {
+            float: left;
+            padding: 24px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label {
+            font-size: 12px;
+            text-align: left;
+            vertical-align: top;
+            width: 180px;
+            margin: 0 0 8px 0;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .quotation-item-header {
+            width: 100%;
+            border-radius: 2px;
+            background-color: #becde0;
+            margin: 0 0 4px 0;
+            border: 1px solid transparent;
+          }
+
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="No"] 
+          {
+            width: 10px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="Nation"]
+          {
+            text-align: right;
+            width: 180px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="URL"]
+          {
+            text-align: right;
+            width: 208px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="OrderDate"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="Revision"] {
+            text-align: right;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="CustomerActivityScope"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="CapitalOrExecSomeCountry"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="InstrumentEndUseDescription"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="IsResearchEntrustedMilitary"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="ABCMWeaponRelatedLabel"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="EndUseCertificateAvailableLabel"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="RiskHighDisperse"]
+          {
+            width: 600px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskCustomerSmall}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskCustomerReluctantInfo}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskUnusualPayment}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskAnormalPractice}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskCustomerKnowledgeSmall}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskInstrumentIncompatible}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskInappropriateSP}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskNoWishUsualService}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskPOBox}"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="{!$Component.form.RiskIllegalExporter}"]
+          {
+            width: 450px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="CustomerPastTransaction"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="OrganizationCompany"]
+          {
+            width: 220px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="CustomerProcMainUser"]
+          {
+            width: 245px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="ABCMWeaponRelated"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="ConventionalWeaponRelated"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="EndUseCertificateAvailable"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="AssuranceStatementAvailable"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="EndUseInspectionPossibility"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="CustomerDeniedPerson"]
+          {
+            width: 400px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="ResponsibleUser"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="ResponsibleUser2"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="Title1"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="Title2"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="DateResponsibleUser"],
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="DateResponsibleUser2"]
+          {
+            width: 70px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label[for="Title1Item"]
+          {
+            width: 350px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value
+          {
+            width: 240px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.OrderDate
+          {
+            width: 100px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.Revision
+          {
+            width: 326px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.URL,
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.CustomerActivityScope,
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.InstrumentEndUseDescription
+          {
+            width: 750px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.ResponsibleUser,
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.ResponsibleUser2,
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.DateResponsibleUser,
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.DateResponsibleUser2
+          {
+            width: 180px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-value.other
+          {
+            width: 120px;
+            margin-left: 8px;
+          }
+          .radio-table {
+            margin-top: 8px;
+          }
+          .radio-table td {
+            padding: 0 10px 8px 8px;    
+          }
+          .radio-table-title {
+            vertical-align: top;
+          }
+        </style>
+
+        <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+        <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/js/bootstrap.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/PagerHelper.js')}" />
+
+        <script>
+            var $j = jQuery.noConflict();
+            var safety = {!ISBLANK(rec.id)};
+            var makeSafetyCheck = true;
+            var makeSafetyCheck2 = true;
+
+            $j(function(){
+                var windwTransitions = (function(e){
+                    if (makeSafetyCheck2 && (makeSafetyCheck || document.activeElement.type === 'text')) {
+                        var currentFocus = document.querySelector(':focus');
+                        if (currentFocus && typeof currentFocus !== 'undefined') {
+                            currentFocus.blur();
+                        }
+                        if (safety) {
+                            e.returnValue = '内容に変更がありました。保存せずにページから離れますか？';
+                        } else {
+                            safety = true;
+                        }
+                    }
+                });
+
+                if (window.addEventListener) {
+                    window.addEventListener('beforeunload', windwTransitions);
+                } else if (window.attachEvent) {
+                    window.attachEvent('onbeforeunload', windwTransitions);
+                } else {
+                    console.log("画面遷移時に警告を出せません。ご注意ください。");
+                }
+
+                var $window = $j(window);
+                $window.on('click', clearAction);
+
+                $window.on('scroll',function(e){
+                    var beforeTop = window.beforeTop;
+                    var currentTop = $window.scrollTop();
+                    if (!beforeTop) {
+                        beforeTop = 0;
+                    }
+                    if (beforeTop < currentTop && currentTop > 48) {
+                        $j('.navi-area').addClass('fixed-top');
+                    } else if ((beforeTop > currentTop && currentTop <= 48) || currentTop == 0) {
+                        $j('.navi-area').removeClass('fixed-top');
+                    }
+                    window.beforeTop = currentTop; 
+                });
+
+                $window.on('keydown',function(e){
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    if (/(38|40|27)/.test(e.which) && $dropdown.length) {
+
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (e.which == 27) {
+                            $dropdown.removeClass('open');
+                            $dropdown.find('[data-type="button"]').trigger('focus');
+                        }
+                        
+                        var $items = $dropdown.find('[data-type="list"] [data-type="item"]');
+                        var $target = $j(e.target);
+                        if ($target.attr('data-type') !== 'item') {
+                            $target = $target.closest('[data-type="item"]');
+                        }
+
+                        var target = null;
+                        if ($target.length) {
+                          target = $target[0];
+                        }
+                        var index = 0;
+                        if (target) {
+                            index = $items.index(target);
+                            if (e.which == 38 && index > 0) {
+                                index--;
+                            }
+                            if (e.which == 40 && index < $items.length - 1) {
+                                index++;
+                            }
+                        }
+                        $items.eq(index).find('a,input').trigger('focus');
+                    }
+                });
+            });
+
+            // アンロック
+            function unlockSafety() {
+                safety = false;
+            }
+            // ロック
+            function lockSafety() {
+                safety = true;
+            }
+            // ロック確認(フォーカスが離れた時にチェック)
+            function safetyLockCheck(targetNode) {
+
+                var value = targetNode.getAttribute('data-compare-value');
+                var type = targetNode.getAttribute('type');
+                var currentValue = null;
+//                if (type === 'checkbox' || type === 'radio') {
+                if (type === 'checkbox') {
+                    currentValue = targetNode.checked;
+                } else {
+                    currentValue = targetNode.value;
+                }
+                if (value !== currentValue) {
+                    lockSafety();
+                }
+            }
+
+            // アクションクリア
+            function clearAction(e) {
+                var $target = $j(e.target).closest('[data-type="dropdown"]');
+                if (!$target.hasClass('open')) {
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    $dropdown.removeClass('open');
+                }
+            }
+
+            // 読込直後
+            window.onload = function() {
+
+            	// ラジオボタン初期設定
+                setRadio('{!rec.CustomerStatus__c}', 'CustomerStatus');
+                setRadio('{!rec.FacilityType__c}', 'FacilityType');
+                setRadio('{!rec.CustomerField__c}', 'CustomerField');
+                setRadio('{!rec.CapitalOrExecSomeCountry__c}', 'CapitalOrExecSomeCountry');
+                setRadio('{!rec.CustomerPastTransaction__c}', 'CustomerPastTransaction');
+                setRadio('{!rec.IsResearchEntrustedMilitary__c}', 'IsResearchEntrustedMilitary');
+                setRadio('{!rec.ABCMWeaponRelated__c}', 'ABCMWeaponRelated');
+                setRadio('{!rec.ConventionalWeaponRelated__c}', 'ConventionalWeaponRelated');
+                setRadio('{!rec.EndUseCertificateAvailable__c}', 'EndUseCertificateAvailable');
+                setRadio('{!rec.AssuranceStatementAvailable__c}', 'AssuranceStatementAvailable');
+                setRadio('{!rec.EndUseInspectionPossibility__c}', 'EndUseInspectionPossibility');
+                setRadio('{!rec.CustomerDeniedPerson__c}', 'CustomerDeniedPerson');
+            }
+
+            // ラジオボタン初期設定処理
+            function setRadio(obj, name) {
+
+                var elements = document.getElementsByName(name);
+
+                for (var i = 0; i < elements.length; i++) {
+                    if (obj == elements[i].value) {
+                        elements[i].checked = true;
+                        break;
+                    }
+                }
+            }
+
+            // ラジオボタンの値をHiddenに渡す
+            function selectOption(input, txtid){
+                document.getElementById(txtid).value = input.value;
+                // hiddenの入力値を比較
+                safetyLockCheck(document.getElementById(txtid));
+            }
+
+            // Print Out Button
+            function openPreview() {
+                window.open("{!PreviewUrl}","_blank"," width=960,height=600,resizable=no,toolbar=no,location=no,menubar=no,status=no,scrollbars=yes");
+            }
+
+            function closeWindow(){
+                window.close();
+            }
+        </script>
+      </head>
+
+      <body>
+        <apex:actionStatus layout="block" onstop="contentInit();" id="ajaxPageStatus" startStyleClass="ajax-status-start-page">
+          <apex:facet name="start">
+            <div class="ajax-status-start-inner ajax-loading"></div>
+          </apex:facet>
+        </apex:actionStatus>
+
+        <apex:outputPanel layout="block" styleClass="contents" id="contents" >
+          <div class="page-header">
+            <apex:include pageName="{!$Page.JEOL_VisualforceHeader}" />
+          </div>
+
+          <div class="contents-body">
+            <apex:form id="form">
+<!-- radiobutton用hidden項目 -->
+              <apex:inputHidden value="{!rec.CustomerStatus__c}" id="hidCustomerStatus" html-data-compare-value="{!baseRec.CustomerStatus__c}"/>
+              <apex:inputHidden value="{!rec.FacilityType__c}" id="hidFacilityType" html-data-compare-value="{!baseRec.FacilityType__c}"/>
+              <apex:inputHidden value="{!rec.CustomerField__c}" id="hidCustomerField" html-data-compare-value="{!baseRec.CustomerField__c}"/>
+              <apex:inputHidden value="{!rec.CapitalOrExecSomeCountry__c}" id="hidCapitalOrExecSomeCountry" html-data-compare-value="{!baseRec.CapitalOrExecSomeCountry__c}"/>
+              <apex:inputHidden value="{!rec.CustomerPastTransaction__c}" id="hidCustomerPastTransaction" html-data-compare-value="{!baseRec.CustomerPastTransaction__c}"/>
+              <apex:inputHidden value="{!rec.IsResearchEntrustedMilitary__c}" id="hidIsResearchEntrustedMilitary" html-data-compare-value="{!baseRec.IsResearchEntrustedMilitary__c}"/>
+              <apex:inputHidden value="{!rec.ABCMWeaponRelated__c}" id="hidABCMWeaponRelated" html-data-compare-value="{!baseRec.ABCMWeaponRelated__c}"/>
+              <apex:inputHidden value="{!rec.ConventionalWeaponRelated__c}" id="hidConventionalWeaponRelated" html-data-compare-value="{!baseRec.ConventionalWeaponRelated__c}"/>
+              <apex:inputHidden value="{!rec.EndUseCertificateAvailable__c}" id="hidEndUseCertificateAvailable" html-data-compare-value="{!baseRec.EndUseCertificateAvailable__c}"/>
+              <apex:inputHidden value="{!rec.AssuranceStatementAvailable__c}" id="hidAssuranceStatementAvailable" html-data-compare-value="{!baseRec.AssuranceStatementAvailable__c}"/>
+              <apex:inputHidden value="{!rec.EndUseInspectionPossibility__c}" id="hidEndUseInspectionPossibility" html-data-compare-value="{!baseRec.EndUseInspectionPossibility__c}"/>
+              <apex:inputHidden value="{!rec.CustomerDeniedPerson__c}" id="hidCustomerDeniedPerson" html-data-compare-value="{!baseRec.CustomerDeniedPerson__c}"/>
+
+              <div class="section navi-area" >
+                <div class="section-body base-width clearfix">
+                  <ul class="navi-buttons clearfix">
+                    <li class="navi-item">
+<!-- Save Button -->
+                      <apex:outputPanel layout="none" rendered="{!isValid}" >
+                        <apex:commandLink action="{!saveAction}" styleClass="customButton save" onclick="unlockSafety();" status="ajaxPageStatus" >{!$Label.JEOL_QuotEdit_Label_Save}</apex:commandLink>
+                      </apex:outputPanel>
+                    </li>
+                  </ul>
+
+<!-- Print Out Button -->
+                  <ul class="navi-buttons right clearfix">
+                    <li class=" navi-item">
+                      <apex:outputPanel layout="none" rendered="{!(isValid && !isNew)}" >
+                        <apex:commandLink value="Print Out" styleClass="customButton printOut" action="{!ajaxSaveAction}" oncomplete="openPreview(); unlockSafery();" status="ajaxPageStatus" />
+                      </apex:outputPanel>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="section base-width">
+                <div class="screenname">
+                  <h1 class="small">Input CI data</h1>
+                  <div class="big" >
+<!-- 新規作成 -->
+                    <apex:outputText rendered="{!isNew}" >
+                      <span>Input CI data</span>
+                    </apex:outputText>
+<!-- 新規以外 -->
+                    <apex:outputText rendered="{!!isNew}" value="{!$Label.JEOL_QuotEdit_Label_ReferringKeyword}">
+                      <apex:param value="{!rec.AsiaProfitCalculation__r.Name}"/>
+                    </apex:outputText>
+
+                  </div>
+                </div>
+              </div>
+
+<!-- パラメータ不正時 --> 
+              <apex:outputPanel layout="none" rendered="{!!isValid}">
+                <div class="section base-width" >
+                  <apex:messages layout="table" />
+                  <apex:outputText >
+                    <apex:outputLink value="{!$Page.JEOLAsia_ProfitCalculationEditorPage}" onclick="unlockSafety();">コチラ</apex:outputLink>
+                    <apex:outputText value="から再度操作を行ってください。" />
+                  </apex:outputText>
+                </div>
+              </apex:outputPanel>
+
+              <apex:outputPanel layout="none" id="listview" rendered="{!isValid}">
+
+                <div class="section button-area base-width" >
+                  <div class="section-body clearfix">
+
+<!--  Back To Profit Calculation Detail -->
+                    <apex:commandLink oncomplete="closeWindow()" >&laquo;&nbsp;Close Window</apex:commandLink>
+<!--
+                    <apex:outputLink value="{!$Page.JEOLAsia_ProfitCalculationEditorPage}" >&laquo;&nbsp;Back To Profit Calculation Detail
+                      <apex:param name="id" value="{!rec.AsiaProfitCalculation__c}"/>
+                    </apex:outputLink>
+-->
+                  </div>
+                  <div class="section base-width error-area" >
+                    <apex:pageMessages id="apexMessage" />
+                  </div>
+
+                  <div class="section quotation-area base-width">
+                    <div class="section-header">
+                    </div>
+
+                    <div class="section-body">
+                           
+                      <div class="quotation-information clearfix">
+
+                        <div style="float: left;">
+
+                          <div class="quotation-item basic-information-area">
+
+                            <div class="field" style="min-width: 400px;">
+<!-- 1.Order No. -->
+                              <label for="No" class="field-label No" >1.</label>
+                              <label for="OrderNo" class="field-label OrderNo" >Order No.  :</label>
+                              <apex:inputField id="OrderNo" styleClass="field-value OrderNo" value="{!rec.OrderNo__c}" html-data-compare-value="{!baseRec.OrderNo__c}" onblur="safetyLockCheck(this);"/>
+<!-- Date -->
+                              <label for="OrderDate" class="field-label OrderDate" >Date :</label>
+                              <apex:inputField id="OrderDate" styleClass="field-value OrderDate" value="{!rec.OrderDate__c}" html-data-compare-value="{!baseRec.OrderDate__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 2.Instrument -->
+                              <label for="No" class="field-label No" >2.</label>
+                              <label for="Instrument" class="field-label Instrument" >Instrument  :</label>
+                              <apex:inputField id="Instrument" styleClass="field-value Instrument" value="{!rec.Instrument__c}" html-data-compare-value="{!baseRec.Instrument__c}" onblur="safetyLockCheck(this);"/>
+<!-- Revision -->
+                              <label for="Revision" class="field-label Revision" >Revision :</label>
+                              <apex:inputField id="Revision" styleClass="field-value Revision" value="{!rec.Revision__c}" html-data-compare-value="{!baseRec.Revision__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 3.Configuration -->
+                              <label for="No" class="field-label No" >3.</label>
+                              <label for="Configuration" class="field-label Configuration" >Configuration  :</label>
+                              <apex:inputField id="Configuration" style="width: 750px; margin-bottom: 4px;" styleClass="field-value Configuration" value="{!rec.Configuration__c}" html-data-compare-value="{!baseRec.Configuration__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 4.Customer's Name -->
+                              <label for="No" class="field-label No" >4.</label>
+                              <label for="CustomerName" class="field-label CustomerName" >Customer's Name  :</label>
+                              <apex:inputField id="CustomerName" styleClass="field-value CustomerName" value="{!rec.CustomerName__c}" html-data-compare-value="{!baseRec.CustomerName__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 5.Address -->
+                              <label for="No" class="field-label No" >5.</label>
+                              <label for="Address" class="field-label Address" >Address  :</label>
+                              <apex:inputField id="Address" style="width: 750px; margin-bottom: 4px;" styleClass="field-value Address" value="{!rec.Address__c}" html-data-compare-value="{!baseRec.Address__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- Nation -->
+                              <apex:outputLabel for="blank" styleClass="field-label"/>
+
+                              <label for="Nation" class="field-label Nation" >Nation  :</label>
+                              <apex:inputField id="Nation" styleClass="field-value Nation" value="{!rec.Nation__c}" html-data-compare-value="{!baseRec.Nation__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- URL -->
+                              <label for="URL" class="field-label URL" >(URL)  :</label>
+                              <apex:inputField id="URL" styleClass="field-value URL" value="{!rec.URL__c}" html-data-compare-value="{!baseRec.URL__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 6.Customer's Status -->
+                              <table>
+                                <tr>
+                                  <td class="radio-table-title" >
+                                    <label for="No" class="field-label No" >6.</label>
+                                    <label for="CustomerStatus" class="field-label CustomerStatus" >Customer's Status  :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table">
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerStatus" id="CustomerStatus0" type="radio" value="{!CustomerStatusItems[0]}" onclick="selectOption(this,'{!$Component.hidCustomerStatus}');" />
+                                          <label for="CustomerStatus0">{!CustomerStatusItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerStatus" id="CustomerStatus1" type="radio" value="{!CustomerStatusItems[1]}" onclick="selectOption(this,'{!$Component.hidCustomerStatus}');" />
+                                          <label for="CustomerStatus1">{!CustomerStatusItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerStatus" id="CustomerStatus2" type="radio" value="{!CustomerStatusItems[2]}" onclick="selectOption(this,'{!$Component.hidCustomerStatus}');" />
+                                          <label for="CustomerStatus2">{!CustomerStatusItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerStatus" id="CustomerStatus3" type="radio" value="{!CustomerStatusItems[3]}" onclick="selectOption(this,'{!$Component.hidCustomerStatus}');" />
+                                          <label for="CustomerStatus3">{!CustomerStatusItems[3]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerStatus" id="CustomerStatus4" type="radio" value="{!CustomerStatusItems[4]}" onclick="selectOption(this,'{!$Component.hidCustomerStatus}');" />
+                                          <label for="CustomerStatus4">{!CustomerStatusItems[4]}</label>
+                                        </td>
+                                      </tr>
+
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                              <br/>
+<!-- 7.Type of Facility -->
+                              <table>
+                                <tr>
+                                  <td class="radio-table-title" >
+                                    <label for="No" class="field-label No" >7.</label>
+                                    <label for="FacilityType" class="field-label FacilityType" >Type of Facility  :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td colspan="2">
+                                          <input name="FacilityType" id="FacilityType0" type="radio" value="{!FacilityTypeItems[0]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType0">{!FacilityTypeItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="FacilityType" id="FacilityType1" type="radio" value="{!FacilityTypeItems[1]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType1">{!FacilityTypeItems[1]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td>
+                                          <input name="FacilityType" id="FacilityType2" type="radio" value="{!FacilityTypeItems[2]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType2">{!FacilityTypeItems[2]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="FacilityType" id="FacilityType3" type="radio" value="{!FacilityTypeItems[3]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType3">{!FacilityTypeItems[3]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="FacilityType" id="FacilityType4" type="radio" value="{!FacilityTypeItems[4]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType4">{!FacilityTypeItems[4]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">
+                                          <input name="FacilityType" id="FacilityType5" type="radio" value="{!FacilityTypeItems[5]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType5">{!FacilityTypeItems[5]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="FacilityType" id="FacilityType6" type="radio" value="{!FacilityTypeItems[6]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType6">{!FacilityTypeItems[6]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">
+                                          <input name="FacilityType" id="FacilityType7" type="radio" value="{!FacilityTypeItems[7]}" onclick="selectOption(this,'{!$Component.hidFacilityType}');" />
+                                          <label for="FacilityType7">{!FacilityTypeItems[7]}</label>
+<!-- Type of Facility Label -->
+                                          <apex:inputField id="FacilityTypeOtherLabel" styleClass="field-value FacilityTypeOtherLabel other" value="{!rec.FacilityTypeOtherLabel__c}" html-data-compare-value="{!baseRec.FacilityTypeOtherLabel__c}" onblur="safetyLockCheck(this);"/>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <br/>
+<!-- 8.Field of Customer -->
+                              <table>
+                                <tr>
+                                  <td class="radio-table-title" >
+                                    <label for="No" class="field-label No" >8.</label>
+                                    <label for="CustomerField" class="field-label CustomerField" >Field of Customer  :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField0" type="radio" value="{!CustomerFieldItems[0]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField0">{!CustomerFieldItems[0]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField1" type="radio" value="{!CustomerFieldItems[1]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField1">{!CustomerFieldItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField2" type="radio" value="{!CustomerFieldItems[2]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField2">{!CustomerFieldItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField3" type="radio" value="{!CustomerFieldItems[3]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField3">{!CustomerFieldItems[3]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField4" type="radio" value="{!CustomerFieldItems[4]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField4">{!CustomerFieldItems[4]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField5" type="radio" value="{!CustomerFieldItems[5]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField5">{!CustomerFieldItems[5]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerField" id="CustomerField6" type="radio" value="{!CustomerFieldItems[6]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField6">{!CustomerFieldItems[6]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">
+                                          <input name="CustomerField" id="CustomerField7" type="radio" value="{!CustomerFieldItems[7]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField7">{!CustomerFieldItems[7]}</label>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">
+                                          <input name="CustomerField" id="CustomerField8" type="radio" value="{!CustomerFieldItems[8]}" onclick="selectOption(this,'{!$Component.hidCustomerField}');" />
+                                          <label for="CustomerField8">{!CustomerFieldItems[8]}</label>
+<!-- Field of Customer Label -->
+                                          <apex:inputField id="CustomerFieldOtherLabel" styleClass="field-value CustomerFieldOtherLabel other" value="{!rec.CustomerFieldOtherLabel__c}" html-data-compare-value="{!baseRec.CustomerFieldOtherLabel__c}" onblur="safetyLockCheck(this);"/>                                            
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <br/>
+<!-- 9.Scope of Customer's Activity -->
+                              <label for="No" class="field-label No" >9.</label>
+                              <label for="CustomerActivityScope" class="field-label CustomerActivityScope" >Scope of customer's Activity (Type of products or research)  :</label>
+                              <br/>
+
+                              <label style="width: 40px;" class="field-label" ></label>
+
+                              <apex:inputField id="CustomerActivityScope"  style="margin-bottom: 4px;" styleClass="field-value CustomerActivityScope" value="{!rec.CustomerActivityScope__c}" html-data-compare-value="{!baseRec.CustomerActivityScope__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 10.Principal User of Customer's Products -->
+                              <label for="No" class="field-label No" >10.</label>
+                              <label for="CustomerProcMainUser" class="field-label CustomerProcMainUser" >Principal User of Customer's Products</label>
+
+                              <label style="text-align: right;" class="field-label" >N/A</label>
+
+                              <apex:inputField id="CustomerProcMainUser" styleClass="field-value CustomerProcMainUser other" value="{!rec.CustomerProcMainUser__c}" html-data-compare-value="{!baseRec.CustomerProcMainUser__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 11.CapitalOrExecSomeCountry -->
+                              <label for="No" class="field-label No" >11.</label>
+                              <label for="CapitalOrExecSomeCountry" class="field-label CapitalOrExecSomeCountry" >Capital &amp;/ or Executives from ①Iran, ②Iraq, ③North Korea:</label>
+
+                              <table>
+                                <tr>
+                                  <td>
+                                    <table class="radio-table" style="margin-left: 60px;">
+                                      <tr>
+                                        <td>
+                                          <input name="CapitalOrExecSomeCountry" id="CapitalOrExecSomeCountry0" type="radio" value="{!CapitalOrExecSomeCountryItems[0]}" onclick="selectOption(this,'{!$Component.hidCapitalOrExecSomeCountry}');" />
+                                          <label for="CapitalOrExecSomeCountry0">{!CapitalOrExecSomeCountryItems[0]}</label>
+<!-- CapitalOrExecSomeCountryLabel -->
+                                          <apex:inputField id="CapitalOrExecSomeCountryLabel" styleClass="field-value CapitalOrExecSomeCountryLabel other" value="{!rec.CapitalOrExecSomeCountryLabel__c}" html-data-compare-value="{!baseRec.CapitalOrExecSomeCountryLabel__c}" onblur="safetyLockCheck(this);"/>
+                                        </td>
+                                        <td>
+                                          <input name="CapitalOrExecSomeCountry" id="CapitalOrExecSomeCountry1" type="radio" value="{!CapitalOrExecSomeCountryItems[1]}" onclick="selectOption(this,'{!$Component.hidCapitalOrExecSomeCountry}');" />
+                                          <label for="CapitalOrExecSomeCountry1">{!CapitalOrExecSomeCountryItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CapitalOrExecSomeCountry" id="CapitalOrExecSomeCountry2" type="radio" value="{!CapitalOrExecSomeCountryItems[2]}" onclick="selectOption(this,'{!$Component.hidCapitalOrExecSomeCountry}');" />
+                                          <label for="CapitalOrExecSomeCountry2">{!CapitalOrExecSomeCountryItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+
+<!-- 12.CapitalOrExecSomeCountry -->
+
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >12.</label>
+                                    <label for="CustomerPastTransaction" class="field-label CustomerPastTransaction" >Past Transaction with Customer:</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerPastTransaction" id="CustomerPastTransaction0" type="radio" value="{!CustomerPastTransactionItems[0]}" onclick="selectOption(this,'{!$Component.hidCustomerPastTransaction}');" />
+                                          <label for="CustomerPastTransaction0">{!CustomerPastTransactionItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerPastTransaction" id="CustomerPastTransaction1" type="radio" value="{!CustomerPastTransactionItems[1]}" onclick="selectOption(this,'{!$Component.hidCustomerPastTransaction}');" />
+                                          <label for="CustomerPastTransaction1">{!CustomerPastTransactionItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerPastTransaction" id="CustomerPastTransaction2" type="radio" value="{!CustomerPastTransactionItems[2]}" onclick="selectOption(this,'{!$Component.hidCustomerPastTransaction}');" />
+                                          <label for="CustomerPastTransaction2">{!CustomerPastTransactionItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- Instrument -->
+                              <label for="No" class="field-label No" ></label>
+                              <label for="CustomerPastTransactionInstrument" class="field-label CustomerPastTransactionInstrument" >Instrument :</label>
+                              <apex:inputField id="CustomerPastTransactionInstrument" styleClass="field-value CustomerPastTransactionInstrument other" value="{!rec.CustomerPastTransactionInstrument__c}" html-data-compare-value="{!baseRec.CustomerPastTransactionInstrument__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 13.InstrumentEndUseDescription -->
+                              <label for="No" class="field-label No" >13.</label>
+                              <label for="InstrumentEndUseDescription" class="field-label InstrumentEndUseDescription" >Specific and Detailed End-use of the Ordered Instrument :</label>
+                              <br/>
+
+                              <label style="width: 40px;" class="field-label" ></label>
+
+                              <apex:inputField id="InstrumentEndUseDescription" styleClass="field-value InstrumentEndUseDescription" value="{!rec.InstrumentEndUseDescription__c}" html-data-compare-value="{!baseRec.InstrumentEndUseDescription__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- 14.IsResearchEntrustedMilitary -->
+                              <label for="No" class="field-label No" >14.</label>
+                              <label for="IsResearchEntrustedMilitary" class="field-label IsResearchEntrustedMilitary" >Researches Entrusted by the Military/Defense :</label>
+
+                              <table>
+                                <tr>
+                                  <td>
+                                    <table class="radio-table" style="margin-left: 60px;">
+                                      <tr>
+                                        <td>
+                                          <input name="IsResearchEntrustedMilitary" id="IsResearchEntrustedMilitary0" type="radio" value="{!IsResearchEntrustedMilitaryItems[0]}" onclick="selectOption(this,'{!$Component.hidIsResearchEntrustedMilitary}');" />
+                                          <label for="IsResearchEntrustedMilitary0">{!IsResearchEntrustedMilitaryItems[0]}</label>
+<!-- IsResearchEntrustedMilitarySubject -->
+                                          <apex:inputField id="IsResearchEntrustedMilitarySubject" style="margin-left: 8px;" styleClass="field-value IsResearchEntrustedMilitarySubject" value="{!rec.IsResearchEntrustedMilitarySubject__c}" html-data-compare-value="{!baseRec.IsResearchEntrustedMilitarySubject__c}" onblur="safetyLockCheck(this);"/>
+                                        </td>
+                                        <td>
+                                          <input name="IsResearchEntrustedMilitary" id="IsResearchEntrustedMilitary1" type="radio" value="{!IsResearchEntrustedMilitaryItems[1]}" onclick="selectOption(this,'{!$Component.hidIsResearchEntrustedMilitary}');" />
+                                          <label for="IsResearchEntrustedMilitary1">{!IsResearchEntrustedMilitaryItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="IsResearchEntrustedMilitary" id="IsResearchEntrustedMilitary2" type="radio" value="{!IsResearchEntrustedMilitaryItems[2]}" onclick="selectOption(this,'{!$Component.hidIsResearchEntrustedMilitary}');" />
+                                          <label for="IsResearchEntrustedMilitary2">{!IsResearchEntrustedMilitaryItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- 15.ABCMWeaponRelated -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >15.</label>
+                                    <label for="ABCMWeaponRelated" class="field-label ABCMWeaponRelated" >Possibility of A.B.C.M. Weapons Related Use :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="ABCMWeaponRelated" id="ABCMWeaponRelated0" type="radio" value="{!ABCMWeaponRelatedItems[0]}" onclick="selectOption(this,'{!$Component.hidABCMWeaponRelated}');" />
+                                          <label for="ABCMWeaponRelated0">{!ABCMWeaponRelatedItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="ABCMWeaponRelated" id="ABCMWeaponRelated1" type="radio" value="{!ABCMWeaponRelatedItems[1]}" onclick="selectOption(this,'{!$Component.hidABCMWeaponRelated}');" />
+                                          <label for="ABCMWeaponRelated1">{!ABCMWeaponRelatedItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="ABCMWeaponRelated" id="ABCMWeaponRelated2" type="radio" value="{!ABCMWeaponRelatedItems[2]}" onclick="selectOption(this,'{!$Component.hidABCMWeaponRelated}');" />
+                                          <label for="ABCMWeaponRelated2">{!ABCMWeaponRelatedItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- ABCMWeaponRelatedLabel -->
+                              <label for="No" class="field-label No" ></label>
+                              <label for="ABCMWeaponRelatedLabel" class="field-label ABCMWeaponRelatedLabel" >(A.B.C.M. Weapons: Atomic, Biological, Chemical, Missile Weapons)</label>
+                              <br/>
+<!-- 16.ConventionalWeaponRelated -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >16.</label>
+                                    <label for="ConventionalWeaponRelated" class="field-label ConventionalWeaponRelated" >Possibility of Converntional Weapons Related to use :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="ConventionalWeaponRelated" id="ConventionalWeaponRelated0" type="radio" value="{!ConventionalWeaponRelatedItems[0]}" onclick="selectOption(this,'{!$Component.hidConventionalWeaponRelated}');" />
+                                          <label for="ConventionalWeaponRelated0">{!ConventionalWeaponRelatedItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="ConventionalWeaponRelated" id="ConventionalWeaponRelated1" type="radio" value="{!ConventionalWeaponRelatedItems[1]}" onclick="selectOption(this,'{!$Component.hidConventionalWeaponRelated}');" />
+                                          <label for="ConventionalWeaponRelated1">{!ConventionalWeaponRelatedItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="ConventionalWeaponRelated" id="ConventionalWeaponRelated2" type="radio" value="{!ConventionalWeaponRelatedItems[2]}" onclick="selectOption(this,'{!$Component.hidConventionalWeaponRelated}');" />
+                                          <label for="ConventionalWeaponRelated2">{!ConventionalWeaponRelatedItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- 17.EndUseCertificateAvailable -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >17.</label>
+                                    <label for="EndUseCertificateAvailable" class="field-label EndUseCertificateAvailable" >Availability of End-use Certificate :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="EndUseCertificateAvailable" id="EndUseCertificateAvailable0" type="radio" value="{!EndUseCertificateAvailableItems[0]}" onclick="selectOption(this,'{!$Component.hidEndUseCertificateAvailable}');" />
+                                          <label for="EndUseCertificateAvailable0">{!EndUseCertificateAvailableItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="EndUseCertificateAvailable" id="EndUseCertificateAvailable1" type="radio" value="{!EndUseCertificateAvailableItems[1]}" onclick="selectOption(this,'{!$Component.hidEndUseCertificateAvailable}');" />
+                                          <label for="EndUseCertificateAvailable1">{!EndUseCertificateAvailableItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="EndUseCertificateAvailable" id="EndUseCertificateAvailable2" type="radio" value="{!EndUseCertificateAvailableItems[2]}" onclick="selectOption(this,'{!$Component.hidEndUseCertificateAvailable}');" />
+                                          <label for="EndUseCertificateAvailable2">{!EndUseCertificateAvailableItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- EndUseCertificateAvailableLabel -->
+                              <label for="No" class="field-label No" ></label>
+                              <label for="EndUseCertificateAvailableLabel" class="field-label EndUseCertificateAvailableLabel" >(In case of accident &amp; problem occurrence. Item18 &amp; 19 are same too)</label>
+                              <br/>
+<!-- 18.AssuranceStatementAvailable -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >18.</label>
+                                    <label for="AssuranceStatementAvailable" class="field-label AssuranceStatementAvailable" >Availability of Statement of Assurance :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="AssuranceStatementAvailable" id="AssuranceStatementAvailable0" type="radio" value="{!AssuranceStatementAvailableItems[0]}" onclick="selectOption(this,'{!$Component.hidAssuranceStatementAvailable}');" />
+                                          <label for="AssuranceStatementAvailable0">{!AssuranceStatementAvailableItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="AssuranceStatementAvailable" id="AssuranceStatementAvailable1" type="radio" value="{!AssuranceStatementAvailableItems[1]}" onclick="selectOption(this,'{!$Component.hidAssuranceStatementAvailable}');" />
+                                          <label for="AssuranceStatementAvailable1">{!AssuranceStatementAvailableItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="AssuranceStatementAvailable" id="AssuranceStatementAvailable2" type="radio" value="{!AssuranceStatementAvailableItems[2]}" onclick="selectOption(this,'{!$Component.hidAssuranceStatementAvailable}');" />
+                                          <label for="AssuranceStatementAvailable2">{!AssuranceStatementAvailableItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- 19.EndUseInspectionPossibility -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >19.</label>
+                                    <label for="EndUseInspectionPossibility" class="field-label EndUseInspectionPossibility" >Possibility of End-use Inspection :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="EndUseInspectionPossibility" id="EndUseInspectionPossibility0" type="radio" value="{!EndUseInspectionPossibilityItems[0]}" onclick="selectOption(this,'{!$Component.hidEndUseInspectionPossibility}');" />
+                                          <label for="EndUseInspectionPossibility0">{!EndUseInspectionPossibilityItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="EndUseInspectionPossibility" id="EndUseInspectionPossibility1" type="radio" value="{!EndUseInspectionPossibilityItems[1]}" onclick="selectOption(this,'{!$Component.hidEndUseInspectionPossibility}');" />
+                                          <label for="EndUseInspectionPossibility1">{!EndUseInspectionPossibilityItems[1]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="EndUseInspectionPossibility" id="EndUseInspectionPossibility2" type="radio" value="{!EndUseInspectionPossibilityItems[2]}" onclick="selectOption(this,'{!$Component.hidEndUseInspectionPossibility}');" />
+                                          <label for="EndUseInspectionPossibility2">{!EndUseInspectionPossibilityItems[2]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- 20.RiskHighDisperse -->
+                              <label for="No" class="field-label No" >20.</label>
+                              <label for="RiskHighDisperse" class="field-label RiskHighDisperse" >High Disperse Risk Profile (Mark(ﾚ)if does not correspond) :</label>
+
+                              <label style="width: 40px;" class="field-label" ></label>
+
+                              <br/>
+<!-- RiskCustomerSmall -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskCustomerSmall}" class="field-label RiskCustomerSmall" >Customer is small and not known well.</label>
+
+                              <apex:inputField id="RiskCustomerSmall" styleClass="field-value RiskCustomerSmall" value="{!rec.RiskCustomerSmall__c}" html-data-compare-value="{!baseRec.RiskCustomerSmall__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskCustomerReluctantInfo -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskCustomerReluctantInfo}" class="field-label RiskCustomerReluctantInfo" >Customer is reluctant to provide end-use information.</label>
+
+                              <apex:inputField id="RiskCustomerReluctantInfo" styleClass="field-value RiskCustomerReluctantInfo" value="{!rec.RiskCustomerReluctantInfo__c}" html-data-compare-value="{!baseRec.RiskCustomerReluctantInfo__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskUnusualPayment -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskUnusualPayment}" class="field-label RiskUnusualPayment" >Customer requests unusual payment term/currency.</label>
+
+                              <apex:inputField id="RiskUnusualPayment" styleClass="field-value RiskUnusualPayment" value="{!rec.RiskUnusualPayment__c}" html-data-compare-value="{!baseRec.RiskUnusualPayment__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskAnormalPractice -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskAnormalPractice}" class="field-label RiskAnormalPractice" >Order does not correspond to normal practice(amount, packing, etc.)</label>
+
+                              <apex:inputField id="RiskAnormalPractice" styleClass="field-value RiskAnormalPractice" value="{!rec.RiskAnormalPractice__c}" html-data-compare-value="{!baseRec.RiskAnormalPractice__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskCustomerKnowledgeSmall -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskCustomerKnowledgeSmall}" class="field-label RiskCustomerKnowledgeSmall" >Customer's knowledge of ordered instrument is very small.</label>
+
+                              <apex:inputField id="RiskCustomerKnowledgeSmall" styleClass="field-value RiskCustomerKnowledgeSmall" value="{!rec.RiskCustomerKnowledgeSmall__c}" html-data-compare-value="{!baseRec.RiskCustomerKnowledgeSmall__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskInstrumentIncompatible -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskInstrumentIncompatible}" class="field-label RiskInstrumentIncompatible" >Instrument is incompatible with customer's business.</label>
+
+                              <apex:inputField id="RiskInstrumentIncompatible" styleClass="field-value RiskInstrumentIncompatible" value="{!rec.RiskInstrumentIncompatible__c}" html-data-compare-value="{!baseRec.RiskInstrumentIncompatible__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskInappropriateSP -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskInappropriateSP}" class="field-label RiskInappropriateSP" >Customer orders inappropriate service parts.</label>
+
+                              <apex:inputField id="RiskInappropriateSP" styleClass="field-value RiskInappropriateSP" value="{!rec.RiskInappropriateSP__c}" html-data-compare-value="{!baseRec.RiskInappropriateSP__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskNoWishUsualService -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskNoWishUsualService}" class="field-label RiskNoWishUsualService" >Customer does not wish to ask for usual installation/service.</label>
+
+                              <apex:inputField id="RiskNoWishUsualService" styleClass="field-value RiskNoWishUsualService" value="{!rec.RiskNoWishUsualService__c}" html-data-compare-value="{!baseRec.RiskNoWishUsualService__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskPOBox -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskPOBox}" class="field-label RiskPOBox" >Customer uses P.O Box without fixing delivery conditions.</label>
+
+                              <apex:inputField id="RiskPOBox" styleClass="field-value RiskPOBox" value="{!rec.RiskPOBox__c}" html-data-compare-value="{!baseRec.RiskPOBox__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+<!-- RiskIllegalExporter -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="{!$Component.RiskIllegalExporter}" class="field-label RiskIllegalExporter" >Customer is known or suspected as being an illegal exporter.</label>
+
+                              <apex:inputField id="RiskIllegalExporter" styleClass="field-value RiskIllegalExporter" value="{!rec.RiskIllegalExporter__c}" html-data-compare-value="{!baseRec.RiskIllegalExporter__c}" onblur="safetyLockCheck(this);"/>
+                              <br/>
+
+<!-- 21.CustomerDeniedPerson -->
+                              <table>
+                                <tr>
+                                  <td>
+                                    <label for="No" class="field-label No" >21.</label>
+                                    <label for="CustomerDeniedPerson" class="field-label CustomerDeniedPerson" >Customer is listed in the Denied Persons List :</label>
+                                  </td>
+                                  <td>
+                                    <table class="radio-table" >
+                                      <tr>
+                                        <td>
+                                          <input name="CustomerDeniedPerson" id="CustomerDeniedPerson0" type="radio" value="{!CustomerDeniedPersonItems[0]}" onclick="selectOption(this,'{!$Component.hidCustomerDeniedPerson}');" />
+                                          <label for="CustomerDeniedPerson0">{!CustomerDeniedPersonItems[0]}</label>
+                                        </td>
+                                        <td>
+                                          <input name="CustomerDeniedPerson" id="CustomerDeniedPerson1" type="radio" value="{!CustomerDeniedPersonItems[1]}" onclick="selectOption(this,'{!$Component.hidCustomerDeniedPerson}');" />
+                                          <label for="CustomerDeniedPerson1">{!CustomerDeniedPersonItems[1]}</label>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+<!-- Organization (Company) -->
+                              <label style="width: 40px;" class="field-label" ></label>
+                              <label for="OrganizationCompany" class="field-label OrganizationCompany" >Organization(Company) : </label>
+
+<!-- OrganizationName -->
+                              <apex:outputLabel value="{!rec.OrganizationName__c}" for="OrganizationName" styleClass="field-label OrganizationName" />
+                              <br/>
+
+                              <table style="table-layout:fixed;" >
+
+                                <col span="1" style="width:70px;"/>
+                                <col span="1" style="width:70px;"/>
+                                <col span="1" style="width:300px;"/>
+                                <col span="1" style="width:70px;"/>
+                                <col span="1" style="width:300px;"/>
+
+                                <tr>
+                                  <td>
+                                  </td>
+<!-- ResponsibleUser -->
+                                  <td>
+                                    <label for="ResponsibleUser" class="field-label ResponsibleUser" >Name :</label>
+                                  </td>
+                                  <td>
+                                    <apex:inputField id="ResponsibleUser" styleClass="field-value ResponsibleUser" value="{!rec.ResponsibleUser__c}" html-data-compare-value="{!baseRec.ResponsibleUser__c}" onblur="safetyLockCheck(this);" >
+                                    <apex:actionSupport event="onchange" rerender="ResponsibleUserTitle"/>      
+                                    </apex:inputField>
+                                  </td>
+<!-- ResponsibleUser2 -->
+                                  <td>
+                                    <label for="ResponsibleUser2" class="field-label ResponsibleUser2" >Name :</label>
+                                  </td>
+                                  <td>
+                                    <apex:inputField id="ResponsibleUser2" styleClass="field-value ResponsibleUser2" value="{!rec.ResponsibleUser2__c}" html-data-compare-value="{!baseRec.ResponsibleUser2__c}" onblur="safetyLockCheck(this);" >
+                                      <apex:actionSupport event="onchange" rerender="ResponsibleUser2Title"/>
+                                    </apex:inputField>
+                                  </td>
+                                </tr>
+
+                                <tr>
+                                  <td>
+                                  </td>
+<!-- Title1 -->
+                                  <td>
+                                    <label for="Title1" class="field-label Title1" >Title :</label>
+                                  </td>
+                                  <td>
+                                    <apex:outputText id="ResponsibleUserTitle" value="{!ResponsibleUserTitle}" styleClass="field-label ResponsibleUserTitle" />
+                                  </td>
+<!-- Title2 -->
+                                  <td>
+                                    <label for="Title2" class="field-label Title1" >Title :</label>
+                                  </td>
+                                  <td>
+                                    <apex:outputText id="ResponsibleUser2Title" value="{!ResponsibleUser2Title}" styleClass="field-label ResponsibleUser2Title" />
+                                  </td>
+                                </tr>
+
+                                <tr>
+                                  <td>
+                                  </td>
+<!-- DateResponsibleUser -->
+                                  <td>
+                                    <label for="DateResponsibleUser" class="field-label DateResponsibleUser" >Date :</label>
+                                  </td>
+                                  <td>
+                                    <apex:inputField id="DateResponsibleUser" styleClass="field-value DateResponsibleUser" value="{!rec.DateResponsibleUser__c}" html-data-compare-value="{!baseRec.DateResponsibleUser__c}" onblur="safetyLockCheck(this);"/>
+                                  </td>
+<!-- DateResponsibleUser2 -->
+                                  <td>
+                                    <label for="DateResponsibleUser2" class="field-label DateResponsibleUser2" >Date :</label>
+                                  </td>
+                                  <td>
+                                    <apex:inputField id="DateResponsibleUser2" styleClass="field-value DateResponsibleUser2" value="{!rec.DateResponsibleUser2__c}" html-data-compare-value="{!baseRec.DateResponsibleUser2__c}" onblur="safetyLockCheck(this);"/>
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </apex:outputPanel>
+<!-- footer -->
+              <div class="footer">
+                <apex:include pageName="{!$Page.JEOL_VisualforceFooter}" />
+              </div>
+
+            </apex:form>
+          </div>
+        </apex:outputPanel>
+
+      </body>
+    </html>
+  </apex:outputPanel>
+</apex:page>

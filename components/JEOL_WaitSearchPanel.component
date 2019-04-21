@@ -1,0 +1,64 @@
+<apex:component layout="none">
+  <apex:attribute name="isModalMode" description="モーダル表示を行うか" type="Boolean" default="false" required="false"/>
+  <apex:attribute name="text" description="表示文言" type="String" default="待機中..." required="false"/>
+  <apex:attribute name="showWeitImage" description="画像を表示させるか" type="Boolean" default="true" required="false"/>
+  <div>
+    <style>
+		.jeol_wait_panel {
+			display: none;
+			position: {!IF(isModalMode, 'fixed', 'absolute')};
+			top: 0px;
+			left: 0px;
+			z-index: 100;
+			background-color: {!IF(isModalMode, 'rgba(0,0,0,0.5)', '')};
+		}
+		.jeol_wait_panel div {
+			padding: 10px;
+			margin: 10px auto;
+			width: 200px;
+			color: gray;
+			font-weight: bold;
+			box-shadow: 3px 3px 10px gray;
+			border-right: 1px solid #ddd;
+			border-bottom: 1px solid #ddd;
+			background-color: white;
+		}
+		
+		.jeol_wait_panel div img {
+			margin-right: 10px;
+		}
+	</style>
+	<script>
+	  	function showWaitPanel() {
+	  		var panel = jQuery('.jeol_wait_panel');
+	  		var targetHeight;
+	  		var targetWidth;
+	  		if ({!isModalMode}) {
+	  			targetHeight = window.innerHeight;
+	  			targetWidth = window.innerWidth;
+	  		} else {
+	  			targetHeight = panel.parent().height();
+	  			targetWidth = panel.parent().width();
+	  		}
+	  		panel.height(targetHeight);
+	  		panel.width(targetWidth);
+			panel.fadeIn(300);
+		}
+		function hideWaitPanel() {
+			jQuery('.jeol_wait_panel').fadeOut(300);
+		}
+      <apex:outputPanel rendered="{!isModalMode}" layout="none">
+		jQuery(window).resize(function() {
+			jQuery('.jeol_wait_panel').height(window.innerHeight)
+			jQuery('.jeol_wait_panel').width(window.innerWidth)
+		});
+	  </apex:outputPanel>
+    </script>
+    <div class="jeol_wait_panel">
+      <div>
+        <apex:image value="/img/loading32.gif" rendered="{!showWeitImage}" />
+        <span >{!text}</span>
+      </div>
+    </div>
+  </div>
+</apex:component>

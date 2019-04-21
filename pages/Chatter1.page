@@ -1,0 +1,16 @@
+<apex:page standardController="Lead">
+
+
+ 
+
+   <chatter:feedWithFollowers entityId="{!Lead.id}"/> 
+
+
+
+
+  Above Example Shows Feed of Lead name {!Lead.Name}.
+
+
+ 
+
+</apex:page>

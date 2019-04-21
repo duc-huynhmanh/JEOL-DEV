@@ -1,0 +1,494 @@
+<!--
+ * Updated on 2015/06/11 by Polus (Voxer) - There was some miss between DirectSalesExpress__c and RegulerPriceExpress__c
+ -->
+<apex:page renderAs="{!renderTarget}" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOL_QuotationCertificationPrintPageCtrl" rendered="{!outputType == 'preview' || outputType == 'print'}" >
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        @page {
+          size: A4; /* 595pt * 841.5pt */
+          margin: 30pt 70pt 70pt 70pt; /* 455pt * 701.5.5pt */
+        }
+        @media print,screen {
+          html, body {
+            margin: 0pt;
+            padding: 0pt;
+            font-size: 11pt;
+            font-family: 'Arial Unicode MS';
+            height: 100%;
+          }
+          * {
+            color: #000;
+            padding: 0pt;
+            //text-align: justify;
+          }
+          
+          .contents {
+            display: none;
+            width: 100%;
+            margin: 0 auto;
+          }
+          .header {
+            overflow: hidden;
+          }
+          .header .issue-date {
+            text-align: right;
+            width: 100%;
+            float: left;
+          }
+          .header .customer-info {
+            text-align: left;
+            width: 100%;
+            float: left;
+            margin-bottom: 16pt;
+          }
+          .header .customer-info .customer-name .title {
+            padding-left: 8pt;
+          }
+          .header .company-info {
+            text-align: left;
+            float: right;
+            width: 240pt;
+          }
+          .header .company-info .postalcode,
+          .header .company-info .address {
+            font-size: 10pt;
+          }
+          .header .company-info .company-name h1 {
+            font-size: 11pt;
+            font-weight: normal;
+            margin: 0pt;
+          }
+          .header .company-info .company-phone-numbers {
+            overflow: hidden;
+          }
+          .header .company-info .company-phone-numbers .fax,
+          .header .company-info .company-phone-numbers .tel {
+            float: left;
+            width: 50%;
+            border: none;
+          }
+          .direct-sales {
+            width: 100%;
+            margin-top: 40pt;
+          }
+          .direct-sales h2 {
+            font-size: 14pt;
+            font-weight: normal;
+            text-align: center;
+          }
+          .direct-sales .direct-sales-body p {
+            white-space: nowrap;
+            margin: 0pt;
+            margin-top: 20pt;
+            text-align: center;
+          }
+          .direct-sales-details {
+            margin-top: 40pt;
+            position: relative;
+            height: 620pt;
+          }
+          .direct-sales-details.first {
+            height: 360pt;
+          }
+          .direct-sales-details.first:before {
+            display: block;
+            text-align: center;
+            content: "記";
+          }
+          .direct-sales-details.over:after {
+            content: "以上";
+            display: block;
+            width: 100%;
+            text-align: right;
+            position: absolute;
+            bottom: -20pt;
+            left: 0pt;
+          }
+          .direct-sales-details table {
+            margin-top: 20pt;
+          }
+          table {
+            table-layout: fixed;
+            //width: 100%;
+            border-collapse: collapse;
+          }
+          table thead tr th {
+            font-weight: normal;
+            text-align: left;
+            padding-left: 8pt;
+            padding-bottom: 16pt;
+          }
+          .directSales col.product-name {width: 279pt;}
+          .directSales col.quentity {width: 88pt;}
+          .directSales col.quentity-unit {width: 88pt;}
+
+          .regulerPrice col.product-name {width: 279pt;}
+          .regulerPrice col.quentity {width: 44pt;}
+          .regulerPrice col.quentity-unit {width: 44pt;}
+          .regulerPrice col.amount {width: 88pt;}
+
+          table thead tr th.quentity {text-align: center;}
+
+          table tbody tr td.amount,
+          table tbody tr td.quentity {
+            text-align: right;
+          }
+          table tbody tr td.quentity-unit {
+            text-align: left;
+          }
+          table tbody tr td {
+            height: 16pt;
+            line-height: 16pt;
+            //border: 1pt solid #000;
+            padding: 0px 4pt;
+          }
+          .postalcode:before {
+            content: "〒";
+          }
+          .tel:before {
+            content: "TEL："
+          }
+          .fax:before {
+            content: "FAX："
+          }
+          .postalcode:before,
+          .tel:before,
+          .fax:before{
+            padding-right: 4pt;
+          }
+          .center {
+            text-align: center;
+          }
+          .page{
+            page-break-after: always;
+            position: relative;
+          }
+          .page.last{
+            page-break-after: avoid;
+          }
+          .page-no {
+            text-align: right;
+            height: 10pt;
+            margin-bottom: 20pt;
+          }
+        }
+      </style>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'preview'}">
+        <style>
+          @media screen {
+            html,body {
+              background-color: #ccc;
+            } 
+            .contents {
+              display: block;
+              margin: 0px auto;
+              width: 100%;
+            }
+            .page,
+            .page.last {
+              background-color: #fff;
+              margin: 4px auto;
+              padding: 30pt 70pt 70pt 70pt;
+              width: 455pt;
+              box-shadow: 0px 4px 6px 3px rgba(0,0,0,0.3);
+              border: 1pt solid #eee;
+              height: 701.5pt;
+            }
+          }
+        </style>
+      </apex:outputPanel>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'print'}">
+        <style>
+          @media print {
+            .contents {
+              display: block;
+            }
+          }
+        </style>
+      </apex:outputPanel>
+    </head>
+    <body>
+      <div class="contents">
+        <apex:repeat value="{!pdfPages}" var="page" >
+          <apex:outputPanel layout="block" styleClass="page directSales {!IF(page.isLast && !page.rec.RegulerPriceExpress__c, 'last','')}" rendered="{!page.rec.DirectSalesExpress__c}" >
+            <apex:outputPanel layout="block" styleClass="page-no">
+              <span>Page</span>
+              <span>
+                <apex:outputText value="{!page.pageNo}" />
+              </span>
+              <span>/</span>
+              <span>
+                <apex:outputText value="{!pageSize}" />
+              </span>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="header" rendered="{!page.isFirst}">
+              <div class="issue-date">
+                <span>
+                  <apex:outputText value="{!page.DirectSalesIssueDate}" />
+                </span>
+              </div>
+              <div class="customer-info">
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName}" />
+                  </span>
+<!--
+                  <span class="title">
+                    <apex:outputText value="{!page.rec.Addressee__c}" />
+                  </span>
+-->
+                </div>
+
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName2}" />
+                  </span>
+                </div>
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName3}" />
+                  </span>
+                </div>
+              </div>
+              <div class="company-info">
+                <div class="postalcode">
+                  <span>
+                    <apex:outputText value="{!page.rec.PostalCode__c}" />
+                  </span>
+                </div>
+                <div class="address" style="max-width: 270px;" >
+                  <span>
+                                <div><apex:outputText value="{!page.rec.AddressLine1__c}" rendered="{!!isnull(page.rec.AddressLine1__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine2__c}" rendered="{!!isnull(page.rec.AddressLine2__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine3__c}" rendered="{!!isnull(page.rec.AddressLine3__c)}" /></div>
+<!--                    <apex:outputText escape="false" value="{!CompanyAddress}" /> -->
+                  </span>
+                </div>
+                <div class="company-name">
+                  <h1 >
+                    <apex:outputText value="{!page.rec.OrgName__c}" />
+                  </h1>
+                </div>
+                <div style="margin-left: 13px;" class="company-department">
+                  <div >
+                    <!--Modification-VAIB-Begin(2015/05/21 UAT_QA_List No.44)-->
+                    <!-- <apex:outputText value="{!page.rec.DepartmentName__c}" /> -->
+                    <apex:outputText value="{!departmentOutputText}"/>
+                    <!--Modification-VAIB-End(2015/05/21 UAT_QA_List No.44)-->
+                  </div>
+                </div>
+
+              <apex:outputPanel rendered="{!page.Rec.RepresentativeNameExpress__c}">
+                <div style="margin-left: 26px;" class="company-department">                
+                  <div class="Supervisor-info">
+                    <span class="Supervisor-position">
+                      <apex:outputText value="{!page.rec.SupervisorPosition__c}" />
+                    </span>
+                    <span class="Supervisor-name">
+                      <apex:outputText value="{!page.rec.SupervisorName__c}" />
+                    </span>
+                  </div>
+                </div>
+                <div class="company-phone-numbers">
+                  <div class="tel">
+                    <apex:outputText value="{!page.rec.Phone__c}" />
+                  </div>
+                  <div class="fax">
+                    <apex:outputText value="{!page.rec.Fax__c}" />
+                  </div>
+                </div>
+              </apex:outputPanel>
+
+              </div>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="direct-sales" rendered="{!page.isFirst}">
+              <h2>
+                <span>直接販売証明書</span>
+              </h2>
+              <div class="direct-sales-body">
+                <p>下記物品は、他の業者を通じることなく弊社にて直接販売していることを証明いたします。</p>
+              </div>
+            </apex:outputPanel>
+            <div class="direct-sales-details {!IF(page.isLast, 'over', '')} {!IF(page.isFirst,'first','')}">
+              <table>
+                <col class="product-name" />
+                <col class="quentity" />
+                <col class="quentity-unit" />
+                <apex:outputPanel layout="none" rendered="{!page.isFirst}">
+                  <thead>
+                    <tr>
+                      <th>品名</th>
+                      <th class="quentity" colspan="2">数量</th>
+                    </tr>
+                  </thead>
+                </apex:outputPanel>
+                <tbody>
+                  <apex:repeat value="{!page.Details}" var="detail" >
+                    <tr data-type="{!detail.rec.Depth__c}">
+                      <td>
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" style="white-space: pre;"/>
+                          </div>
+                        </apex:repeat>
+                      </td>
+                      <td class="quentity" >
+                        <apex:outputText value="{!detail.QuantityFormat}" rendered="{!detail.rec.Type__c == '1' && detail.rec.Quantity__c != null && detail.rec.Quantity__c != 0}"/> <!--Modification-VAIB-(2015/05/29 UAT_QA_List No.71,87)-->
+                      </td>
+                      <td class="quentity-unit" >
+                        <apex:outputText value="{!detail.rec.QuantityUnit__c}" rendered="{!detail.rec.Type__c == '1' &&  detail.rec.Quantity__c != null && detail.rec.Quantity__c != 0}"/> <!--Modification-VAIB-(2015/05/29 UAT_QA_List No.71,87)-->
+                      </td>
+                    </tr>
+                  </apex:repeat>
+                </tbody>
+              </table>
+            </div>
+          </apex:outputPanel>
+        </apex:repeat>
+        <apex:repeat value="{!pdfPages}" var="page" >
+          <apex:outputPanel layout="block" styleClass="regulerPrice page {!IF(page.isLast, 'last','')}" rendered="{!page.rec.RegulerPriceExpress__c}" >
+            <apex:outputPanel layout="block" styleClass="page-no">
+              <span>Page</span>
+              <span>
+                <apex:outputText value="{!page.pageNo}" />
+              </span>
+              <span>/</span>
+              <span>
+                <apex:outputText value="{!pageSize}" />
+              </span>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="header" rendered="{!page.isFirst}">
+              <div class="issue-date">
+                <span>
+                  <apex:outputText value="{!page.RegulerPriceIssueDate}" />
+                </span>
+              </div>
+              <div class="customer-info">
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName}" />
+                  </span>
+                </div>
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName2}" />
+                  </span>
+                </div>
+                <div class="customer-name">
+                  <span>
+                    <apex:outputText value="{!page.customerName3}" />
+                  </span>
+                </div>
+              </div>
+              <div class="company-info">
+                <div class="postalcode">
+                  <span>
+                    <apex:outputText value="{!page.rec.PostalCode__c}" />
+                  </span>
+                </div>
+                <div class="address" style="max-width: 270px;" >
+                  <span>
+                                <div><apex:outputText value="{!page.rec.AddressLine1__c}" rendered="{!!isnull(page.rec.AddressLine1__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine2__c}" rendered="{!!isnull(page.rec.AddressLine2__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine3__c}" rendered="{!!isnull(page.rec.AddressLine3__c)}" /></div>
+<!--                    <apex:outputText escape="false" value="{!CompanyAddress}" /> -->
+                  </span>
+                </div>
+                <div class="company-name">
+                  <h1 >
+                    <apex:outputText value="{!page.rec.OrgName__c}" />
+                  </h1>
+                </div>
+                <div style="margin-left: 13px;" class="company-department">
+                  <div >
+                    <!--Modification-VAIB-Begin(2015/05/21 UAT_QA_List No.44)-->
+                    <apex:outputText value="{!departmentOutputText}" />
+                    <!-- <apex:outputText value="{!page.rec.DepartmentName__c}" /> -->
+                    <!--Modification-VAIB-End(2015/05/21 UAT_QA_List No.44)-->
+                  </div>
+                </div>
+
+              <apex:outputPanel rendered="{!page.Rec.RepresentativeNameExpress__c}">
+                <div style="margin-left: 26px;" class="company-department">
+                  <div class="Supervisor-info">
+                    <span class="Supervisor-position">
+                      <apex:outputText value="{!page.rec.SupervisorPosition__c}" />
+                    </span>
+                    <span class="Supervisor-name">
+                      <apex:outputText value="{!page.rec.SupervisorName__c}" />
+                    </span>
+                  </div>
+                </div>
+                <div class="company-phone-numbers">
+                  <div class="tel">
+                    <apex:outputText value="{!page.rec.Phone__c}" />
+                  </div>
+                  <div class="fax">
+                    <apex:outputText value="{!page.rec.Fax__c}" />
+                  </div>
+                </div>
+              </apex:outputPanel>
+              </div>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="direct-sales" rendered="{!page.isFirst}">
+              <h2>
+                <span>定価証明書</span>
+              </h2>
+              <div class="direct-sales-body">
+                <p>下記物品は、定価に相違ないことを証明いたします。</p>
+              </div>
+            </apex:outputPanel>
+            <div class="direct-sales-details {!IF(page.isLast, 'over', '')} {!IF(page.isFirst,'first','')}">
+              <table>
+                <col class="product-name" />
+                <col class="quentity" />
+                <col class="quentity-unit" />
+                <col class="amount" />
+                <apex:outputPanel layout="none" rendered="{!page.isFirst}">
+                  <thead>
+                    <tr>
+                      <th colspan="4" style="text-align: right">
+                        <apex:outputText value="(*本価格は税抜きです)" rendered="{!page.rec.RegulerPriceCommentExpress__c}"/>
+                      </th>
+                    </tr>
+                    <tr>
+                      <th>品名</th>
+                      <th class="quentity" colspan="2">数量</th>
+                      <th >金額(円)</th>
+                    </tr>
+                  </thead>
+                </apex:outputPanel>
+                <tbody>
+                  <apex:repeat value="{!page.Details}" var="detail" >
+                    <tr data-type="{!detail.rec.Depth__c}">
+                      <td>
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" style="white-space: pre;"/>
+                          </div>
+                        </apex:repeat>
+                      </td>
+                      <td class="quentity" >
+                        <apex:outputText value="{!detail.QuantityFormat}" rendered="{!detail.rec.Type__c == '1'&& detail.rec.Quantity__c != null && detail.rec.Quantity__c != 0}"/> <!--Modification-VAIB-(2015/05/29 UAT_QA_List No.71,87)-->
+                      </td>
+                      <td class="quentity-unit" >
+                        <apex:outputText value="{!detail.rec.QuantityUnit__c}" rendered="{!detail.rec.Type__c == '1'&& detail.rec.Quantity__c != null && detail.rec.Quantity__c != 0}"/> <!--Modification-VAIB-(2015/05/29 UAT_QA_List No.71,87)-->
+                      </td>
+                      <td class="amount" >
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.Type__c == '1' && detail.rec.Amount__c != null && detail.rec.Amount__c != 0}"> <!--Modification-VAIB-(2015/05/29 UAT_QA_List No.71,87)-->
+                          <apex:param value="{!detail.rec.Amount__c}" />
+                        </apex:outputText>
+                      </td>
+                    </tr>
+                  </apex:repeat>
+                </tbody>
+              </table>
+            </div>
+          </apex:outputPanel>
+        </apex:repeat>
+      </div>
+    </body>
+  </html>
+</apex:page>

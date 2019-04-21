@@ -1,0 +1,691 @@
+<apex:page controller="JEOLAsia_MaintenanceListToRenewAdd_ctrl" docType="html-5.0" id="page" >
+<html>
+<head>
+    <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+
+    <style>
+        .customButton {
+            background: none;
+            background-color: #ffffff;
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+            margin-bottom: -17px;
+            padding: 4px 16px;
+            border: 1px solid #7e9bc1;
+            color: #2f4159;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+            box-shadow: none;
+            transition: box-shadow 0.1s linear 0s, background-color 0.1s linear 0s, border-color 0.1s linear 0s;
+            height: 30px;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            font-weight: normal;
+            float: left;
+            line-height: 30px;
+        }
+        .customButton:hover {
+            background: none;
+            background-color: #f2f5f8;
+            border-color: #00ABFF;
+            text-decoration: none;
+            box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+            position: relative;
+        }
+        .customButton:focus {
+            background: none;
+            box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+            border-color: #00ABFF;
+            background-color: #f2f5f8;
+            position: relative;
+        }
+        .customButton:active {
+            transition: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.20) inset;
+            background-color: #e5ebf2;
+        }
+
+
+
+        .input{
+            font-size:14px;
+            font-family:;
+            border: 1px solid #989c9d;
+            border-radius:5px;
+            padding: 3px 5px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+            width: 120px;
+        }
+
+        .jeol_wait_panel {
+            left: auto !important;
+        }
+        .record-list {
+            margin-left: 0px;
+        }
+        #searchPanel {
+          margin-left: 0px;
+        }
+        .screenname {
+          margin-left: 0px;
+        }
+        .fakeContainer {
+            width:1013px;
+        }
+
+        .clm00 { width: 30px;}
+        .clm01 { width: 35px;}
+        .clm02 { width: 95px;}
+        .clm03 { width: 110px;}
+        .clm04 { width: 45px;}
+        .clm05 { width: 110px;}
+        .clm06 { width: 90px;}
+        .clm07 { width: 80px;}
+        .clm08 { width: 80px;}
+        .clm09 { width: 30px;}
+        .clm10 { width: 95px;}
+
+        .searchresulttable {
+            width: 100%;
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .searchresulttable td{
+            border: 0;
+            margin: 0;
+            padding: 0 !important;
+        }
+
+        .button-section {
+            padding-top: 13px;
+            margin-bottom: -10px;
+        }
+
+        .button-section a {
+            color: #2f4159;
+            text-decoration: none;
+        }
+        .button-section a:hover {
+            color: #2f4159;
+        }
+
+        .seriesSelect, .regionsSelect {
+            display: none;
+        }
+
+        .seriesItem, .regionsItem {
+            display: inline-block;
+            width: 120px;
+            float: left;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            margin: 4px;
+            height: 1.3em;
+        }
+        .seriesSelect-header, .regionsSelect-header {
+            background-color: #9ccada;
+            margin: 8px 0 0 0;
+            padding: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .selectButtons {
+            text-align: right;
+        }
+        .selectButtons .button {
+            float: right;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var $j = jQuery.noConflict();
+        //読み込み直後動作をしたいとき
+        $j(function(){
+        $j(".focustarget").first().focus();
+        });
+        var viewFunction;
+
+        function mode() {
+            if ((typeof viewFunction).toLowerCase() === 'function') {
+                viewFunction();
+            }
+        }
+
+        function callChangeOrder(key) {
+            var obj = $j('.orderInput');
+            obj.val(key);
+            changeOrder();
+        }
+
+        function hideSearchCriteriaPanel() {
+            $j("#open_icon").show();
+            $j("#close_icon").hide();
+            $j("#search_criteria").slideUp(500);
+            $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+            viewFunction = hideSearchCriteriaPanel;
+        }
+
+        function showSearchCriteriaPanel() {
+            $j("#open_icon").hide();
+            $j("#close_icon").show();
+            $j("#search_criteria").slideDown(500);
+            $j(".fakeContainer").animate({height: '250px'},500);
+            viewFunction = showSearchCriteriaPanel;
+        }
+
+        function allViewMode() {
+            $j("#open_icon").show();
+            $j("#close_icon").hide();
+            $j("#search_criteria").slideUp(500);
+            $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+            viewFunction = allViewMode;
+        }
+
+        function showSeriesSelect() {
+            var target = $j('.seriesSelect');
+            if (target) {
+                target.dialog({
+                    appendTo: '.search_criteria_form',
+                    autoOpen: false,
+                    closeOnEscape: false,
+                    closeText: 'hide',
+                    draggable: true,
+                    modal: true,
+                    resizable: true,
+                    title: 'Selection of Series',
+                    width: 840,
+                    open: function(){$j(".ui-dialog-titlebar-close").hide();}
+                });
+                target.dialog('open');
+            } else {
+                //alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+                alert('An unexpected error has occurred. Please refresh your browser and try again.');
+            }
+        }
+
+        // function showRegionsSelect() {
+        //     var target = $j('.regionsSelect');
+        //     if (target) {
+        //         target.dialog({
+        //             appendTo: '.search_criteria_form',
+        //             autoOpen: false,
+        //             closeOnEscape: false,
+        //             closeText: 'hide',
+        //             draggable: true,
+        //             modal: true,
+        //             resizable: true,
+        //             title: '地域の選択',
+        //             width: 840,
+        //             open: function(){$j(".ui-dialog-titlebar-close").hide();}
+        //         });
+        //         target.dialog('open');
+        //     } else {
+        //         alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+        //     }
+        // }
+
+        $j(document).ready(function(){
+            showSearchCriteriaPanel();
+        });
+    </script>
+</head>
+<body>
+
+    <apex:form style="width: 994px; margin-left: auto; margin-right: auto;" id="form" >
+
+        <c:JEOL_WaitSearchPanel text="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Searching}"/>
+        <apex:outputPanel id="order">
+            <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+            <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult, pageMessages" />
+        </apex:outputPanel>
+        <div class="screenname">
+            <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+            <span id="title">{!$Label.JEOLAsia_MaintRenewalAdd_Label_ManualAddition}</span>
+        </div>
+        <div class="button-section" >
+            <apex:outputLink value="{!$Page.JEOLAsia_MaintenanceNewList}" >&laquo;&nbsp;{!$Label.JEOLAsia_MaintRenewalAdd_Label_ReturnNewList}</apex:outputLink>
+        </div>
+        <div id="searchPanel">
+            <div>
+                <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+                <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+                <div id="serch_title">{!$Label.JEOLAsia_MaintRenewalAdd_Label_SearchFilters}</div>
+            </div>
+            <div id="search_criteria">
+                <apex:outputPanel layout="block" id="search_criteria_form" styleClass="search_criteria_form">
+                    <table id="search_criteria_table" class="search_criteria_table">
+                        <!--Row Radio-->
+                        <tr>
+                            <!--  first year or second year after -->
+                            <td colspan="2">
+                                <apex:selectRadio layout="lineDirection" value="{!selectObj}" style="float: center;">
+                                    <apex:selectOptions value="{!ListSelectObj}"/>
+                                    <apex:actionSupport event="onchange" reRender="searchResult"/>
+                                </apex:selectRadio>
+                            </td>
+                        </tr>
+                        <!-- ROW 1 -->
+                        <tr>
+                            <td class="label" style="width: 180px;">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_ProjectNo}" />
+                            </td>
+                            <td>
+                                <apex:inputText value="{!targetProjectNumber}" id="projectNumber" styleClass="input" />
+                            </td>
+                            <td class="label" style="width: 180px;">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_McmNo}" />
+                            </td>
+                            <td>
+                                <apex:inputText value="{!mcmNo}" id="mcmNoId" styleClass="input" />
+                            </td>
+                            <td class="label" style="width: 180px;">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Model}" />
+                            </td>
+                            <td>
+                                <apex:inputText value="{!targetModel}" id="model" styleClass="input" />
+                            </td>
+                        </tr>
+                        <!-- ROW 2 -->
+                        <tr>
+                            <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_CustomerCode}"/>
+                            </td>
+                            <td>
+                                <apex:inputText value="{!targetCustomerCode}" id="customerCode" styleClass="input" maxlength="255"/>
+                            </td>
+                            <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_CustomerName}"/>
+                            </td>
+                            <td>
+                                <apex:inputText value="{!targetCustomerName}" id="customerName" styleClass="input" maxlength="255"/>
+                            </td>
+
+                            <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Salesperson}"/>
+                            </td>
+                            <td>
+                                <apex:inputText value="{!targetSalesPerson}" id="salesperson" styleClass="input" maxlength="255"/>
+                            </td>
+                        </tr>
+                        <!-- ROW 3 -->
+                        <tr>
+                            <td class="label labelLarge">
+                                <apex:outputText value="Contract End Date "/>
+                            </td>
+                            <td colspan="2">
+                                <!-- <apex:input type="date" value="{!contractFrom}" style="width: 130px;"/> -->
+                                <p style="display: none;"><apex:inputField value="{!pm.ContractEndDate__c}"/></p>
+                                <apex:inputText value="{!contractFrom}" id="contractFromId" style="width: 130px;" onfocus="DatePicker.pickDate(false, '{!$Component.contractFromId}', false);"/>
+                                <apex:outputText value="〜" style="margin-left:20px;"/>
+                                <!-- <apex:input type="date" value="{!contractTo}" style="width: 130px;"/> -->
+                                <apex:inputText value="{!contractTo}" id="contractToId" style="width: 130px;float: right;" onfocus="DatePicker.pickDate(false, '{!$Component.contractToId}', false);"/>
+                            </td>
+                        </tr>
+                        <!-- ROW 4 -->
+                        <tr>
+                            <!--  系列 -->
+                            <td class="label labelLarge">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Series}" />
+                            </td>
+                            <td>
+                                <apex:actionFunction name="seriesSelect" oncomplete="showSeriesSelect();" rerender="seriesSelectPanel" />
+                                <input id="seriesSelectButton" onclick="seriesSelect();" type="button" class="btn input" value="SELECT" style="height: 22px; width:132px; padding: 2px 1px;" />
+                            </td>
+
+                            <td class="label">
+                                <apex:outputText value="Selected Series" />
+                            </td>
+                            <td style="max-width: 300px;">
+                                <div style="width: 100%; overflow: hidden; vertical-align: middle; text-overflow: ellipsis; white-space: nowrap; line-height: 29px;">
+                                    <apex:outputText value="{!SelectedSeries}" id="SelectedSeries"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="buttons" >
+                        <apex:commandLink value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Clear}" styleClass="button_white" action="{!doFormClear}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" />
+                        <apex:commandLink value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Search}" styleClass="button_green" action="{!doSearch}" rerender="searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+                    </div>
+                    <!-- 系列選択ボタン動作 -->
+                    <apex:outputPanel styleClass="seriesSelect" layout="block">
+                        <apex:outputPanel layout="block" styleClass="seriesSelect-header">
+                          <h2>Please check the series you want to search.</h2>
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+                          <apex:commandButton value="SelectAll" action="{!seriesSelectAllSelect}" rerender="seriesSelectPanel" />
+                          <apex:commandButton value="SelectCancel" action="{!seriesSelectAllDeselect}" rerender="seriesSelectPanel" />
+                          <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                            <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                            <apex:outputText value="Connecting..." />
+                          </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="seriesSelectPanel" layout="block" styleClass="selectSeries clearfix">
+                          <apex:repeat value="{!SeriesOptions}" var="seriesComp">
+                            <div class="seriesItem">
+                              <apex:inputCheckBox id="selectTarget" value="{!seriesComp.isSelected}" />
+                              <apex:outputLabel for="selectTarget" value="{!seriesComp.option.Label}" />
+                            </div>
+                          </apex:repeat>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+                          <apex:commandlink styleClass="button_white" value="Cancel" action="{!seriesSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel" />
+                          <apex:commandlink styleClass="button_green" value="Apply" action="{!seriesSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel, SelectedSeries" />
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </div>
+        </div>
+        <!-- 検索結果 -->
+        <apex:outputPanel layout="block" id="searchResult" >
+            <apex:pageMessages id="pageMessages" />
+            <apex:outputPanel rendered="{!Records.size > 0}">
+                <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+                    <col class="clm00" />
+                    <col class="clm01" />
+                    <col class="clm02" />
+                    <col class="clm03" />
+                    <col class="clm04" />
+                    <col class="clm05" />
+                    <col class="clm06" />
+                    <col class="clm07" />
+                    <col class="clm08" />
+                    <col class="clm09" />
+                    <col class="clm10" />
+                    <tr class="contents_title">
+                        <td colspan="11" style="padding: 0;">
+                            <table class="searchresulttable" width="100%">
+                            <tr>
+                                <td width="50%">
+                                    <div class="in_contents_title">{!$Label.JEOLAsia_MaintRenewalAdd_Label_SearchResults}</div>
+                                </td>
+                                <td width="50%" align="right">
+                                    <apex:commandButton value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_AddAll}" style="font-size:16px;margin-top:3px;" action="{!addContractMaintenanceAll}" onclick="if(!window.confirm('Are you sure you want to add all？')) return false;showWaitPanel();" oncomplete="mode();hideWaitPanel();showResult('{!$Label.JEOLAsia_MaintRenewalAdd_Message_Added}');" rerender="searchResult, pageMessages" />
+                                </td>
+                            </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="koumoku">
+                        <th>
+                            <span>No</span>
+                        </th>
+                        <th>
+                        </th>
+                        <!-- Project No -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'Name', 'ProjectMaster__r.Name')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_ProjectNo}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Name', 'ProjectMaster__r.Name') && orderDesc == false}" value="△"/>
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Name', 'ProjectMaster__r.Name') && orderDesc == true}" value="▽"/>
+                            </a>
+                        </th>
+
+                        <!-- Contract End Date -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'ContractEndDate__c', 'NewContractEndDate__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_ContractEndDate}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractEndDate__c', 'NewContractEndDate__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractEndDate__c', 'NewContractEndDate__c') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- Series -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'Series__c', 'ProjectMaster__r.Series__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Series}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Series__c', 'ProjectMaster__r.Series__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Series__c', 'ProjectMaster__r.Series__c') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- Sales Person -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'SalesPerson__r.Name', 'ProjectMaster__r.SalesPerson__r.Name')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Salesperson}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'SalesPerson__r.Name', 'ProjectMaster__r.SalesPerson__r.Name') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'SalesPerson__r.Name', 'ProjectMaster__r.SalesPerson__r.Name') && orderDesc == true}" value="▽" />
+                            </a>
+                            <br/>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'SalesAssistant__r.Name', 'ProjectMaster__r.SalesAssistant__r.Name')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Assistant}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'SalesAssistant__r.Name', 'ProjectMaster__r.SalesAssistant__r.Name') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'SalesAssistant__r.Name', 'ProjectMaster__r.SalesAssistant__r.Name') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- Contract Name -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'ContractName__c', 'ProjectMaster__r.ContractName__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_SoldToName}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractName__c', 'ProjectMaster__r.ContractName__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractName__c', 'ProjectMaster__r.ContractName__c') && orderDesc == true}" value="▽" />
+                            </a>
+                            <br/>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'ShipmentName__c', 'ProjectMaster__r.ShipmentName__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_ShipToName}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ShipmentName__c', 'ProjectMaster__r.ShipmentName__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ShipmentName__c', 'ProjectMaster__r.ShipmentName__c') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- Model -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'Model__c', 'ProjectMaster__r.Model__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Model}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Model__c', 'ProjectMaster__r.Model__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'Model__c', 'ProjectMaster__r.Model__c') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- Price -->
+                        <th colspan="2">
+                            <a href="javascript:void(0)" onclick="callChangeOrder('{!IF(selectObj == '1', 'ContractPrice__c', 'ProjectMaster__r.ContractPrice__c')}');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Price}" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractPrice__c', 'ProjectMaster__r.ContractPrice__c') && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == IF(selectObj == '1', 'ContractPrice__c', 'ProjectMaster__r.ContractPrice__c') && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                        <!-- mcmNo. -->
+                        <th>
+                            <a href="javascript:void(0)" onclick="callChangeOrder('Name');">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_McmNo}" />
+                                <apex:outputText rendered="{!orderBy == 'Name' && orderDesc == false}" value="△" />
+                                <apex:outputText rendered="{!orderBy == 'Name' && orderDesc == true}" value="▽" />
+                            </a>
+                        </th>
+                    </tr>
+                </table>
+                <!-- 一覧 -->
+                <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+                    <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+                    <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+                        <col class="clm00" />
+                        <col class="clm01" />
+                        <col class="clm02" />
+                        <col class="clm03" />
+                        <col class="clm04" />
+                        <col class="clm05" />
+                        <col class="clm06" />
+                        <col class="clm07" />
+                        <col class="clm08" />
+                        <col class="clm09" />
+                        <col class="clm10" />
+
+                        <apex:repeat value="{!Records}" var="Record" >
+                                <tr class="contents">
+                                    <td>
+                                        <apex:outputText value="{!baseRowNumber + Record.rowNumber}" />
+                                    </td>
+                                    <td>
+                                        <apex:commandButton value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Add}" action="{!addContractMaintenance}" onclick="showWaitPanel();" oncomplete="mode();hideWaitPanel();showResult('{!$Label.JEOLAsia_MaintRenewalAdd_Message_Added}');" rerender="searchResult, pageMessages" >
+                                          <apex:param name="dataId" assignto="{!dataId}" value="{!IF(selectObj == '1', Record.projectMaster.Id, Record.mcm.Id)}"/>
+                                        </apex:commandButton>
+                                    </td>
+                                    <td >
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '1', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOLAsia_ProjectMaster + '?id=' + Record.projectMaster.id}" >
+                                                <apex:outputField value="{!Record.projectMaster.Name}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '2', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOLAsia_ProjectMaster + '?id=' + Record.mcm.ProjectMaster__r.id}" >
+                                                <apex:outputField value="{!Record.mcm.ProjectMaster__r.Name}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                    </td>
+                                    <td >
+                                        <apex:outputText value="{0, date, yyyy/MM/dd}">
+                                            <apex:param value="{!IF(selectObj == '1', Record.projectMaster.ContractEndDate__c, Record.mcm.NewContractEndDate__c)}"></apex:param>
+                                        </apex:outputText>
+                                    </td>
+                                    <td >
+                                        <apex:outputText value="{!IF(selectObj == '1', Record.projectMaster.Series__c, Record.mcm.ProjectMaster__r.Series__c)}" />
+                                    </td>
+                                    <td >
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '1', true, false)}">
+                                            <apex:outputField value="{!Record.projectMaster.SalesPerson__c}" />
+                                        </apex:outputpanel>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '2', true, false)}">
+                                            <apex:outputField value="{!Record.mcm.ProjectMaster__r.SalesPerson__c}" />
+                                        </apex:outputpanel>
+                                        <br/>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '1', true, false)}">
+                                            <apex:outputField value="{!Record.projectMaster.SalesAssistant__c}" />
+                                        </apex:outputpanel>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '2', true, false)}">
+                                            <apex:outputField value="{!Record.mcm.ProjectMaster__r.SalesAssistant__c}" />
+                                        </apex:outputpanel>
+                                    </td>
+                                    <td >
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '1', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOL_AccountPage}?id={!Record.projectMaster.ContractAccount__c}">
+                                                <apex:outputField value="{!Record.projectMaster.ContractName__c}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '2', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOL_AccountPage}?id={!Record.mcm.ProjectMaster__r.ContractAccount__c}">
+                                                <apex:outputField value="{!Record.mcm.ProjectMaster__r.ContractName__c}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                        <br/>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '1', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOL_AccountPage}?id={!Record.projectMaster.ShipmentAccount__c}">
+                                                <apex:outputField value="{!Record.projectMaster.ShipmentName__c}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                        <apex:outputpanel layout="none" rendered="{!IF(selectObj == '2', true, false)}">
+                                            <apex:outputLink value="{!$Page.JEOL_AccountPage}?id={!Record.mcm.ProjectMaster__r.ShipmentAccount__c}">
+                                                <apex:outputField value="{!Record.mcm.ProjectMaster__r.ShipmentName__c}" />
+                                            </apex:outputLink>
+                                        </apex:outputpanel>
+                                    </td>
+                                    <td >
+                                        <apex:outputText value="{!IF(selectObj == '1', Record.projectMaster.Model__c, Record.mcm.ProjectMaster__r.Model__c)}" />
+                                    </td>
+                                    <td align="right" style="border-right-style:none;">
+                                        <apex:outputText value="{0, number, ###,###,###,###,##0.00}">
+                                            <apex:param value="{!IF(selectObj == '1', Record.projectMaster.ContractPrice__c, Record.mcm.ProjectMaster__r.ContractPrice__c)}" />
+                                        </apex:outputText>
+                                    </td>
+                                    <td align="right" style="border-left-style:none;">
+                                        <apex:outputText value="{!IF(selectObj == '1', Record.projectMaster.CurrencyContractPrice__c, Record.mcm.ProjectMaster__r.CurrencyContractPrice__c)}"/>
+                                    </td>
+                                    <td>
+                                        <apex:outputLink value="{!$Page.JEOLAsia_MaintenanceDetailView}?id={!Record.mcm.Id}">
+                                            <apex:outputText value="{!Record.mcm.Name}"/>
+                                        </apex:outputLink>
+                                    </td>
+                                </tr>
+                        </apex:repeat>
+                    </table>
+                </div>
+                <!-- ページ遷移欄-->
+                <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;" id="pagegationId">
+                    <col class="clm00" />
+                    <col class="clm01" />
+                    <col class="clm02" />
+                    <col class="clm03" />
+                    <col class="clm04" />
+                    <col class="clm05" />
+                    <col class="clm06" />
+                    <col class="clm07" />
+                    <col class="clm08" />
+                    <apex:variable value="{!Records.size}" var="size" />
+                    <tr class="menu">
+                        <td colspan="9" style="padding: 0;">
+                            <table id="each_menu">
+                                <tr>
+                                    <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                                        <apex:outputPanel rendered="{!(ssc.PageSize) != null}">
+                                            <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                                        </apex:outputPanel>
+                                        <apex:outputText value="     {!$Label.JEOLAsia_MaintRenewalAdd_Label_ShowBefore}" />
+                                        <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                                            <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                                            <apex:selectOption itemValue="10" itemLabel="10"/>
+                                            <apex:selectOption itemValue="20" itemLabel="20"/>
+                                            <apex:selectOption itemValue="50" itemLabel="50"/>
+                                        </apex:selectList>
+                                        <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">{!$Label.JEOLAsia_MaintRenewalAdd_Label_ShowAfter}</apex:outputLink>
+                                    </td>
+                                    <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                                        <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                                            <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                            <apex:outputText value="｜◀" />
+                                        </apex:outputLink>
+                                        <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                                        <apex:outputText value=" " />
+                                        <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                                            <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                            <apex:outputText value="◀ {!$Label.JEOLAsia_MaintRenewalAdd_Label_Previous}" />
+                                        </apex:outputLink>
+                                        <apex:outputText value="◀ {!$Label.JEOLAsia_MaintRenewalAdd_Label_Previous}" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                                        <apex:outputText value=" " />
+                                        <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                                            <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                            <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Next} ▶" />
+                                        </apex:outputLink>
+                                        <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Next} ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                                        <apex:outputText value=" " />
+                                        <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                                            <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                            <apex:outputText value="▶｜" />
+                                        </apex:outputLink>
+                                        <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                                    </td>
+                                    <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                                        <apex:outputText value="{!$Label.JEOLAsia_MaintRenewalAdd_Label_Page}　" />
+                                        <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                                          <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                                        </apex:input>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+
+            <apex:outputpanel rendered="{!Records.size == null || Records.size <= 0}" >
+                <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top: 0; margin-bottom: 0;">
+                  <tr class="contents_title">
+                    <td >
+                      <div class="in_contents_title">{!$Label.JEOLAsia_MaintRenewalAdd_Message_NoData}</div>
+                    </td>
+                  </tr>
+                </table>
+            </apex:outputpanel>
+        </apex:outputPanel>
+    </apex:form>
+</body>
+</html>
+
+</apex:page>

@@ -1,0 +1,2868 @@
+        var $j = jQuery.noConflict();
+        var safety = {!ISBLANK(qdm.parentRec.id)};
+        var makeSafetyCheck = true;
+        var makeSafetyCheck2 = true;
+        var isMouseDown = false;
+        var isRemoveMode = true;
+
+        $j(document).on('mouseenter', '.mightOverflow', function() {
+            var $this = $j(this);
+
+            if(this.offsetWidth < this.scrollWidth && !$this.attr('title')){
+                $this.attr('title', $this.text());
+            }
+        });
+
+        $j(document).on('mouseenter', '.showTooltipEnglishText', function() {
+            var $this = $j(this);
+            $j('.EibunText').val($this.attr('title'));
+        });
+        
+
+        $j(function(){
+            var windwTransitions = (function(e){
+                if (makeSafetyCheck2 && (makeSafetyCheck || document.activeElement.type === 'text')) {
+                    var currentFocus = document.querySelector(':focus');
+                    if (currentFocus && typeof currentFocus !== 'undefined') {
+                        currentFocus.blur();
+                    }
+                    if (safety) {
+                        e.returnValue = 'ì‡óeÇ…ïœçXÇ™Ç†ÇËÇ‹ÇµÇΩÅBï€ë∂ÇπÇ∏Ç…ÉyÅ[ÉWÇ©ÇÁó£ÇÍÇ‹Ç∑Ç©ÅH';
+                    } else {
+                        safety = true;
+                    }
+                }
+            });
+            if (window.addEventListener) {
+                window.addEventListener('beforeunload', windwTransitions);
+            } else if (window.attachEvent) {
+                window.attachEvent('onbeforeunload', windwTransitions);
+            } else {
+                alert("âÊñ ëJà⁄éûÇ…åxçêÇèoÇπÇ‹ÇπÇÒÅBÇ≤íçà”Ç≠ÇæÇ≥Ç¢ÅB");
+            }
+            var $window = $j(window);
+            $window.on('click',clearAction);
+            $window.on('scroll',function(e){
+                var beforeTop = window.beforeTop;
+                var currentTop = $window.scrollTop();
+                if (!beforeTop) {
+                    beforeTop = 0;
+                }
+                if (beforeTop < currentTop && currentTop > 48) {
+                    $j('.navi-area').addClass('fixed-top');
+                } else if ((beforeTop > currentTop && currentTop <= 48) || currentTop == 0) {
+                    $j('.navi-area').removeClass('fixed-top');
+                }
+                window.beforeTop = currentTop; 
+            });
+            $window.on('keydown',function(e){
+                var $dropdown = $j('.open[data-type="dropdown"]');
+                if (/(38|40|27)/.test(e.which) && $dropdown.length) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (e.which == 27) {
+                        $dropdown.removeClass('open');
+                        $dropdown.find('[data-type="button"]').trigger('focus');
+                    }
+                    
+                    var $items = $dropdown.find('[data-type="list"] [data-type="item"]');
+                    var $target = $j(e.target);
+                    if ($target.attr('data-type') !== 'item') {
+                        $target = $target.closest('[data-type="item"]');
+                    }
+
+                    var target = null;
+                    if ($target.length) {
+                      target = $target[0];
+                    }
+                    var index = 0;
+                    if (target) {
+                        index = $items.index(target);
+                        if (e.which == 38 && index > 0) {
+                            index--;
+                        }
+                        if (e.which == 40 && index < $items.length - 1) {
+                            index++;
+                        }
+                    }
+                    $items.eq(index).find('a,input').trigger('focus');
+                }
+            });
+            contentInit();
+        });
+
+        function getCurrentJProdCostCurrency() {
+
+            var salesPriceUnitValue = $j('.currencyCostIsoCode').val();
+            if (!salesPriceUnitValue) {
+                salesPriceUnitValue = $j("[id$='currencyCostIsoCodeView']").text();
+            }
+
+            return salesPriceUnitValue;
+        }
+
+        function getCurrentSalesCurrency() {
+
+            var salesPriceUnitValue = $j('.currencySalesIsoCode').val();
+            if (!salesPriceUnitValue) {
+                salesPriceUnitValue = $j("[id$='currencySalesIsoCodeView']").text();
+            }
+
+            return salesPriceUnitValue;
+        }
+
+
+        function unlockSafety() {
+            safety = false;
+        }
+        function lockSafety() {
+            safety = true;
+        }
+        function contentInit() {
+            initWithCalcurate();
+            $j('#selected-list-A').droppable(droppableOption);
+            $j('#selected-list-B').droppable(droppableOption);
+            $j('#selected-list-G1').droppable(droppableOption);
+            $j('#selected-list-G2').droppable(droppableOption);
+            $j('#selected-list-catalog-A').droppable(droppableOption_catalogA);
+            $j('#selected-list-catalog-G').droppable(droppableOption_catalogG);
+            //$j('.content-panel').draggable({handle: ".content-header"});
+            //$j('.subwindow').draggable({handle: '.content-header'});
+            $j('#detailProductItemView').on('hidden.bs.modal', function () {
+                $j('#detailProductItemView .selected-list .drop-target').empty();
+                detailProductAItemManage.setTargetNode(null);
+                detailProductBItemManage.setTargetNode(null);
+                detailProductG1ItemManage.setTargetNode(null);
+                detailProductG2ItemManage.setTargetNode(null);
+                detailProductACatalogManage.setTargetNode(null);
+                detailProductGCatalogManage.setTargetNode(null);
+            });
+        }
+        function dorpdownAction(target) {
+            var $target = $j(target).closest('[data-type="dropdown"]');
+            if ($target.hasClass('open')) {
+                $target.removeClass('open');
+            } else {
+                $j('.open').removeClass('open');
+                $target.addClass('open');
+            }
+        }
+        function clearAction(e) {
+            var $target = $j(e.target).closest('[data-type="dropdown"]');
+            if (!$target.hasClass('open')) {
+                var $dropdown = $j('.open[data-type="dropdown"]');
+                $dropdown.removeClass('open');
+                //$dropdown.find('[data-type="button"]').trigger('focus');
+            }
+        }
+        
+        function setInputField(target) {
+            var $target = $j(target);
+            var $dropdown = $target.closest('[data-type="dropdown"]');
+            var $inputField = $dropdown.find('[data-type="input-field"]');
+            if ($target.attr('data-type') !== 'item') {
+                $target = $target.closest('[data-type="item"]');
+            }
+            $inputField.val($target[0].getAttribute('data-value'));
+            $inputField.trigger('focus');
+            dorpdownAction(target);
+        }
+        function setSortableA() {
+            var sortableArea = $j('.quotation-detail-listA');
+            sortableArea.sortable(sortableOptionA);
+        }
+        function setSortableB() {
+            var sortableArea = $j('.quotation-detail-listB');
+            sortableArea.sortable(sortableOptionB);
+        }
+        function setSortableC() {
+            var sortableArea = $j('.quotation-detail-listC');
+            sortableArea.sortable(sortableOptionC);
+        }
+        function setSortableD() {
+            var sortableArea = $j('.quotation-detail-listD');
+            sortableArea.sortable(sortableOptionD);
+        }
+        function setSortableE() {
+            var sortableArea = $j('.quotation-detail-listE');
+            sortableArea.sortable(sortableOptionE);
+        }
+        function setSortableF() {
+            var sortableArea = $j('.quotation-detail-listF');
+            sortableArea.sortable(sortableOptionF);
+        }
+        function setSortableG() {
+            var sortableArea = $j('.quotation-detail-listG');
+            sortableArea.sortable(sortableOptionG);
+        }
+
+        function formatRate(target){
+            var rateVal = transformCurrencyToInteger($j(target).val(), 9);
+            if (rateVal == 0) rateVal = 1;
+            $j(target).val(currencyFormat(rateVal.toFixed(9)));
+        }
+
+        function addDepth(target){
+            var targetRow = $j(target).closest('.quotation-detail-item');
+            var targetBefore = targetRow.prev('.quotation-detail-item');
+            var depth = parseInt(targetRow[0].getAttribute('data-depth'), 10);
+            if (targetBefore[0]) {
+                var beforeDepth = parseInt(targetBefore[0].getAttribute('data-depth'), 10);
+                var resultVal =  1 + depth;
+                if (resultVal - beforeDepth > 1) {
+                    resultVal--;
+                }
+                if (resultVal > 5) {
+                    resultVal = 5;
+                }
+                targetRow[0].setAttribute('data-depth', resultVal);
+                targetRow.find('.quotation-detail-depth').val(resultVal);
+                initWithCalcurate();
+            }
+        }
+
+        function removeDepth(target, isChain){
+            var targetRow = $j(target).closest('.quotation-detail-item');
+            var targetBefore = targetRow.prev('.quotation-detail-item');
+            var depth = parseInt(targetRow[0].getAttribute('data-depth'), 10);
+            var resultVal = 0;
+            if (targetBefore[0]) {
+                var beforeDepth = parseInt(targetBefore[0].getAttribute('data-depth'), 10);
+                var resultVal =  0 + depth - 1;
+                if (resultVal < 0) {
+                    resultVal = 0;
+                }
+                targetRow[0].setAttribute('data-depth', resultVal);
+                targetRow.find('.quotation-detail-depth').val(resultVal);
+            }
+            var targetAfter = targetRow.next('.quotation-detail-item');
+            if (targetAfter[0]) {
+                var nextNodeDepth = parseInt(targetAfter[0].getAttribute('data-depth'), 10);
+                var conpareNum = (isChain ? 0 : 1);
+                if (nextNodeDepth - resultVal > conpareNum) {
+                    removeDepth(targetAfter[0], true);
+                }
+            }
+            initWithCalcurate();
+            
+        }
+        function eraseDepth(target) {
+            var targetRow = $j(target).closest('.quotation-detail-item');
+            var depth = parseInt(targetRow[0].getAttribute('data-depth'), 10);
+            for (var i = depth; i >= 0; i--) {
+                removeDepth(target);
+            }
+        }
+        
+        function initWithCalcurate() {
+            RowManageA.create();
+            RowManageB.create();
+            RowManageC.create();
+            RowManageD.create();
+            RowManageE.create();
+            RowManageF.create();
+            RowManageG.create();
+            calcurate();
+        }
+
+        function calcurate() {
+            myDivObj = document.getElementById("isReadOnly");
+            if ( !myDivObj || myDivObj.innerHTML != "1") {
+
+                RowManageA.calcurate();
+                RowManageB.calcurate();
+                RowManageC.calcurate();
+                RowManageD.calcurate();
+                RowManageE.calcurate();
+                RowManageF.calcurate();
+                RowManageG.calcurate();
+
+            }
+        }
+
+        // Fuction changing the discount type from Rate to Value and vice versa
+        function discountChangeRateValueType() {
+          var discountType= $j('.discountType').val();
+          if (discountType === 'Rate') {
+            $j('.discountType').val('Value');
+          } else {
+            $j('.discountType').val('Rate');
+          }
+        }
+
+        var ItemWrap = function(target, parent) {
+            this.target = target;
+            this.$target = $j(target);
+            if (target) {
+                this.type = target.getAttribute('data-type');
+            }
+            this.parent = parent;
+            var layerNum = 0;
+            if (parent) {
+                layerNum = parent.layer + 1;
+            }
+            this.layer = layerNum;
+            this.children = new Array();
+        };
+        ItemWrap.prototype = {
+            calc: function() {
+                
+            }
+        }
+        var RowManageA = function(){};
+        RowManageA.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemA');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+
+            calcurate: function() {
+            }
+        }
+        RowManageA = new RowManageA();
+
+
+
+
+        var RowManageB = function(){};
+        RowManageB.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemB');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+
+            calcurate: function() {
+            }
+
+        }
+        RowManageB = new RowManageB();
+
+
+
+        var RowManageC = function(){};
+        RowManageC.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+                this.subTotalC = 0;
+                this.subTotalSalesC = 0;
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+
+            create: function() {
+                var details = $j('.quotation-detail-itemC');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+
+            calcurate: function() {
+            }
+
+        }
+        RowManageC = new RowManageC();
+
+
+        var RowManageD = function(){};
+        RowManageD.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+                this.subTotalD = 0;
+                this.subTotalSalesD = 0;
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemD');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+
+            calcurate: function() {
+            }
+
+
+        }
+        RowManageD = new RowManageD();
+
+
+
+        var RowManageE = function(){};
+        RowManageE.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+                this.subTotalE = 0;
+                this.subTotalSalesE = 0;
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemE');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+            calcurate: function() {
+            }
+
+        }
+        RowManageE = new RowManageE();
+
+
+        var RowManageF = function(){};
+        RowManageF.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+                this.subTotalF = 0;
+                this.subTotalSalesF = 0;
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemF');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+
+            calcurate: function() {
+            }
+
+        }
+        RowManageF = new RowManageF();
+
+
+
+        var RowManageG = function(){};
+        RowManageG.prototype = {
+            init : function (){
+                this.root = new ItemWrap();
+                this.list = new Array();
+                this.subTotalG = 0;
+                this.subTotalSalesG = 0;
+            },
+            push: function(row) {
+                var rootItem = this.root;
+                var lastChildItem = rootItem;
+
+                while (lastChildItem.children.length > 0) {
+                    var length = lastChildItem.children.length;
+                    lastChildItem = lastChildItem.children[length - 1];
+                }
+                var currentTarget = lastChildItem;
+                if (currentTarget.target) {
+                    var targetDepth = parseInt(row.getAttribute('data-depth'), 10);
+                    var currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+    
+                    if (targetDepth == currentTargetDepth) {
+                        currentTarget = currentTarget.parent;
+                    } else if (targetDepth < currentTargetDepth) {
+                        while (currentTarget.target) {
+                            currentTargetDepth = parseInt(currentTarget.target.getAttribute('data-depth'), 10);
+                            if (targetDepth == currentTargetDepth) {
+                                currentTarget = currentTarget.parent;
+                                break;
+                            }
+                            currentTarget = currentTarget.parent;
+                        }
+                    }
+                }
+                var item = new ItemWrap(row, currentTarget);
+                currentTarget.children.push(item);
+                this.list.push(item);
+            },
+            create: function() {
+                var details = $j('.quotation-detail-itemG');
+                this.init();
+                for (var i = 0; i < details.length; i++) {
+                    this.push(details[i]);
+                }
+            },
+            calcurate: function() {
+               
+            }
+
+        }
+        RowManageG = new RowManageG();        
+
+
+        function currencyFormat(value) {
+            if (!value && value !== 0) {
+                value = 0;
+            }
+            var valueParts = String(value).split(".");
+            valueParts[0] = valueParts[0].replace(/(\d)(?=(\d{3})+(?!\d))/g,"$1,");
+            return valueParts.join('.');
+        }
+        var transform2ByteNumericBase = 'ÇOÇPÇQÇRÇSÇTÇUÇVÇWÇX';
+        function transformCurrencyToInteger(value, iNbDigits) {
+
+            value = String(value);
+            if ((!value && value !== 0) || !value.match(/^-?(?!,)[0-9ÇO-ÇX,]*(\.?(?=[0-9ÇO-ÇX]+)[0-9ÇO-ÇX]+)$/g)) {
+                value = '0';
+            } else {
+                value = value.replace(/[ÇO-ÇX]/g,function(s){return transform2ByteNumericBase.indexOf(s);});
+            }
+            value = parseFloat(value.replace(/,/g,''));
+
+            value = parseFloat(parseFloat(parseFloat((parseFloat((value * Math.pow(10, iNbDigits)).toFixed(10)).toFixed(0))) / Math.pow(10, iNbDigits)).toFixed(iNbDigits));
+
+            return value;
+        }
+
+        function optionSetting(target) {
+            var $targetRow = $j(target).closest('.quotation-detail-item');
+            var value = $j(target).prop('checked');
+            $targetRow[0].setAttribute(target.getAttribute('data-target'),value);
+        }
+
+
+
+
+
+
+        function optionSettingFromPanelClick(target) {
+            var $targetRow = $j(target).closest('.quotation-detail-item');
+            var targetClass = target.getAttribute('data-target-class');
+            var $targetChackbox = $targetRow.find('.' + targetClass);
+            var value = $targetChackbox.prop('checked');
+            $targetChackbox.prop('checked', !value);
+            optionSetting($targetChackbox[0]);
+        }
+
+        var sortableOptionA = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionA',
+                start: function(e,ui){isExecuteSortableA = true;},
+                activate: createPlaceholderBodyA,
+                stop: changeSortNoA
+        };
+        var sortableOptionB = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionB',
+                start: function(e,ui){isExecuteSortableB = true;},
+                activate: createPlaceholderBodyB,
+                stop: changeSortNoB
+        };
+        var sortableOptionC = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionC',
+                start: function(e,ui){isExecuteSortableC = true;},
+                activate: createPlaceholderBodyC,
+                stop: changeSortNoC
+        };
+        var sortableOptionD = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionD',
+                start: function(e,ui){isExecuteSortableD = true;},
+                activate: createPlaceholderBodyD,
+                stop: changeSortNoD
+        };
+        var sortableOptionE = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionE',
+                start: function(e,ui){isExecuteSortableE = true;},
+                activate: createPlaceholderBodyE,
+                stop: changeSortNoE
+        };
+        var sortableOptionF = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionF',
+                start: function(e,ui){isExecuteSortableF = true;},
+                activate: createPlaceholderBodyF,
+                stop: changeSortNoF
+        };
+        var sortableOptionG = {
+                axis:'y',
+                opacity: 0.7,
+                placeholder: 'drag-placeholder',
+                cursor: 'row-resize',
+                handle: '.sortableActionG',
+                start: function(e,ui){isExecuteSortableG = true;},
+                activate: createPlaceholderBodyG,
+                stop: changeSortNoG
+        };
+        var isExecuteSortableA = false;
+        var isExecuteSortableB = false;
+        var isExecuteSortableC = false;
+        var isExecuteSortableD = false;
+        var isExecuteSortableE = false;
+        var isExecuteSortableF = false;
+        var isExecuteSortableG = false;
+        function createPlaceholderBodyA(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemA');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyB(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemB');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyC(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemC');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyD(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemD');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyE(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemE');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyF(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemF');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function createPlaceholderBodyG(e, ui) {
+            var body = ui.item.find('.quotation-detail-itemG');
+            var placeHolder = $j('.drag-placeholder');
+            var bodyItem = document.createElement('div');
+            for (var i = 0; i < body.length; i++) {
+                var item = bodyItem.cloneNode();
+                item.setAttribute('data-depth', body[i].getAttribute('data-depth'));
+                placeHolder.append(item);
+            }
+        }
+        function dragActionA(targetRow) {
+
+            detailBodyBlur(lasttarget);
+        
+            setSortableA();
+            var $sortableArea = $j('.quotation-detail-listA');
+            var target = $j(targetRow).closest('.quotation-detail-itemA')[0];
+            var $details = $j('.quotation-detail-itemA');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemA');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemA';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserA);
+            
+        }
+        function dragActionB(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableB();
+            var $sortableArea = $j('.quotation-detail-listB');
+            var target = $j(targetRow).closest('.quotation-detail-itemB')[0];
+            var $details = $j('.quotation-detail-itemB');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemB');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemB';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserB);
+            
+        }
+        function dragActionC(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableC();
+            var $sortableArea = $j('.quotation-detail-listC');
+            var target = $j(targetRow).closest('.quotation-detail-itemC')[0];
+            var $details = $j('.quotation-detail-itemC');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemC');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemC';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserC);
+            
+        }
+        function dragActionD(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableD();
+            var $sortableArea = $j('.quotation-detail-listD');
+            var target = $j(targetRow).closest('.quotation-detail-itemD')[0];
+            var $details = $j('.quotation-detail-itemD');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemD');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemD';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserD);
+            
+        }
+        function dragActionE(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableE();
+            var $sortableArea = $j('.quotation-detail-listE');
+            var target = $j(targetRow).closest('.quotation-detail-itemE')[0];
+            var $details = $j('.quotation-detail-itemE');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemE');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemE';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserE);
+            
+        }
+        function dragActionF(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableF();
+            var $sortableArea = $j('.quotation-detail-listF');
+            var target = $j(targetRow).closest('.quotation-detail-itemF')[0];
+            var $details = $j('.quotation-detail-itemF');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemF');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemF';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserF);
+            
+        }
+        function dragActionG(targetRow) {
+            detailBodyBlur(lasttarget);
+        
+            setSortableG();
+            var $sortableArea = $j('.quotation-detail-listG');
+            var target = $j(targetRow).closest('.quotation-detail-itemG')[0];
+            var $details = $j('.quotation-detail-itemG');
+            var wrapdiv = document.createElement('div');
+            $j(wrapdiv).addClass('quotation-detail-childWrap-itemG');
+            $sortableArea.empty();
+            var block = wrapdiv.cloneNode();
+            var isChildNode = false;
+            var targetDepth = parseInt(target.getAttribute('data-depth'), 10);
+            var lastDepth = 0;
+            
+            var targetDetailType = target.getAttribute('data-type');
+            for (var i = 0; i < $details.length; i++) {
+                var detail = $details[i];
+                var currentDetailDepth = parseInt(detail.getAttribute('data-depth'), 10);
+                lastDepth = currentDetailDepth;
+                if (targetDepth === currentDetailDepth || (isChildNode && targetDepth - currentDetailDepth >= 0)) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                    isChildNode = (targetDepth === currentDetailDepth)
+                }
+                block.appendChild(detail);
+                if (!isChildNode && targetDepth !== 0 && targetDepth - currentDetailDepth < 2) {
+                    if (block.childNodes.length > 0) {
+                        $sortableArea.append(block);
+                    }
+                    block = wrapdiv.cloneNode();
+                }
+            }
+            if (block.childNodes.length > 0) {
+                $sortableArea.append(block);
+            }
+            var sortableTarget = ' .quotation-detail-childWrap-itemG';
+            var excludeSelectors = [];
+            if (targetDepth - lastDepth > 1 && targetDepth !== 0 && !(targetDetailType === '4' || targetDetailType === '3' || targetDetailType === '5')) {
+                excludeSelectors.push(':last');
+            }
+            if (targetDepth !== 0) {
+                excludeSelectors.push(':first');
+            }
+            if (excludeSelectors.length > 0) {
+                sortableTarget += ':not(' + excludeSelectors.join(',') +')'
+            }
+            $sortableArea.sortable('option', 'items', sortableTarget);
+            $sortableArea.sortable('refresh');
+            $j(document).on("mouseup",childWrapEraserG);
+            
+        }
+        function childWrapEraserA() {
+            if (!isExecuteSortableA) {
+                var details = $j('.quotation-detail-itemA');
+                $j('.quotation-detail-childWrap-itemA').remove();
+                $j('.quotation-detail-listA').append(details);
+            }
+            isExecuteSortableA = false;
+            $j(document).off("mouseup",childWrapEraserA);                       
+        }
+        function childWrapEraserB() {
+            if (!isExecuteSortableB) {
+                var details = $j('.quotation-detail-itemB');
+                $j('.quotation-detail-childWrap-itemB').remove();
+                $j('.quotation-detail-listB').append(details);
+            }
+            isExecuteSortableB = false;
+            $j(document).off("mouseup",childWrapEraserB);                       
+        }
+        function childWrapEraserC() {
+            if (!isExecuteSortableC) {
+                var details = $j('.quotation-detail-itemC');
+                $j('.quotation-detail-childWrap-itemC').remove();
+                $j('.quotation-detail-listC').append(details);
+            }
+            isExecuteSortableC = false;
+            $j(document).off("mouseup",childWrapEraserC);                       
+        }
+        function childWrapEraserD() {
+            if (!isExecuteSortableD) {
+                var details = $j('.quotation-detail-itemD');
+                $j('.quotation-detail-childWrap-itemD').remove();
+                $j('.quotation-detail-listD').append(details);
+            }
+            isExecuteSortableD = false;
+            $j(document).off("mouseup",childWrapEraserD);                       
+        }
+        function childWrapEraserE() {
+            if (!isExecuteSortableE) {
+                var details = $j('.quotation-detail-itemE');
+                $j('.quotation-detail-childWrap-itemE').remove();
+                $j('.quotation-detail-listE').append(details);
+            }
+            isExecuteSortableE = false;
+            $j(document).off("mouseup",childWrapEraserE);                       
+        }
+        function childWrapEraserF() {
+            if (!isExecuteSortableF) {
+                var details = $j('.quotation-detail-itemF');
+                $j('.quotation-detail-childWrap-itemF').remove();
+                $j('.quotation-detail-listF').append(details);
+            }
+            isExecuteSortableF = false;
+            $j(document).off("mouseup",childWrapEraserF);                       
+        }
+        function childWrapEraserG() {
+            if (!isExecuteSortableG) {
+                var details = $j('.quotation-detail-itemG');
+                $j('.quotation-detail-childWrap-itemG').remove();
+                $j('.quotation-detail-listG').append(details);
+            }
+            isExecuteSortableG = false;
+            $j(document).off("mouseup",childWrapEraserG);                       
+        }
+        function changeSortNoA(e, ui) {
+            var details = $j('.quotation-detail-itemA');
+            var sortableArea = $j('.quotation-detail-listA');
+            sortableArea.empty();
+            
+            RowManageA.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageA.push(detail);
+            }
+            RowManageA.calcurate();
+            calcurate();
+        }
+        function changeSortNoB(e, ui) {
+            var details = $j('.quotation-detail-itemB');
+            var sortableArea = $j('.quotation-detail-listB');
+            sortableArea.empty();
+            
+            RowManageB.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageB.push(detail);
+            }
+            RowManageB.calcurate();
+            calcurate();
+        }
+        function changeSortNoC(e, ui) {
+            var details = $j('.quotation-detail-itemC');
+            var sortableArea = $j('.quotation-detail-listC');
+            sortableArea.empty();
+            
+            RowManageC.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageC.push(detail);
+            }
+            RowManageC.calcurate();
+            calcurate();
+        }
+        function changeSortNoD(e, ui) {
+            var details = $j('.quotation-detail-itemD');
+            var sortableArea = $j('.quotation-detail-listD');
+            sortableArea.empty();
+            
+            RowManageD.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageD.push(detail);
+            }
+            RowManageD.calcurate();
+            calcurate();
+        }
+        function changeSortNoE(e, ui) {
+            var details = $j('.quotation-detail-itemE');
+            var sortableArea = $j('.quotation-detail-listE');
+            sortableArea.empty();
+            
+            RowManageE.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageE.push(detail);
+            }
+            RowManageE.calcurate();
+            calcurate();
+        }
+        function changeSortNoF(e, ui) {
+            var details = $j('.quotation-detail-itemF');
+            var sortableArea = $j('.quotation-detail-listF');
+            sortableArea.empty();
+            
+            RowManageF.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageF.push(detail);
+            }
+            RowManageF.calcurate();
+            calcurate();
+        }
+        function changeSortNoG(e, ui) {
+            var details = $j('.quotation-detail-itemG');
+            var sortableArea = $j('.quotation-detail-listG');
+            sortableArea.empty();
+            
+            RowManageG.init();
+            for (var i = 0; i < details.length; i++) {
+                var detail = details[i];
+                setSortNo(detail, i);
+                sortableArea.append(detail);
+                RowManageG.push(detail);
+            }
+            RowManageG.calcurate();
+            calcurate();
+        }
+        function setSortNo(target, sortNo) {
+            var $target = $j(target)
+            target.setAttribute('data-sortNo', sortNo);
+            $target.find('.quotation-detail-sortNo').val(sortNo);
+        }
+        
+        /*-----------------------------------------------*/
+        var productAConfig = {
+            fields: [
+                {sobjectField:['ParentModelType__c'], label: 'Model Type', className: 'master-ModelType', targetFormClassName: "quotation-detail-ModelType"},
+                {sobjectField:['ParentEnglishName__c'], label: 'Item', className: 'master-productName', targetFormClassName: 'quotation-detail-productName'},
+                {sobjectField:['ProductItem__r','Kikaku__c'], label:['Spec']},
+                {sobjectField:['Price__c'], label: 'Price', className: 'number', targetFormClassName: 'quotation-detail-UnitPrice'},
+                {sobjectField:['CostCurrency__c'], label: 'Cur', className: 'costCurrency', targetFormClassName: 'quotation-detail-CostCurrency'}
+            ]
+        };
+        var productBConfig = {
+            fields: [
+                {sobjectField:['ModelType__c'], label: 'Model Type', className: 'master-ModelType', targetFormClassName: "quotation-detail-ModelType", hidden: true},
+                {sobjectField:['EnglishName__c'], label: 'Item', className: 'master-productName', targetFormClassName: 'quotation-detail-productName'},
+                {sobjectField:['Supplier__c'], label: 'Supplier', className: 'master-supplier', targetFormClassName: 'quotation-detail-Supplier'}
+            ]
+        };
+        var productG1Config = {
+            fields: [
+                {sobjectField:['ParentModelType__c'], label: 'Model Type', className: 'master-ModelType', targetFormClassName: "quotation-detail-ModelType"},
+                {sobjectField:['ParentEnglishName__c'], label: 'Item', className: 'master-productName', targetFormClassName: 'quotation-detail-productName'},
+                {sobjectField:['ProductItem__r','Kikaku__c'], label:['Spec']},
+                {sobjectField:['Price__c'], label: 'Price', className: 'number', targetFormClassName: 'quotation-detail-UnitPrice'},
+                {sobjectField:['CostCurrency__c'], label: 'Cur', className: 'costCurrency', targetFormClassName: 'quotation-detail-CostCurrency'}
+            ]
+        };
+        var productG2Config = {
+            fields: [
+                {sobjectField:['ParentModelType__c'], label: 'Model Type', className: 'master-ModelType', targetFormClassName: "quotation-detail-ModelType", hidden: true},
+                {sobjectField:['ParentEnglishName__c'], label: 'Item', className: 'master-productName', targetFormClassName: 'quotation-detail-productName'},
+                {sobjectField:['Price__c'], label: 'Price', className: 'number', targetFormClassName: 'quotation-detail-UnitPrice'},
+                {sobjectField:['ProductItem__r','Supplier__c'], label: 'Supplier', className: 'master-supplier', targetFormClassName: 'quotation-detail-Supplier'},
+                {sobjectField:['CostCurrency__c'], label: 'Cur', className: 'costCurrency', targetFormClassName: 'quotation-detail-CostCurrency'}
+            ]
+        };
+        var catalogAConfig = {
+            fields: [
+                {sobjectField:['ProductItem__r','Name'], appendTargetField:['Name'], className: 'master-catalogModelType', targetFormClassName: 'catalogModelType', hidden: true},
+                {sobjectField:['ProductItem__r','EnglishName__c'], appendTargetField:['ParentEnglishName__c'], className: 'master-catalogProductName', targetFormClassName: 'catalogProductName'},
+                {sobjectField:['ProductItem__r','ModelTypeDisplay__c'], appendTargetField:['ParentModelType__c'], className: 'master-catalogProductModelType', targetFormClassName: 'catalogProductModelType'},
+                {sobjectField:['AdditionalInformation__c'], appendTargetField:['ParentFullName__c'], className: 'master-catalogProductModelType2', targetFormClassName: 'catalogProductModelType2'},
+                {sobjectField:['NumberOfMounting__c'], appendTargetField:['NumberOfMounting__c'], className: 'master-NumberOfMounting__c', targetFormClassName: 'NumberOfMounting', hidden: true},
+                {sobjectField:['LocalSupplyFlag__c'], appendTargetField:['LocalSupplyFlag__c'], className: 'master-LocalSupplyFlag', targetFormClassName: 'LocalSupplyFlag', hidden: true},
+                {sobjectField:['ProductItem__c'], appendTargetField:['ProductItem__c'], className: 'master-catalogProductItem', targetFormClassName: 'catalogProductItem', hidden: true}
+            ]
+        };
+        var catalogGConfig = {
+            fields: [
+                {sobjectField:['ProductItem__r','Name'], appendTargetField:['Name'], className: 'master-catalogModelType', targetFormClassName: 'catalogModelType', hidden: true},
+                {sobjectField:['ProductItem__r','EnglishName__c'], appendTargetField:['ParentEnglishName__c'], className: 'master-catalogProductName', targetFormClassName: 'catalogProductName'},
+                {sobjectField:['ProductItem__r','ModelTypeDisplay__c'], appendTargetField:['ParentModelType__c'], className: 'master-catalogProductModelType', targetFormClassName: 'catalogProductModelType'},
+                {sobjectField:['AdditionalInformation__c'], appendTargetField:['ParentFullName__c'], className: 'master-catalogProductModelType2', targetFormClassName: 'catalogProductModelType2'},
+                {sobjectField:['NumberOfMounting__c'], appendTargetField:['NumberOfMounting__c'], className: 'master-NumberOfMounting__c', targetFormClassName: 'NumberOfMounting', hidden: true},
+                {sobjectField:['LocalSupplyFlag__c'], appendTargetField:['LocalSupplyFlag__c'], className: 'master-LocalSupplyFlag', targetFormClassName: 'LocalSupplyFlag', hidden: true},
+                {sobjectField:['ProductItem__c'], appendTargetField:['ProductItem__c'], className: 'master-catalogProductItem', targetFormClassName: 'catalogProductItem', hidden: true}
+            ]
+        };
+
+        var detailTypes = ['ñæç◊','å©èoÇµ','èîåoîÔ','è¨åv','å˚ëK'];
+        var detailFieldConfigures = {
+                fields: [
+                    {sobjectField: ['Type__c'], label: 'ñæç◊É^ÉCÉv', resultFunc: function(resultValue){
+                            var ret = '';
+                            if (resultValue) {
+                                ret = detailTypes[parseInt(resultValue, 10) - 1];
+                            }
+                            return ret;
+                        }
+                    },
+                    {sobjectField: ['Body__c'], label: 'ì‡óe'},
+                    {sobjectField: ['ModelType__c'], label: '{!$Label.JEOL_QuotEdit_Label_ItemNo}'},
+                    {sobjectField: ['Quantity__c'], label: 'êîó ', className: 'number'}
+                ]
+        };
+
+        var divNode = document.createElement('div');
+        function render(records, renderTarget, renderConfigure, eventFunction) {
+            var records = records;
+            var body = renderTarget;
+            body.empty();
+            var $table = $j(divNode.cloneNode());
+            $table.addClass('table');
+            var $headerRow = $j(divNode.cloneNode());
+            $headerRow.addClass('item');
+            $table.append($headerRow);
+            var config = renderConfigure;
+            var fieldSettings = config.fields;
+            for (var i = 0; i < records.length; i++) {
+                var currentTarget = records[i];
+                var $item = $j(divNode.cloneNode());
+                $item.addClass('item');
+                for (key in eventFunction) {
+                    $item.on(key, eventFunction[key]);
+                }
+                if (fieldSettings) {
+                    for (var j = 0; j < fieldSettings.length; j++) {
+                        var fieldConfigure = fieldSettings[j];
+                        if (fieldConfigure.sobjectField) {
+                            var fieldValue = getFieldValue(currentTarget,fieldConfigure.sobjectField);
+                            if (i === 0) {
+                                var $headItem = createField(fieldConfigure.label);
+                                $headItem.addClass('head');
+                                if (fieldConfigure.hidden) {
+                                    $headItem.css({display: 'none'});
+                                }
+                                $headerRow.append($headItem);
+                            }
+                            $headerRow.append($headItem);
+                            if (fieldConfigure.resultFunc && typeof fieldConfigure.resultFunc === "function") {
+                                fieldValue = fieldConfigure.resultFunc(fieldValue);
+                            }
+                            $field = createField(fieldValue, fieldConfigure.className);
+                            $item.append($field)
+                            if (fieldConfigure.hidden) {
+                                $field.css({display: 'none'});
+                            }
+                        }
+                    }
+                    $table.append($item);
+                }
+            }
+            body.append($table);
+            return body.find('.item');
+        }
+        function getFieldValue(targetSobject, fieldNameArray) {
+            var target = targetSobject;
+            for (var i = 0; i < fieldNameArray.length; i++) {
+                var fieldName = fieldNameArray[i];
+                if (fieldName && typeof target[fieldName] !== "undefined") {
+                    target = target[fieldName];
+                    if (typeof target == "string") {
+                      target = convert(target);
+                    }
+                } else {
+                    target = '';
+                    break;
+                }
+            }
+            return target;
+        }
+
+        var convert = function(convert){
+            return $j("<span />", { html: convert }).text();
+        };
+
+        function createField(value, fieldClass) {
+            var field = $j(divNode.cloneNode());
+            field.addClass('field');
+            var fieldValue = $j(divNode.cloneNode());
+            fieldClass = ' ' + (fieldClass ? fieldClass : '');
+            fieldValue.addClass('field-value' + fieldClass);
+
+            fieldValue.text(value);
+            field.append(fieldValue);
+            return field;
+        }
+        function pagerInfo(manage, targetNode) {
+            var manager = manage;
+            var $pagerArea = $j(targetNode).find('.pager-area');
+            var currentPageNum = manager.getPageNumber();
+            $pagerArea.find('.current-page-number').text(currentPageNum);
+            if (currentPageNum > 1) {
+                $pagerArea.find('.prev.customButton').show();
+                $pagerArea.find('.prev.disabled-button').hide();
+            } else {
+                $pagerArea.find('.prev.customButton').hide();
+                $pagerArea.find('.prev.disabled-button').show();
+            }
+            var maxPageNum = manager.maxPageNumber();
+            $pagerArea.find('.max-page-number').text(maxPageNum);
+            if (maxPageNum > currentPageNum) {
+                $pagerArea.find('.next.customButton').show();
+                $pagerArea.find('.next.disabled-button').hide();
+            } else {
+                $pagerArea.find('.next.customButton').hide();
+                $pagerArea.find('.next.disabled-button').show();
+            }
+        }
+        
+
+
+/*------------------------------------------------------------*/
+//
+//  ïiñ⁄ï°êîëIëâÊñ     ïiñ⁄åüçı ÉJÉ^ÉçÉOåüçı SECTION A
+//
+/*------------------------------------------------------------*/
+
+        function initDetailProductAItemManage($targetNode) {
+
+            $j('#productAItemSearch').removeClass("hidden");
+            $j('#productBItemSearch').addClass("hidden");
+            $j('#productG1ItemSearch').addClass("hidden");
+            $j('#productG2ItemSearch').addClass("hidden");
+
+            if ($j( "select[name*=':quotationType']" ).find("option:selected").text() == $j( "input[name*=':quotation-unit-label']" ).val()) {
+              $j('#catalogAItemSearch').removeClass("hidden");
+            } else {
+              $j('#catalogAItemSearch').addClass("hidden");
+            }
+            $j('#catalogGItemSearch').addClass("hidden");
+
+            tabSelection($j('#productAItemSearch'));
+            
+            detailProductAItemManage.setTargetNode($targetNode);
+            detailProductACatalogManage.setTargetNode($targetNode);
+
+        }
+
+        var detailProductAItemManage = new PagerHelper();
+        detailProductAItemManage.setPageSize(13);
+        detailProductAItemManage.setConfig(productAConfig);
+        
+        function productAItemSearchJS() {
+            var conditions = queryCondition($j('#detailProductAItemSearchArea'));
+            conditions['sectionItem'] = 'A';
+            detailProductAItemsQuery(conditions);
+        }
+        function detailProductAItemsQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+
+            var quotationType = $j( "select[name*=':quotationType']" ).val();
+            
+            JEOLAsia_ProjectMasterEditorPageCtrl.getProductMaster(conditions, '', quotationType, function(result){
+                if (result) {
+                    var manage = detailProductAItemManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = render(manage.getRecords(), $modal.find('#productAItemTabPanel .item-list'), manage.getConfig());
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'The search returned too many rows. Only the 10,000 first datas will be displayed.';
+                        showAlert(errorText);
+                    }
+                    pagerInfo(detailProductAItemManage, $j('#productAItemTabPanel'));
+                    if($modal.find('#productAItemTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductAItemSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('Information could not be retrieved. Try again later.');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        function nextRecordsAddDraggableA() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductAItemManage.next(), $modal.find('#productAItemTabPanel .item-list'), detailProductAItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductAItemManage, $j('#productAItemTabPanel'));
+        } 
+        function prevRecordsAddDraggableA() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductAItemManage.prev(), $modal.find('#productAItemTabPanel .item-list'), detailProductAItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductAItemManage, $j('#productAItemTabPanel'));
+        }
+        
+        function chooseItemDetailProductA() {
+            var items = [];
+            var config = detailProductAItemManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productAItemTabPanel .item.selected');
+            if ($selectedItems.length) {
+                for (var i = 0; i < $selectedItems.length; i++) {
+                    var $selectedItem = $j($selectedItems[i]);
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var value = $selectedItem.find('.' + field.className).text();
+                            values.push('"' + field.sobjectField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    items.push('{' + values.join(',') + '}');
+                }
+                var $targetNode = detailProductAItemManage.getTargetNode();
+                var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+                var jsonText = '{' + 
+                                    '"sortNo":"' + targetSortNo + '",' +
+                                    '"items":[' + items.join(',') +']' +
+                                '}';
+
+                createSelectedProductAItemDetails(jsonText);
+                $modal.modal('hide');
+            } else {
+                showAlert('Please select the items to add.');
+            }
+        }
+
+        var detailProductACatalogManage = new PagerHelper();
+        detailProductACatalogManage.setPageSize(10000);
+        detailProductACatalogManage.setConfig(catalogAConfig);
+
+        function productACatalogSearch() {
+            var conditions = queryCondition($j('#detailProductACatalogSearchArea'));
+            detailProductACatalogQuery(conditions);
+        }
+
+        function detailProductACatalogQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+            JEOLAsia_ProjectMasterEditorPageCtrl.getCatalogHead(conditions, function(result){
+                if (result) {
+                    var manage = detailProductACatalogManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = catalogRenderA(manage.getRecords(), $modal.find('#productACatalogTabPanel .item-list'), manage.getConfig(),{"click":getChildCatalogStructureA}, true);
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'åüçıåãâ Ç™ëΩÇ¢ÇΩÇﬂ10000åèÇ‹Ç≈ï\é¶ÇµÇ‹Ç∑ÅB';
+                        showAlert(errorText);
+                    }
+                    //pagerInfo(detailProductACatalogManage, $j('#productACatalogTabPanel'));
+                    if($modal.find('#productACatalogTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductACatalogSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        
+        function getChildCatalogStructureA(e) {
+            var $target = $j(e.target);
+            var $parentItem = $target.closest('.item');
+            if (!$parentItem.hasClass('got-items')) {
+                $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+                JEOLAsia_ProjectMasterEditorPageCtrl.getChildCatalogStructure($parentItem[0].getAttribute('data-catalog'), $parentItem[0].getAttribute('data-target'), $parentItem[0].getAttribute('data-position'), function(result, event){
+                    childCatalogStructureCallBackA(result, event, $parentItem);
+                    $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+                });
+            }
+            $parentItem.toggleClass('open');
+            e.preventDefault();
+            return false;
+        }
+        function childCatalogStructureCallBackA(result, event, $parentItem) {
+            var ret = null;
+            if (event.status) {
+                var $childWrapper = $j(divNode.cloneNode());
+                $childWrapper.addClass('children');
+                $parentItem.append($childWrapper);
+                var manage = detailProductACatalogManage;
+                manage.setRecords(result);
+                var $modal = $j('#detailProductItemView');
+                var $items = catalogRenderA(manage.getRecords(), $childWrapper, manage.getConfig(),{"click":getChildCatalogStructureA});
+                if (!$parentItem.hasClass('non-select-drag')) {
+                    $items.draggable(draggableOption);
+                } else {
+                    $items.addClass('selected non-select-drag');
+                    $items.draggable(selectedDraggableOption);
+                }
+                var errorText = '';
+                if (manage.size() >= 10000) {
+                    errorText = 'åüçıåãâ Ç™ëΩÇ¢ÇΩÇﬂ10000åèÇ‹Ç≈ï\é¶ÇµÇ‹Ç∑ÅB';
+                    showAlert(errorText);
+                }
+                ret = $items;
+            } else {
+                showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+            }
+            $parentItem.addClass('got-items');
+            return ret;
+        }
+        function catalogRenderA(records, renderTarget, renderConfigure, eventFunction, isRoot) {    
+            var records = records;
+            var body = renderTarget;
+            body.empty();
+            var $tree = $j(divNode.cloneNode());
+            $tree.addClass('tree');
+            var config = renderConfigure;
+            var fieldSettings = config.fields;
+            for (var i = 0; i < records.length; i++) {
+                var currentTarget = records[i];
+                var $item = $j(divNode.cloneNode());
+                $item.addClass('item');
+                
+                var $view = $j(divNode.cloneNode());
+                $view.addClass('tree-view');
+                $item.append($view);
+                var $fieldSet = $j(divNode.cloneNode());
+                $fieldSet.addClass('tree-fieldset');
+                $item.append($fieldSet);
+                if (fieldSettings) {
+                    createCatalogItemDetailA(currentTarget, $view, $fieldSet, fieldSettings);
+                    if ((currentTarget.Position__c === 1 && isRoot) || currentTarget.ClassificationType__c == 1) {
+                        for (key in eventFunction) {
+                            $view.on(key, eventFunction[key]);
+                        }
+                        var structure = null;
+                        if (currentTarget.Position__c === 1) {
+                            structure = currentTarget.CatalogStructure__c;
+                        } else {
+                            structure = currentTarget.ClassificationNo__c;
+                        }
+                        $item[0].setAttribute('data-target', structure);
+                        $item[0].setAttribute('data-catalog', currentTarget.ProductCatalog__c);
+                    }
+                    if (currentTarget.Position__c === 1 && !isRoot) {
+<!--                        $item[0].setAttribute('data-exclude-json-data', true); -->
+                    }
+                    var targetPosition = currentTarget.Position__c;
+                    $item[0].setAttribute('data-position', targetPosition);
+                    if (currentTarget.EnglishText__c) {
+                      $item[0].setAttribute('title', currentTarget.EnglishText__c);
+                    } else {
+                      $item[0].setAttribute('title', '');
+                    }
+
+                    $item[0].className += " showTooltipEnglishText";
+                    $tree.append($item);
+                }
+            }
+            body.append($tree);
+            return body.find('.item');
+        }
+        function createCatalogItemDetailA(target, $view, $fieldSet, fieldSettings) {
+            var viewTexts = [];
+            for (var i = 0; i < fieldSettings.length; i++) {
+                var fieldConfigure = fieldSettings[i];
+                if (fieldConfigure.sobjectField) {
+                    var fieldValue = getFieldValue(target,fieldConfigure.sobjectField);
+                    if (fieldConfigure.resultFunc && typeof fieldConfigure.resultFunc === "function") {
+                        fieldValue = fieldConfigure.resultFunc(fieldValue);
+                    }
+                    if (!fieldConfigure.hidden && fieldValue.length > 0) {
+                        viewTexts.push(fieldValue);
+                    }
+                    var $field = createField(fieldValue, fieldConfigure.className);
+                    $fieldSet.append($field);
+                    /*if (fieldConfigure.hidden) {
+                        $field.css({display: 'none'});
+                    }*/
+                }
+            }
+            $view.text(viewTexts.join(' '));
+        }
+        
+        var asyncGetStructrueQueue = null;
+        var fAlreadySent = true; <!-- Used to send it only once. If not, when the main folder has been opened, but not the child folders, the content of the child folder is added twice (reason unknown) (By Polus on 2015/06/16) -->
+        
+        function chooseCatalogDetailProductA() {
+            var items = [];
+            asyncGetStructrueQueue = {};
+            fAlreadySent = false;
+            var config = detailProductACatalogManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productACatalogTabPanel .item.selected');
+            if ($selectedItems.length) {
+                $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+                getAllStructureA($selectedItems);
+            } else {
+                showAlert('Please select the items to add.');
+            }                
+        }
+        function getAllStructureA($targets) {
+            if ($targets.length) {
+                for (var i = 0; i < $targets.length; i++) {
+                    var item = $targets[i];
+                    var $item = $j(item);
+                    var targetCatalog = item.getAttribute('data-catalog');
+                    var targetStructure = item.getAttribute('data-target');
+                    var targetPosition = item.getAttribute('data-position');
+                    if ($item.hasClass('got-items') && targetStructure && targetStructure.length) {
+                        <!-- The folder has been opened -->
+                        asyncGetStructrueQueue[targetStructure] = item;
+                        getAllStructureA($item.find('.children>.tree>.item'));
+                        delete asyncGetStructrueQueue[targetStructure];
+                    } else if (targetStructure && targetStructure.length) {
+                        <!-- The folder has not been opened, all childs should be added -->
+                        asyncGetStructrueQueue[targetStructure] = item;
+                        getCatalogStructureCallA($item, targetCatalog, targetStructure, targetPosition);
+                    }
+                }
+            }
+            var queueLen = 0;
+            for (key in asyncGetStructrueQueue) {
+                queueLen++;
+            }
+            if (queueLen <= 0 && !fAlreadySent) {
+                fAlreadySent = true;
+                createImportCatalogJsonA();
+            }
+        }
+        function getCatalogStructureCallA($item, targetCatalog, targetStructure, targetPosition) {
+            JEOLAsia_ProjectMasterEditorPageCtrl.getChildCatalogStructure(targetCatalog, targetStructure, targetPosition, function(result, event){
+                var $items = childCatalogStructureCallBackA(result, event, $item);
+                delete asyncGetStructrueQueue[targetStructure];
+                if ($items) {
+                    getAllStructureA($items);
+                }
+            });
+        }
+        function createImportCatalogJsonA() {
+            var $items = $j('#detailProductItemView #productACatalogTabPanel #selected-list-catalog-A>.tree>.item');
+            var jsonItems = [];
+            getCatalogJsonA($items, jsonItems, 0);
+            var $targetNode = detailProductACatalogManage.getTargetNode();
+            var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+            var jsonText = '{' + 
+                                '"sortNo":"' + targetSortNo + '",' +
+                                '"items":[' + jsonItems.join(',') +']' +
+                            '}';
+            var parsedJson = JSON.parse(jsonText);
+
+            createSelectedProductAItemDetails(jsonText);
+            $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            $j('#detailProductItemView').modal('hide');
+        }
+        
+        function getCatalogJsonA($items, jsonItems, depth) {
+        
+            var config = detailProductACatalogManage.getConfig();
+            var fields = config.fields;
+            for (var i = 0; i < $items.length; i++) {
+                var item = $items[i];
+                var $item = $j(item);
+                
+                var isExcludeTarget = (depth != 0 && item.getAttribute('data-exclude-json-data') === 'true');
+                if (!isExcludeTarget) {
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var $fieldset = $item.children('.tree-fieldset');
+                            var value = $fieldset.find('.' + field.className).text();
+                            values.push('"' + field.appendTargetField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    values.push('"depth":' + depth);
+                    jsonItems.push('{' + values.join(',') + '}');
+                    var structure = item.getAttribute('data-target');
+                    if (structure && structure.length > 0) {
+                        var children = $item.children('.children').children('.tree').children('.item');
+                        getCatalogJsonA(children, jsonItems, depth + 1);
+                    }
+                }
+            }
+        }
+
+
+
+/*------------------------------------------------------------*/
+//
+//  ïiñ⁄ï°êîëIëâÊñ     ïiñ⁄åüçı ÉJÉ^ÉçÉOåüçı SECTION B
+//
+/*------------------------------------------------------------*/
+
+        function initDetailProductBItemManage($targetNode) {
+
+            $j('#productAItemSearch').addClass("hidden");
+            $j('#productBItemSearch').removeClass("hidden");
+            $j('#productG1ItemSearch').addClass("hidden");
+            $j('#productG2ItemSearch').addClass("hidden");
+            $j('#catalogAItemSearch').addClass("hidden");
+            $j('#catalogGItemSearch').addClass("hidden");
+
+            tabSelection($j('#productBItemSearch'));
+
+            detailProductBItemManage.setTargetNode($targetNode);
+
+        }
+
+        var detailProductBItemManage = new PagerHelper();
+        detailProductBItemManage.setPageSize(13);
+        detailProductBItemManage.setConfig(productBConfig);
+        
+        function productBItemSearchJS() {
+            var conditions = queryCondition($j('#detailProductBItemSearchArea'));
+            conditions['sectionItem'] = 'B';
+            detailProductBItemsQuery(conditions);
+        }
+        function detailProductBItemsQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+
+            JEOLAsia_ProjectMasterEditorPageCtrl.getProductMaster(conditions, function(result){
+                if (result) {
+                    var manage = detailProductBItemManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = render(manage.getRecords(), $modal.find('#productBItemTabPanel .item-list'), manage.getConfig());
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'The search returned too many rows. Only the 10,000 first datas will be displayed.';
+                        showAlert(errorText);
+                    }
+                    pagerInfo(detailProductBItemManage, $j('#productBItemTabPanel'));
+                    if($modal.find('#productBItemTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductBItemSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('An unexpected error happened.');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        function nextRecordsAddDraggableB() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductBItemManage.next(), $modal.find('#productBItemTabPanel .item-list'), detailProductBItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductBItemManage, $j('#productBItemTabPanel'));
+        } 
+        function prevRecordsAddDraggableB() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductBItemManage.prev(), $modal.find('#productBItemTabPanel .item-list'), detailProductBItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductBItemManage, $j('#productBItemTabPanel'));
+        }
+        
+        function chooseItemDetailProductB() {
+            var items = [];
+            var config = detailProductBItemManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productBItemTabPanel .item.selected');
+            if ($selectedItems.length) {
+                for (var i = 0; i < $selectedItems.length; i++) {
+                    var $selectedItem = $j($selectedItems[i]);
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var value = $selectedItem.find('.' + field.className).text();
+                            values.push('"' + field.sobjectField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    items.push('{' + values.join(',') + '}');
+                }
+                var $targetNode = detailProductBItemManage.getTargetNode();
+                var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+                var jsonText = '{' + 
+                                    '"sortNo":"' + targetSortNo + '",' +
+                                    '"items":[' + items.join(',') +']' +
+                                '}';
+                createSelectedProductBItemDetails(jsonText);
+                $modal.modal('hide');
+            } else {
+                showAlert('Please select the items to add.');
+            }
+        }
+
+
+
+/*------------------------------------------------------------*/
+//
+//  ïiñ⁄ï°êîëIëâÊñ     ïiñ⁄åüçı ÉJÉ^ÉçÉOåüçı SECTION G
+//
+/*------------------------------------------------------------*/
+
+        function initDetailProductGItemManage($targetNode) {
+
+            $j('#productAItemSearch').addClass("hidden");
+            $j('#productBItemSearch').addClass("hidden");
+            $j('#productG1ItemSearch').removeClass("hidden");
+            $j('#productG2ItemSearch').removeClass("hidden");
+
+            $j('#catalogAItemSearch').addClass("hidden");
+
+            if ($j( "select[name*=':quotationType']" ).find("option:selected").text() == $j( "input[name*=':quotation-unit-label']" ).val()) {
+              $j('#catalogGItemSearch').removeClass("hidden");
+            } else {
+              $j('#catalogGItemSearch').addClass("hidden");
+            }
+
+
+            tabSelection($j('#productG1ItemSearch'));
+
+            detailProductG1ItemManage.setTargetNode($targetNode);
+            detailProductG2ItemManage.setTargetNode($targetNode);
+            detailProductGCatalogManage.setTargetNode($targetNode);
+
+        }
+
+        var detailProductG1ItemManage = new PagerHelper();
+        var detailProductG2ItemManage = new PagerHelper();
+        detailProductG1ItemManage.setPageSize(13);
+        detailProductG2ItemManage.setPageSize(13);
+        detailProductG1ItemManage.setConfig(productG1Config);
+        detailProductG2ItemManage.setConfig(productG2Config);
+        
+        function productG1ItemSearchJS() {
+            var conditions = queryCondition($j('#detailProductG1ItemSearchArea'));
+            conditions['sectionItem'] = 'G1';
+            detailProductG1ItemsQuery(conditions);
+        }
+        function productG2ItemSearchJS() {
+            var conditions = queryCondition($j('#detailProductG2ItemSearchArea'));
+            conditions['sectionItem'] = 'G2';
+            detailProductG2ItemsQuery(conditions);
+        }
+        function detailProductG1ItemsQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+
+            var quotationType = $j( "select[name*=':quotationType']" ).val();
+
+            JEOLAsia_ProjectMasterEditorPageCtrl.getProductMaster(conditions, '', quotationType, function(result){
+                if (result) {
+                    var manage = detailProductG1ItemManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = render(manage.getRecords(), $modal.find('#productG1ItemTabPanel .item-list'), manage.getConfig());
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'The search returned too many rows. Only the 10,000 first datas will be displayed.';
+                        showAlert(errorText);
+                    }
+                    pagerInfo(detailProductG1ItemManage, $j('#productG1ItemTabPanel'));
+                    if($modal.find('#productG1ItemTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductG1ItemSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        function detailProductG2ItemsQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+
+            var quotationType = $j( "select[name*=':quotationType']" ).val();
+
+            JEOLAsia_ProjectMasterEditorPageCtrl.getProductMaster(conditions, '', quotationType, function(result){
+                if (result) {
+                    var manage = detailProductG2ItemManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = render(manage.getRecords(), $modal.find('#productG2ItemTabPanel .item-list'), manage.getConfig());
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'The search returned too many rows. Only the 10,000 first datas will be displayed.';
+                        showAlert(errorText);
+                    }
+                    pagerInfo(detailProductG2ItemManage, $j('#productG2ItemTabPanel'));
+                    if($modal.find('#productG2ItemTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductG2ItemSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        function nextRecordsAddDraggableG1() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductG1ItemManage.next(), $modal.find('#productG1ItemTabPanel .item-list'), detailProductG1ItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductG1ItemManage, $j('#productG1ItemTabPanel'));
+        } 
+        function nextRecordsAddDraggableG2() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductG2ItemManage.next(), $modal.find('#productG2ItemTabPanel .item-list'), detailProductG2ItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductG2ItemManage, $j('#productG2ItemTabPanel'));
+        } 
+        function prevRecordsAddDraggableG1() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductG1ItemManage.prev(), $modal.find('#productG1ItemTabPanel .item-list'), detailProductG1ItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductG1ItemManage, $j('#productG1ItemTabPanel'));
+        }
+        function prevRecordsAddDraggableG2() {
+            var $modal = $j('#detailProductItemView');
+            var $items = render(detailProductG2ItemManage.prev(), $modal.find('#productG2ItemTabPanel .item-list'), detailProductG2ItemManage.getConfig());
+            $items.draggable(draggableOption);
+            pagerInfo(detailProductG2ItemManage, $j('#productG2ItemTabPanel'));
+        }
+        
+        function chooseItemDetailProductG1() {
+            var items = [];
+            var config = detailProductG1ItemManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productG1ItemTabPanel .item.selected');
+            if ($selectedItems.length) {
+                for (var i = 0; i < $selectedItems.length; i++) {
+                    var $selectedItem = $j($selectedItems[i]);
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var value = $selectedItem.find('.' + field.className).text();
+                            values.push('"' + field.sobjectField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    items.push('{' + values.join(',') + '}');
+                }
+                var $targetNode = detailProductG1ItemManage.getTargetNode();
+                var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+                var jsonText = '{' + 
+                                    '"sortNo":"' + targetSortNo + '",' +
+                                    '"JProd":"1",' +
+                                    '"items":[' + items.join(',') +']' +
+                                '}';
+                
+                createSelectedProductGItemDetails(jsonText);
+
+                $modal.modal('hide');
+            } else {
+                showAlert('Please select the items to add.');
+            }
+        }
+
+
+        function chooseItemDetailProductG2() {
+            var items = [];
+            var config = detailProductG2ItemManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productG2ItemTabPanel .item.selected');
+            if ($selectedItems.length) {
+                for (var i = 0; i < $selectedItems.length; i++) {
+                    var $selectedItem = $j($selectedItems[i]);
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var value = $selectedItem.find('.' + field.className).text();
+                            values.push('"' + field.sobjectField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    items.push('{' + values.join(',') + '}');
+                }
+                var $targetNode = detailProductG2ItemManage.getTargetNode();
+                var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+                var jsonText = '{' + 
+                                    '"sortNo":"' + targetSortNo + '",' +
+                                    '"JProd":"2",' +
+                                    '"items":[' + items.join(',') +']' +
+                                '}';
+
+                createSelectedProductGItemDetails(jsonText);
+
+                $modal.modal('hide');
+            } else {
+                showAlert('Please select the items to add.');
+            }
+        }
+
+
+
+        var detailProductGCatalogManage = new PagerHelper();
+        detailProductGCatalogManage.setPageSize(10000);
+        detailProductGCatalogManage.setConfig(catalogGConfig);
+
+        function productGCatalogSearch() {
+            var conditions = queryCondition($j('#detailProductGCatalogSearchArea'));
+            detailProductGCatalogQuery(conditions);
+        }
+
+        function detailProductGCatalogQuery(conditions) {
+            $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+            JEOLAsia_ProjectMasterEditorPageCtrl.getCatalogHead(conditions, function(result){
+                if (result) {
+                    var manage = detailProductGCatalogManage;
+                    manage.setRecords(result);
+                    var $modal = $j('#detailProductItemView');
+                    var $items = catalogRenderG(manage.getRecords(), $modal.find('#productGCatalogTabPanel .item-list'), manage.getConfig(),{"click":getChildCatalogStructureG}, true);
+                    $items.draggable(draggableOption);
+                    var errorText = '';
+                    if (manage.size() >= 10000) {
+                        errorText = 'åüçıåãâ Ç™ëΩÇ¢ÇΩÇﬂ10000åèÇ‹Ç≈ï\é¶ÇµÇ‹Ç∑ÅB';
+                        showAlert(errorText);
+                    }
+                    //pagerInfo(detailProductGCatalogManage, $j('#productGCatalogTabPanel'));
+                    if($modal.find('#productGCatalogTabPanel .auto-close-check').prop('checked')) {
+                        $j('#detailProductGCatalogSearchArea').collapse('hide');
+                    }
+                } else {
+                    showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+                }
+                $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            });
+        }
+        
+        function getChildCatalogStructureG(e) {
+            var $target = $j(e.target);
+            var $parentItem = $target.closest('.item');
+            if (!$parentItem.hasClass('got-items')) {
+                $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+                JEOLAsia_ProjectMasterEditorPageCtrl.getChildCatalogStructure($parentItem[0].getAttribute('data-catalog'), $parentItem[0].getAttribute('data-target'), $parentItem[0].getAttribute('data-position'), function(result, event){
+                    childCatalogStructureCallBackG(result, event, $parentItem);
+                    $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+                });
+            }
+            $parentItem.toggleClass('open');
+            e.preventDefault();
+            return false;
+        }
+        function childCatalogStructureCallBackG(result, event, $parentItem) {
+            var ret = null;
+            if (event.status) {
+                var $childWrapper = $j(divNode.cloneNode());
+                $childWrapper.addClass('children');
+                $parentItem.append($childWrapper);
+                var manage = detailProductGCatalogManage;
+                manage.setRecords(result);
+                var $modal = $j('#detailProductItemView');
+                var $items = catalogRenderG(manage.getRecords(), $childWrapper, manage.getConfig(),{"click":getChildCatalogStructureG});
+                if (!$parentItem.hasClass('non-select-drag')) {
+                    $items.draggable(draggableOption);
+                } else {
+                    $items.addClass('selected non-select-drag');
+                    $items.draggable(selectedDraggableOption);
+                }
+                var errorText = '';
+                if (manage.size() >= 10000) {
+                    errorText = 'åüçıåãâ Ç™ëΩÇ¢ÇΩÇﬂ10000åèÇ‹Ç≈ï\é¶ÇµÇ‹Ç∑ÅB';
+                    showAlert(errorText);
+                }
+                ret = $items;
+            } else {
+                showAlert('èÓïÒÇéÊìæÇ≈Ç´Ç‹ÇπÇÒÇ≈ÇµÇΩÅBçƒìxåüçıÇµÇƒÇ›ÇƒÇ≠ÇæÇ≥Ç¢ÅB');
+            }
+            $parentItem.addClass('got-items');
+            return ret;
+        }
+        function catalogRenderG(records, renderTarget, renderConfigure, eventFunction, isRoot) {    
+            var records = records;
+            var body = renderTarget;
+            body.empty();
+            var $tree = $j(divNode.cloneNode());
+            $tree.addClass('tree');
+            var config = renderConfigure;
+            var fieldSettings = config.fields;
+            for (var i = 0; i < records.length; i++) {
+                var currentTarget = records[i];
+                var $item = $j(divNode.cloneNode());
+                $item.addClass('item');
+                
+                var $view = $j(divNode.cloneNode());
+                $view.addClass('tree-view');
+                $item.append($view);
+                var $fieldSet = $j(divNode.cloneNode());
+                $fieldSet.addClass('tree-fieldset');
+                $item.append($fieldSet);
+                if (fieldSettings) {
+                    createCatalogItemDetailG(currentTarget, $view, $fieldSet, fieldSettings);
+                    if ((currentTarget.Position__c === 1 && isRoot) || currentTarget.ClassificationType__c == 1) {
+                        for (key in eventFunction) {
+                            $view.on(key, eventFunction[key]);
+                        }
+                        var structure = null;
+                        if (currentTarget.Position__c === 1) {
+                            structure = currentTarget.CatalogStructure__c;
+                        } else {
+                            structure = currentTarget.ClassificationNo__c;
+                        }
+                        $item[0].setAttribute('data-target', structure);
+                        $item[0].setAttribute('data-catalog', currentTarget.ProductCatalog__c);
+                    }
+                    if (currentTarget.Position__c === 1 && !isRoot) {
+<!--                        $item[0].setAttribute('data-exclude-json-data', true); -->
+                    }
+                    var targetPosition = currentTarget.Position__c;
+                    $item[0].setAttribute('data-position', targetPosition);
+                    if (currentTarget.EnglishText__c) {
+                      $item[0].setAttribute('title', currentTarget.EnglishText__c);
+                    } else {
+                      $item[0].setAttribute('title', '');
+                    }
+
+                    $item[0].className += " showTooltipEnglishText";
+                    $tree.append($item);
+                }
+            }
+            body.append($tree);
+            return body.find('.item');
+        }
+        function createCatalogItemDetailG(target, $view, $fieldSet, fieldSettings) {
+            var viewTexts = [];
+            for (var i = 0; i < fieldSettings.length; i++) {
+                var fieldConfigure = fieldSettings[i];
+                if (fieldConfigure.sobjectField) {
+                    var fieldValue = getFieldValue(target,fieldConfigure.sobjectField);
+                    if (fieldConfigure.resultFunc && typeof fieldConfigure.resultFunc === "function") {
+                        fieldValue = fieldConfigure.resultFunc(fieldValue);
+                    }
+                    if (!fieldConfigure.hidden && fieldValue.length > 0) {
+                        viewTexts.push(fieldValue);
+                    }
+                    var $field = createField(fieldValue, fieldConfigure.className);
+                    $fieldSet.append($field);
+                    /*if (fieldConfigure.hidden) {
+                        $field.css({display: 'none'});
+                    }*/
+                }
+            }
+            $view.text(viewTexts.join(' '));
+        }
+        
+        var asyncGetStructrueQueue = null;
+        var fAlreadySent = true; <!-- Used to send it only once. If not, when the main folder has been opened, but not the child folders, the content of the child folder is added twice (reason unknown) (By Polus on 2015/06/16) -->
+        
+        function chooseCatalogDetailProductG() {
+            var items = [];
+            asyncGetStructrueQueue = {};
+            fAlreadySent = false;
+            var config = detailProductGCatalogManage.getConfig();
+            var fields = config.fields;
+            var $modal = $j('#detailProductItemView');
+            var $selectedItems = $modal.find('#productGCatalogTabPanel .item.selected');
+            if ($selectedItems.length) {
+                $j('#detailProductItemView .modal-content').addClass('ajax-loading');
+                getAllStructureG($selectedItems);
+            } else {
+                showAlert('Please select the items to add.');
+            }                
+        }
+        function getAllStructureG($targets) {
+            if ($targets.length) {
+                for (var i = 0; i < $targets.length; i++) {
+                    var item = $targets[i];
+                    var $item = $j(item);
+                    var targetCatalog = item.getAttribute('data-catalog');
+                    var targetStructure = item.getAttribute('data-target');
+                    var targetPosition = item.getAttribute('data-position');
+                    if ($item.hasClass('got-items') && targetStructure && targetStructure.length) {
+                        <!-- The folder has been opened -->
+                        asyncGetStructrueQueue[targetStructure] = item;
+                        getAllStructureG($item.find('.children>.tree>.item'));
+                        delete asyncGetStructrueQueue[targetStructure];
+                    } else if (targetStructure && targetStructure.length) {
+                        <!-- The folder has not been opened, all childs should be added -->
+                        asyncGetStructrueQueue[targetStructure] = item;
+                        getCatalogStructureCallG($item, targetCatalog, targetStructure, targetPosition);
+                    }
+                }
+            }
+            var queueLen = 0;
+            for (key in asyncGetStructrueQueue) {
+                queueLen++;
+            }
+            if (queueLen <= 0 && !fAlreadySent) {
+                fAlreadySent = true;
+                createImportCatalogJsonG();
+            }
+        }
+        function getCatalogStructureCallG($item, targetCatalog, targetStructure, targetPosition) {
+            JEOLAsia_ProjectMasterEditorPageCtrl.getChildCatalogStructure(targetCatalog, targetStructure, targetPosition, function(result, event){
+                var $items = childCatalogStructureCallBackG(result, event, $item);
+                delete asyncGetStructrueQueue[targetStructure];
+                if ($items) {
+                    getAllStructureG($items);
+                }
+            });
+        }
+        function createImportCatalogJsonG() {
+            var $items = $j('#detailProductItemView #productGCatalogTabPanel #selected-list-catalog-G>.tree>.item');
+            var jsonItems = [];
+            getCatalogJsonG($items, jsonItems, 0);
+            var $targetNode = detailProductGCatalogManage.getTargetNode();
+            var targetSortNo = $targetNode[0].getAttribute('data-sortNo');
+            var jsonText = '{' + 
+                                '"sortNo":"' + targetSortNo + '",' +
+                                '"items":[' + jsonItems.join(',') +']' +
+                            '}';
+            var parsedJson = JSON.parse(jsonText);
+
+            createSelectedProductGItemDetails(jsonText);
+            $j('#detailProductItemView .modal-content').removeClass('ajax-loading');
+            $j('#detailProductItemView').modal('hide');
+        }
+        
+        function getCatalogJsonG($items, jsonItems, depth) {
+        
+            var config = detailProductGCatalogManage.getConfig();
+            var fields = config.fields;
+            for (var i = 0; i < $items.length; i++) {
+                var item = $items[i];
+                var $item = $j(item);
+                
+                var isExcludeTarget = (depth != 0 && item.getAttribute('data-exclude-json-data') === 'true');
+                if (!isExcludeTarget) {
+                    var values = [];
+                    for (var j = 0; j < fields.length; j++) {
+                        var field = fields[j];
+                        if (field.targetFormClassName) {
+                            var $fieldset = $item.children('.tree-fieldset');
+                            var value = $fieldset.find('.' + field.className).text();
+                            values.push('"' + field.appendTargetField.join('.') + '":"' + value + '"');
+                        }
+                    }
+                    values.push('"depth":' + depth);
+                    jsonItems.push('{' + values.join(',') + '}');
+                    var structure = item.getAttribute('data-target');
+                    if (structure && structure.length > 0) {
+                        var children = $item.children('.children').children('.tree').children('.item');
+                        getCatalogJsonG(children, jsonItems, depth + 1);
+                    }
+                }
+            }
+        }
+
+
+
+
+
+        
+
+
+
+
+        
+        function queryCondition($targetNode) {
+            var $searchFields = $targetNode.find('input.field-value[data-field]');
+            var conditions = {};
+            for (var i = 0; i < $searchFields.length; i++) {
+                var field = $searchFields[i];
+                var fieldName = field.getAttribute('data-field');
+                var fieldValue = field.value;
+                if (fieldName && fieldName.length != 0) {
+                    conditions[fieldName] = fieldValue;
+//alert('fieldName: ' + fieldName + ' | fieldValue: ' + fieldValue); //todobp
+                }
+            }
+            return conditions;
+        }
+        
+        var draggableOption = {
+            helper: 'clone',
+            opacity: 0.7,
+            zIndex: 102,
+            scroll: false,
+            start: function(e, ui) {
+                ui.helper.addClass('item-drag');
+            }
+        };
+        var selectedDraggableOption = {
+            helper: 'clone',
+            opacity: 0.7,
+            zIndex: 102,
+            cursorAt: {left: 5, top: 5},
+            start: function(e, ui) {
+                ui.helper.addClass('item-drag');
+                $j(ui.helper.context).css({'background-color':'#eee'});
+            },
+            stop: function(e, ui) {
+                var $draggable = $j(ui.helper.context);
+                if($draggable.hasClass('remove-target') && $draggable.hasClass('selected')) {
+                    $draggable.remove();
+                } else {
+                    $draggable.css({'background-color':''});
+                }
+            }
+        }
+        var droppableOption = {
+            greedy: true,
+            accept: '.item',
+            tolerance: 'intersect',
+            activeClass: 'drop-active', 
+            hoverClass: 'drop-hover', 
+            drop: function(e, ui){
+                if (!ui.draggable.hasClass('selected')) {
+                    $selectedItem = ui.draggable.removeAttr('style').clone();
+                    $selectedItem.addClass('selected');
+                    $selectedItem.draggable(selectedDraggableOption);
+                    $j(e.target).find('.drop-target').append($selectedItem); 
+                }
+            },
+            out: function(e, ui){
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.addClass('remove-target');
+                }
+            },
+            over: function(e, ui) {
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.removeClass('remove-target');
+                }
+            }
+        };
+        var droppableOption_catalogA = {
+            greedy: true,
+            accept: '.item',
+            tolerance: 'intersect',
+            activeClass: 'drop-active', 
+            hoverClass: 'drop-hover', 
+            drop: function(e, ui){
+                if (!ui.draggable.hasClass('selected')) {
+                    var $selectedItem = ui.draggable.removeAttr('style').clone();
+                    $selectedItem.find('.item').addClass('selected non-select-drag');
+                    $selectedItem.addClass('selected non-select-drag');
+                    $selectedItem.draggable(selectedDraggableOption);
+                    $selectedItem.find('.item').draggable(selectedDraggableOption);
+                    var items = $selectedItem.find('.item[data-target] > .tree-view');
+                    items.on('click',getChildCatalogStructureA);
+                    var structrue = $selectedItem[0].getAttribute('data-target');
+                    if (structrue && structrue.length > 0 ) {
+                        $selectedItem.children('.tree-view').on('click',getChildCatalogStructureA);
+                    }
+                    $j(e.target).find('.drop-target').append($selectedItem); 
+                }
+            },
+            out: function(e, ui){
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.addClass('remove-target');
+                }
+            },
+            over: function(e, ui) {
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.removeClass('remove-target');
+                }
+            }
+        };
+        var droppableOption_catalogG = {
+            greedy: true,
+            accept: '.item',
+            tolerance: 'intersect',
+            activeClass: 'drop-active', 
+            hoverClass: 'drop-hover', 
+            drop: function(e, ui){
+                if (!ui.draggable.hasClass('selected')) {
+                    var $selectedItem = ui.draggable.removeAttr('style').clone();
+                    $selectedItem.find('.item').addClass('selected non-select-drag');
+                    $selectedItem.addClass('selected non-select-drag');
+                    $selectedItem.draggable(selectedDraggableOption);
+                    $selectedItem.find('.item').draggable(selectedDraggableOption);
+                    var items = $selectedItem.find('.item[data-target] > .tree-view');
+                    items.on('click',getChildCatalogStructureG);
+                    var structrue = $selectedItem[0].getAttribute('data-target');
+                    if (structrue && structrue.length > 0 ) {
+                        $selectedItem.children('.tree-view').on('click',getChildCatalogStructureG);
+                    }
+                    $j(e.target).find('.drop-target').append($selectedItem); 
+                }
+            },
+            out: function(e, ui){
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.addClass('remove-target');
+                }
+            },
+            over: function(e, ui) {
+                if (ui.draggable.hasClass('selected')) {
+                    ui.draggable.removeClass('remove-target');
+                }
+            }
+        };
+
+        
+        var alertAnime = null;
+        function showAlert(target) {
+            var alert = document.getElementById('alert');
+            if (alertAnime) {
+                clearTimeout(alertAnime);
+                alert.style.top = '0px';
+                alert.style.opacity = '0';
+                alert.style.transition = 'none';
+            }
+            if (target instanceof $j) {
+                $j(alert).find('.description').append(target);
+            } else if (target instanceof $j || typeof target === 'string') {
+                $j(alert).find('.description').text(target);
+            }
+            alert.style.display = 'block';
+            alertAnime = setTimeout(function(){
+                alert.style.top = '20px';
+                alert.style.opacity = '1';
+                alert.style.transition = '';
+            }, 100);
+            alertAnime = setTimeout(hideAleart, 3200);
+        }
+        function hideAleart() {
+            var alert = document.getElementById('alert');
+            alert.style.top = '';
+            alert.style.opacity = '';
+            alertAnime = setTimeout(function(){
+                alert.style.display = '';
+                alertAnime = null;
+                $j(alert).find('.description').empty();
+            }, 500);
+        }
+        function changeTaxAmountOutput(node) {
+            var $target = $j(node);
+            var value = $target.prop('checked');
+            if (value) {
+                $j('.includeTaxOutput').prop('checked', false);
+            } else {
+                $j('.includeTaxOutput').prop('checked', true);
+            }
+        }
+        var errorAreaId = '#{!$Component.form.apexMessage}';
+        function getErrorArea() {
+            return $j(errorAreaId.replace(/(:)/ig,'\\\$1'));
+        }
+        function showResult(text) {
+            var $error = getErrorArea();
+            var $children = $error.children();
+            if ($children.length > 0) {
+                $children = $children.clone();
+                $children.css({'text-align': 'left'});
+                showAlert($children);
+            } else {
+                showAlert(text);
+            }
+        }
+
+        function transformInputTextBranchNo(text) {
+            var ret = '';
+            if (text || text === 0) {
+                ret = text.replace(/[ÇO-ÇX]/ig,function(s){
+                    return String.fromCharCode(s.charCodeAt(0) - 65248);
+                })
+                ret = ret.match(/^[0-9]*/ig)[0];
+            }
+            if (ret.length < 2) {
+                for (var i = ret.length; i < 2; i++) {
+                    ret = '0' + ret;
+                }
+            }
+            return ret;
+        }
+        function transformSafeInputText(text) {
+            var ret = '';
+            if (text) {
+                ret = text.replace(/[ÇO-ÇXÇÅ-ÇöÇ`-Çy]/g,function(s){
+                    return String.fromCharCode(s.charCodeAt(0) - 65248);
+                })
+                ret = ret.toUpperCase().match(/^[0-9A-Z]*/g)[0];
+            }
+            return ret;
+        }
+        function transformInputText(text) {
+            var ret = '';
+            if (text) {
+                ret = text.replace(/[ÇO-ÇXÇÅ-ÇöÇ`-Çy]/g,function(s){
+                    return String.fromCharCode(s.charCodeAt(0) - 65248);
+                })
+                ret = ret.toUpperCase();
+            }
+            return ret;
+        }
+        function tabSelection(self) {
+            var $self = $j(self);
+            if (!$self.hasClass('active')) {
+                var $modal = $j('#detailProductItemView');
+                var tabs = $modal.find('.tab');
+                tabs.removeClass('active');
+                var targetTabName = $self.attr('data-target');
+                $modal[0].setAttribute('data-tab-target', targetTabName);
+                $self.addClass('active');
+            }
+            $j('#detailProductItemView').css({'display':'block'});
+        }
+        
+        var openModalDetailId = null;
+        function setOpenModalDetailId(target) {
+            var $detail = $j(target).closest('.quotation-detail-item');
+            openModalDetailId = $detail.attr('id');
+        }
+        function focusOpenModalDetail() {
+            var $detail = $j(document.getElementById(openModalDetailId));
+            var $targetButton = $detail.find('.productSelectButton');
+            openModalDetailId = null;
+            $targetButton.trigger('focus');
+        }
+    
+        function safetyLockCheck(targetNode) {
+            var value = targetNode.getAttribute('data-compare-value');
+            var type = targetNode.getAttribute('type');
+            var currentValue = null;
+            if (type === 'checkbox' || type === 'radio') {
+                currentValue = targetNode.checked;
+            } else {
+                currentValue = targetNode.value;
+            }
+            if (value !== currentValue) {
+                lockSafety();
+            }
+        }
+        function unlockSafety() {
+            safety = false;
+        }
+        function lockSafety() {
+            safety = true;
+        }
+        var lasttarget;
+        function detailBodyFocus(target) {
+            lasttarget = target;
+            $j(target).parent().css('left','0px');
+        }
+        function detailBodyBlur(target) {
+            $j(target).parent().css('left','');
+            $j(target).css({height:'31px'});
+        }
+        function openSearchToggleButton(target) {
+            $j('.field.toggle').removeClass('toggle');
+            $j(target).closest('.field').addClass('toggle');
+        }
+        /**
+         * detect IE
+         * returns version of IE or false, if browser is not Internet Explorer
+         */
+        function detectIE() {
+            var ua = window.navigator.userAgent;
+        
+            var msie = ua.indexOf('MSIE ');
+            if (msie > 0) {
+                // IE 10 or older => return version number
+                return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+            }
+        
+            var trident = ua.indexOf('Trident/');
+            if (trident > 0) {
+                // IE 11 => return version number
+                var rv = ua.indexOf('rv:');
+                return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+            }
+        
+            var edge = ua.indexOf('Edge/');
+            if (edge > 0) {
+               // IE 12 => return version number
+               return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+            }
+        
+            // other browser
+            return false;
+        }
+
+        function ignoreEnterKey(e){
+            if ((window.event&&window.event.keyCode==13) || e.which==13) {
+                return false;
+            } else {
+                return true;
+            };
+        } 
+
+        function disableEnterKey(e)
+                {
+                    var key;     
+                    if(window.event)
+                        key = window.event.keyCode; //IE
+                    else
+                        key = e.which; //firefox     
+                    return (key != 13);
+                }

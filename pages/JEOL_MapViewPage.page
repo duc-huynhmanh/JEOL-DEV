@@ -1,0 +1,56 @@
+<apex:page standardcontroller="Account" extensions="JEOL_MapViewCtrl" standardStylesheets="false">
+  <!-- 
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <style>
+    .map {
+        width: 100%;
+        height: 500px;
+        margin: 32px 0 0 0;
+    }
+    .accountRef {
+        color: #015ba7;
+        text-decoration: none;
+    }
+    .accountRef:hover {
+        text-decoration: none;
+    }
+  </style>
+  <apex:sectionHeader title="{!$ObjectType.Account.Label}" subtitle="{!Account.name}周辺" />
+  <apex:outputLink styleClass="accountRef" value="/{!Account.id}" >
+    <apex:outputText >&laquo;&nbsp;{!Account.name}</apex:outputText>
+  </apex:outputLink>
+  <apex:map height="500px" width="100%" mapType="roadmap" >
+    <apex:mapMarker title="{!Account.name}" position="{!Account.Address__c}" />
+    <apex:repeat value="{!NearAccounts}" var="rec" >
+      <apex:mapMarker title="{!rec.name}" position="{!rec.Address__c}" />
+    </apex:repeat>
+  </apex:map>
+  <div style="margin: 16px 0 0 8px">
+    <h2>近隣取引先一覧</h2>
+  </div>
+  <apex:pageblock mode="maindetail">
+    <apex:pageblocktable value="{!NearAccounts}" var="rec">
+      <apex:column >
+        <apex:facet name="header">
+          <apex:outputLabel value="取引先名" />
+        </apex:facet>
+        <apex:outputLink value="/{!rec.id}" >
+          <apex:outputText value="{!rec.name}" />
+        </apex:outputLink>
+      </apex:column>
+      <apex:column >
+        <apex:facet name="header">
+          <apex:outputLabel value="TEL" />
+        </apex:facet>
+        <apex:outputText value="{!rec.Phone}" />
+      </apex:column>
+      <apex:column >
+        <apex:facet name="header">
+          <apex:outputLabel value="住所" />
+        </apex:facet>
+        <apex:outputText value="{!rec.Address__c}" />
+      </apex:column>
+    </apex:pageblocktable>
+  </apex:pageblock>
+  -->
+</apex:page>

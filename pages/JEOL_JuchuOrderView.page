@@ -1,0 +1,321 @@
+<apex:page controller="JEOL_JuchuOrderView" tabStyle="JutyuOrderList__tab">
+  <style>
+    .currencyTextStyle {text-align: right; white-space: pre;}
+    .error_panel{padding: 30px 10px 0 10px;}
+    .error_panel div {margin: 0 0 20px 40px;}
+    .error_panel div h1 {font-size: 1.5em;}
+    .error_panel div div {margin: 10px 0;}
+  </style>
+  <apex:outputPanel rendered="{!hasError}" layout="block" styleClass="error_panel">
+    <apex:outputPanel layout="block" >
+      <apex:image url="/img/msg_icons/error24.png" />
+      <h1 >
+        <apex:outputText value="エラーが発生しました。" />
+      </h1>
+      <apex:outputPanel layout="block" >
+        <apex:outputLink value="{!$Page.JEOL_JutyuOrderListPage}" >
+          <apex:outputText value="こちら" />
+        </apex:outputLink>
+        <apex:outputText value="から参照したい受注オーダを再度選択してください。" />
+      </apex:outputPanel>
+    </apex:outputPanel>
+    <apex:messages />
+  </apex:outputPanel>
+  <apex:outputPanel rendered="{!!hasError}">
+    <apex:sectionHeader title="受注オーダ照会" subtitle="{!target.OrderNo}" />
+    <apex:pageblock mode="maindetail">
+      <apex:pageblocksection title="基本情報" columns="2">
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="オーダNo"/>
+          <apex:outputText value="{!target.OrderNo}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先取引先コード"/>
+          <apex:outputText value="{!target.SalesAccount.Code__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先取引先名"/>
+          <apex:outputText value="{!target.SalesAccount.Name}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先学部・事業所"/>
+          <apex:outputText value="{!target.SalesAccount.Undergraduate__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先取引先コード"/>
+          <apex:outputText value="{!target.ShipmentAccount.Code__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先取引先名"/>
+          <apex:outputText value="{!target.ShipmentAccount.Name}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先学部・事業所"/>
+          <apex:outputText value="{!target.ShipmentAccount.Undergraduate__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="受注日"/>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!target.OrderDate}"/>
+          </apex:outputText>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="受付担当者"/>
+          <apex:outputText value="{!target.SalesStaff}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="希望納期"/>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!target.CarryDeliveryTime}" />
+          </apex:outputText>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="製番"/>
+          <apex:outputText value="{!target.ProductNumber}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel >
+            <apex:outputText value="受注メモ" rendered="{!target.IsSales}" />
+            <apex:outputText value="備考" rendered="{!target.IsService}" />
+          </apex:outputLabel>
+          <apex:outputText value="{!target.OrdersMemp}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="小計"/>
+          <apex:outputText value="{!target.OrderAmount}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="税額"/>
+          <apex:outputText value="{!target.TaxAmount}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="通貨"/>
+          <apex:outputText value="{!target.CurrencyIsoCode}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="合計"/>
+          <apex:outputText value="{!target.SumAmount}"/>
+        </apex:pageblocksectionitem>
+      </apex:pageblocksection>
+
+      <apex:pageblocksection title="詳細情報" columns="2">
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先所属"/>
+          <apex:outputText value="{!target.SalesContactPosition}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先所在地"/>
+          <apex:outputText value="{!target.SalesAccount.Address__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先担当者名"/>
+          <apex:outputText value="{!target.SalesTantoshya}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="販売先担当者TEL"/>
+          <apex:outputText value="{!target.SalesContactTel}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先所属"/>
+          <apex:outputText value="{!target.ShipmentContactPosition}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先所在地"/>
+          <apex:outputText value="{!target.ShipmentAccount.Address__c}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先担当者名"/>
+          <apex:outputText value="{!target.ShipmentTantosha}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="出荷先担当者TEL"/>
+          <apex:outputText value="{!target.ShipmentContactTel}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="顧客オーダ№"/>
+          <apex:outputText value="{!target.CustomerOrderNo}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="CC受付№"/>
+          <apex:outputText value="{!target.CallCenterReceptionNo}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="分納区分"/>
+          <apex:outputText value="{!target.SchedulingDivision}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="後送品"/>
+          <apex:outputText value="{!target.Kosohin}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="請求方式"/>
+          <apex:outputText value="{!target.BillingSystem}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="指定用紙区分"/>
+          <apex:outputText value="{!target.PaperDivision}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="見積"/>
+          <apex:outputText value="{!target.Quotation}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="納品"/>
+          <apex:outputText value="{!target.Invoice}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="請求"/>
+          <apex:outputText value="{!target.Bill}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="機種"/>
+          <apex:outputText value="{!target.ModelPI}"/>
+        </apex:pageblocksectionitem>
+        <apex:pageblocksectionitem >
+          <apex:outputLabel value="本体号機"/>
+          <apex:outputText value="{!target.UnitBody}"/>
+        </apex:pageblocksectionitem>
+      </apex:pageblocksection>
+    </apex:pageblock>
+
+    <apex:pageBlock title="ライン情報" >
+      <apex:outputText value="表示するレコードはありません" rendered="{!target.Lines.size==0}"/>
+
+      <!-- 販売オーダライン -->
+      <apex:pageBlockTable value="{!target.Lines}" var="rec" rendered="{!target.Lines.size!=0 && target.isSales}">
+        <apex:column >
+          <apex:facet name="header">番号</apex:facet>
+          <apex:outputText value="{!rec['Name']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">PARTS №</apex:facet>
+          <apex:outputText value="{!rec['ProductItem__r.Name']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">商品名</apex:facet>
+          <apex:outputText value="{!rec['ProductName__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">数量</apex:facet>
+          <apex:outputText value="{!rec['OrderQuantity__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">単位</apex:facet>
+          <apex:outputText value="{!rec['OrderUnit__c']}"/>
+        </apex:column>
+        <apex:column styleClass="currencyTextStyle">
+          <apex:facet name="header">単価</apex:facet>
+          <apex:outputText value="{!rec['CurrencyIsoCode']} " rendered="{!rec['Price__c'] != null}" />
+          <apex:outputText value="{0,number,###,###,###,###,##0.##}">
+            <apex:param value="{!rec['Price__c']}" />
+          </apex:outputText>
+        </apex:column>
+        <apex:column styleClass="currencyTextStyle">
+          <apex:facet name="header">合計</apex:facet>
+          <apex:outputText value="{!rec['CurrencyIsoCode']} " rendered="{!rec['Amount__c'] != null}" />
+          <apex:outputText value="{0,number,###,###,###,###,##0.##}">
+            <apex:param value="{!rec['Amount__c']}" />
+          </apex:outputText>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">倉庫</apex:facet>
+          <apex:outputText value="{!rec['Soko__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">入荷予定日</apex:facet>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!rec['NyukaYoteDateFormula__c']}"/>
+          </apex:outputText>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷数</apex:facet>
+          <apex:outputText value="{!rec['ShukaSuryo__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷日</apex:facet>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!rec['ShukkaDateFormula__c']}"/>
+          </apex:outputText>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷状況</apex:facet>
+          <apex:outputText value="{!rec['ShukkaStatus__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">在庫管理区分</apex:facet>
+          <apex:outputText value="{!rec['ZaikoKanriKubun__c']}"/>
+        </apex:column>
+       </apex:pageBlockTable>
+
+      <!-- サービスオーダ材料費 -->
+      <apex:pageBlockTable value="{!target.Lines}" var="rec" rendered="{!target.Lines.size!=0 && target.isService}">
+        <apex:column >
+          <apex:facet name="header">番号</apex:facet>
+          <apex:outputText value="{!rec['Name']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">PARTS №</apex:facet>
+          <apex:outputText value="{!rec['ProductItem__r.Name']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">商品名</apex:facet>
+          <apex:outputText value="{!rec['ProductItem__r.JapaneseName__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">数量</apex:facet>
+          <apex:outputText value="{!rec['Suryo__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">単位</apex:facet>
+          <apex:outputText value="{!rec['Tani__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">単価</apex:facet>
+          <apex:outputText value=""/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">合計</apex:facet>
+          <apex:outputText value=""/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">倉庫</apex:facet>
+          <apex:outputText value="{!rec['ProductItem__r.Soko__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">入荷予定日</apex:facet>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!rec['NyukaYoteDateFormula__c']}"/>
+          </apex:outputText>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷数</apex:facet>
+          <apex:outputText value="{!rec['ShukaSuryo__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷日</apex:facet>
+          <apex:outputText value="{0, date, yyyy/MM/dd}">
+            <apex:param value="{!rec['ShukkaDateFormula__c']}"/>
+          </apex:outputText>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">出荷状況</apex:facet>
+          <apex:outputText value="{!rec['ShukkaStatus__c']}"/>
+        </apex:column>
+        <apex:column >
+          <apex:facet name="header">在庫管理区分</apex:facet>
+          <apex:outputText value="{!rec['ProductItem__r.ZaikoKanriKubun__c']}"/>
+        </apex:column>
+      </apex:pageBlockTable>
+
+
+    </apex:pageBlock>
+  </apex:outputPanel>
+</apex:page>

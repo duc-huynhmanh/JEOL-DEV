@@ -1,0 +1,199 @@
+<apex:page standardcontroller="AsiaMaintenanceContractManagement__c" extensions="JEOLAsia_MaintenanceAccountBookCtrl" id="allpage">
+	<apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+    <style>
+        .customButton {
+            background: none;
+            background-color: #ffffff;
+            display: block;
+            margin: 0 auto;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            padding: 4px 4px;
+            border: 1px solid #7e9bc1;
+            color: #2f4159;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+            box-shadow: none;
+            transition: box-shadow 0.1s linear 0s, background-color 0.1s linear 0s, border-color 0.1s linear 0s;
+            height: 30px;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            font-weight: normal;
+            float: left;
+            line-height: 30px;
+        }
+        .customButton:hover {
+            background: none;
+            background-color: #f2f5f8;
+            border-color: #00ABFF;
+            text-decoration: none;
+            box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+            position: relative;
+        }
+        .customButton:focus {
+            background: none;
+            box-shadow: 0px 1px 5px rgba(0,171,255,0.25);
+            border-color: #00ABFF;
+            background-color: #f2f5f8;
+            position: relative;
+        }
+        .customButton:active {
+            transition: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.20) inset;
+            background-color: #e5ebf2;
+        }
+
+        #searchPanel2 {
+            width: 994px;
+            background-color: #9ccada;
+        }
+        #search_criteria2 {
+            width: 100%;
+            background-color: #dfeaeb;
+            font-size: 13px;
+        }
+        #buttons {
+            margin: 0 0 0 0;
+        }
+        .input{
+            font-size:14px;
+            font-family:;
+            border: 1px solid #989c9d;
+            border-radius:5px;
+            padding: 3px 5px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+            width: 120px;
+        }
+
+        .jeol_wait_panel {
+            left: auto !important;
+        }
+        .record-list {
+            margin-left: 0px;
+        }
+        #searchPanel {
+          margin-left: 0px;
+        }
+        .screenname {
+          margin-left: 0px;
+          height: 40px;
+        }
+        .fakeContainer {
+            width:1013px;
+        }
+
+        .koumoku th,
+        .contents td {
+            text-align: center;
+        }
+
+        .clm00 { width: 40px;}
+        .clm01 { width: 65px;}
+        .clm02 { width: 40px;}
+        .clm03 { width: 65px;}
+        .clm04 { width: 40px;}
+        .clm05 { width: 100px;}
+        .clm06 { width: 100px;}
+        .clm07 { width: 100px;}
+        .clm08 { width: 100px;}
+        .clm09 { width: 1px;}
+        .clm10 { width: 1px;}
+
+        .searchresulttable {
+            width: 100%;
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .searchresulttable td{
+            border: 0;
+            margin: 0;
+            padding: 0 !important;
+        }
+
+        .button_white {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border: 1px solid #aebdbf;
+            background-color: #ffffff;
+            background-image: -webkit-linear-gradient(top, #ffffff, #dce0e1);
+            background-image: linear-gradient(to bottom, #ffffff, #dce0e1);
+            text-decoration: none;
+            /* border-radius: 4px; */
+            color: #000000;
+            line-height: 50px;
+            -webkit-transition: none;
+            transition: none;
+            margin: 0px 5px;
+        }
+
+        .pbTitle {
+            width: 0 !important;
+            padding: 0 !important;
+        }
+        .searchresult {
+            width: 112%;
+        }
+    </style>
+
+  <apex:form id="allform" style="width: 890px; margin-left: auto; margin-right: auto;">
+    <c:JEOL_WaitSearchPanel text="Processing..."/>
+
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+      <span id="title">{!$Label.JEOLAsia_MaintAccBook_Label_AccountBook}</span>
+    </div>
+
+    <apex:outputPanel layout="block" id="mainSection" styleclass="searchresult">
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_AddTopRow}" styleClass="button_white" action="{!addFirstRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_AddBottomRow}" styleClass="button_white" action="{!addLastRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" style="margin-right: 30px;" />
+
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_RemoveFirstRow}" styleClass="button_white" action="{!removeFirstRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_RemoveLastRow}" styleClass="button_white" action="{!removeLastRow}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" style="margin-right: 30px;" />
+
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_CopyLastYear}" styleClass="button_white" action="{!importPreviousYearData}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" style="margin-right: 30px;" />
+
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_Save}" styleClass="button_white" action="{!save}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+                <apex:commandLink value="{!$Label.JEOLAsia_MaintAccBook_Label_Cancel}" styleClass="button_white" action="{!cancel}" rerender="mainSection" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+            </apex:pageBlockButtons>
+
+            <apex:pageMessages id="pageMessages" />
+
+            <apex:pageBlockTable value="{!lsAccountBookRow}" var="accountBookRow" >
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.Name.Label}">
+                    <apex:outputText value="{!accountBookRow.Name}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.Inspection__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.Inspection__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.InspectionDone__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.InspectionDone__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.BillingAmount__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.BillingAmount__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.BillingDone__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.BillingDone__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.InvoiceNumber__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.InvoiceNumber__c}"/>
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.AsiaMaintenanceAccountBook__c.fields.PaymentAmount__c.Label}">
+                    <apex:inputfield value="{!accountBookRow.PaymentAmount__c}"/>
+                </apex:column>
+            </apex:pageBlockTable>
+
+        </apex:pageBlock>
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,328 @@
+<apex:page controller="JEOL_ServiceShori_ctrl" standardStylesheets="false" docType="html-5.0">
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <style>
+    .item { width: 25px;}
+    .item1 { width: 96px;}
+    .item2 { width: 100px;}
+    .item3 { width: 70px;}
+    .item4 { width: 60px;} 
+    .item5 { width: 80px;}
+    .item6 { width: 80px;} 
+    .item7 { width: 150px;} 
+    .item8 { width: 70px;}
+    .item9 { width: 70px;}
+    .item10 { width: 70px;}
+  </style>
+  <script type="text/javascript">
+	/*jqueryの場合、$がすでに利用中なのでnoConflictを実行する*/
+	var $j = jQuery.noConflict();
+	var viewFunction;
+
+    function mode() {
+    	if ((typeof viewFunction).toLowerCase() === 'function') {
+    		viewFunction();
+    	}
+    }
+
+    function showSearchCriteriaPanel() {
+        $j(".fakeContainer").animate({height: '400px'},500);
+        viewFunction = showSearchCriteriaPanel;
+    }
+    function allViewMode() {
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+        viewFunction = allViewMode;
+    }
+    
+	$j(document).ready(function(){});
+	function callChangeOrder(key) {
+	    var obj = document.getElementById('{!$Component.order.orderBy}');
+	    obj.value = key;
+	    changeOrder();
+		showSearchCriteriaPanel();
+	}
+  </script>
+  <apex:form id="order">
+    <apex:inputHidden id="orderBy" value="{!orderBy}"/>
+    <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult" />
+  </apex:form>
+  <div class="screenname" style="margin: 20px 0px 45px 35px;">
+    <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_cc.png')}" align="left" width="40px" />
+    <span id="title">サービス処理内容一覧</span>
+  </div>
+  <apex:pageMessages id="pageMessages" />
+  <apex:form id="searchResult">
+    <apex:outputpanel rendered="{!CustomerSupportServiceSyoriList.size != 0}">
+      <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+        <col class="item" />
+        <col class="item1" />
+        <col class="item2" />
+        <col class="item3" />
+        <col class="item4" />
+        <col class="item5" />
+        <col class="item6" />
+        <col class="item7" />
+        <col class="item8" />
+        <col class="item9" />
+        <col class="item10" />
+        <tr class="contents_title">
+          <td colspan="11">
+            <div class="in_contents_title">
+              <apex:outputText value="本体号機：" />
+              <apex:outputtext value="{!MainPartNoMachine}" />
+            </div>
+          </td>
+        </tr>
+        <tr class="koumoku">
+          <th><span>No</span></th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('CustomerCode__c');">
+              <apex:outputText value="取引先コード" />
+              <apex:outputText rendered="{!orderBy=='CustomerCode__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='CustomerCode__c' && orderDesc == true}" value="▽" />
+            </a>
+            <br />
+            <a href="javascript:void(0)" onclick="callChangeOrder('CustomerName__c');">
+              <apex:outputText value="取引先名" />
+              <apex:outputText rendered="{!orderBy=='CustomerName__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='CustomerName__c' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('ModelPI__c');">
+              <apex:outputText value="機種" />
+              <apex:outputText rendered="{!orderBy=='ModelPI__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ModelPI__c' && orderDesc == true}" value="▽" />
+            </a>
+            <apex:outputText value=" / " />
+            <a href="javascript:void(0)" onclick="callChangeOrder('ModelNamePI__c');">
+              <apex:outputText value="機種名" />
+              <apex:outputText rendered="{!orderBy=='ModelNamePI__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ModelNamePI__c' && orderDesc == true}" value="▽" />
+            </a>
+            <br />
+            <a href="javascript:void(0)" onclick="callChangeOrder('ProductNo__c');">
+              <apex:outputText value="製番" />
+              <apex:outputText rendered="{!orderBy=='ProductNo__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ProductNo__c' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('Name');"> 
+              <apex:outputText value="受付番号" />
+              <apex:outputText rendered="{!orderBy=='Name' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='Name' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('ReceptionDatetime__c');">
+              <apex:outputText value="受付日" />
+              <apex:outputText rendered="{!orderBy=='ReceptionDatetime__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ReceptionDatetime__c' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('ServiceStartDate__c');">
+              <apex:outputText value="処理開始日" />
+              <apex:outputText rendered="{!orderBy=='ServiceStartDate__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ServiceStartDate__c' && orderDesc == true}" value="▽" />
+            </a>
+            <br />
+            <a href="javascript:void(0)" onclick="callChangeOrder('ServiceEndDate__c');">
+              <apex:outputText value="処理終了日" />
+              <apex:outputText rendered="{!orderBy=='ServiceEndDate__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='ServiceEndDate__c' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th>
+            <a href="javascript:void(0)" onclick="callChangeOrder('UketsukeSupportPerson__c');">
+              <apex:outputText value="サービス員" />
+              <apex:outputText rendered="{!orderBy=='UketsukeSupportPerson__c' && orderDesc == false}" value="△" />
+              <apex:outputText rendered="{!orderBy=='UketsukeSupportPerson__c' && orderDesc == true}" value="▽" />
+            </a>
+          </th>
+          <th style="width: 30%">
+              <apex:outputText value="対応内容" />
+          </th>
+          <th>
+            <apex:outputText value="故障箇所1" />
+            <br />
+            <apex:outputText value="故障原因1" />
+            <br />
+            <apex:outputText value="対応区分1" />
+          </th>
+          <th>
+            <apex:outputText value="故障箇所2" />
+            <br />
+            <apex:outputText value="故障原因2" />
+            <br />
+            <apex:outputText value="対応区分2" />
+          </th>
+          <th>
+            <apex:outputText value="故障箇所3" />
+            <br />
+            <apex:outputText value="故障原因3" />
+            <br />
+            <apex:outputText value="対応区分3" />
+          </th>
+        </tr>
+      </table>
+      <!-- 一覧-->
+      <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px; height: 400px;">
+        <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+        <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="item" />
+          <col class="item1" />
+          <col class="item2" />
+          <col class="item3" />
+          <col class="item4" />
+          <col class="item5" />
+          <col class="item6" />
+          <col class="item7" />
+          <col class="item8" />
+          <col class="item9" />
+          <col class="item10" />
+          <apex:repeat value="{!CustomerSupportServiceSyoriList}" var="b">
+            <tr class="contents">
+              <td>
+                <apex:outputText value="{!baseRowNumber+b.rowNumber}"/>
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.CustomerCode__c}" />
+                <br />
+                <apex:outputtext value="{!b.rec.CustomerName__c}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.ModelPI__c}" />
+                <apex:outputText value=" / " />
+                <apex:outputText value="{!b.rec.ModelNamePI__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.ProductNo__c}" /></td>
+              <td>
+                <apex:outputLink value="/{!b.rec.Id}">
+                  <apex:outputField value="{!b.rec.Name}" />
+                </apex:outputLink>
+              </td>
+              <td>
+                <apex:outputtext value="{!b.ReceptionDatetimeJST}" />
+              </td>
+              <td>
+                <apex:outputtext value="{0, date, yyyy/MM/dd}" rendered="{!b.rec.ServiceStartDate__c != null}">
+                  <apex:param value="{!b.rec.ServiceStartDate__c}" />
+                </apex:outputtext>
+                <apex:outputtext value="-" rendered="{!b.rec.ServiceStartDate__c == null}" />
+                <br />
+                <apex:outputtext value="{0, date, yyyy/MM/dd}" rendered="{!b.rec.ServiceEndDate__c != null}">
+                  <apex:param value="{!b.rec.ServiceEndDate__c}" />
+                </apex:outputtext>
+                <apex:outputtext value="-" rendered="{!b.rec.ServiceEndDate__c == null}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.UketsukeSupportPerson__c}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.Responce__c}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.FaultLocation1__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.FailureCause1__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.ClassificationDeal1__c}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.FaultLocation2__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.FailureCause2__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.ClassificationDeal2__c}" />
+              </td>
+              <td>
+                <apex:outputText value="{!b.rec.FaultLocation3__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.FailureCause3__c}" />
+                <br />
+                <apex:outputText value="{!b.rec.ClassificationDeal3__c}" />
+              </td>
+            </tr>
+          </apex:repeat>
+        </table>
+      </div>
+      <!-- ページ遷移欄-->
+      <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+        <col class="item" />
+        <col class="item1" />
+        <col class="item2" />
+        <col class="item3" />
+        <col class="item4" />
+        <col class="item5" />
+        <col class="item6" />
+        <col class="item7" />
+        <col class="item8" />
+        <col class="item9" />
+        <col class="item10" />
+        <apex:variable value="{!CustomerSupportServiceSyoriList.size}" var="size" />
+        <tr class="menu">
+          <td colspan="11">
+            <table border="0" id="each_menu">
+              <tr>
+                <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                  <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                    <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                  </apex:outputPanel>
+                  <apex:outputText value="     表示数" />
+                  <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                    <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                    <apex:selectOption itemValue="10" itemLabel="10"/>
+                    <apex:selectOption itemValue="20" itemLabel="20"/>
+                    <apex:selectOption itemValue="50" itemLabel="50"/>
+                  </apex:selectList>
+                  <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">件表示</apex:outputLink>
+                  <apex:outputText value=" / " />
+                  <apex:outputLink value="javascript:void(0);" onclick="showSearchCriteriaPanel();">戻す</apex:outputLink>
+                </td>
+                <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                  <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                    <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                    <apex:outputText value="｜◀" />
+                  </apex:outputLink>
+                  <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                  <apex:outputText value=" " />
+                  <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                    <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                    <apex:outputText value="◀ 前へ" />
+                  </apex:outputLink>
+                  <apex:outputText value="◀ 前へ" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                  <apex:outputText value=" " />
+                  <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                    <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                    <apex:outputText value="次へ ▶" />
+                  </apex:outputLink>
+                  <apex:outputText value="次へ ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                  <apex:outputText value=" " />
+                  <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                    <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                    <apex:outputText value="▶｜" />
+                  </apex:outputLink>
+                  <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                </td>
+                <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                  <apex:outputText value="ページ　" />
+                  <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                    <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                  </apex:input>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <apex:actionFunction name="jump" action="{!jump}" rerender="searchResult" />
+      <apex:actionFunction name="gotoFirst" action="{!first}" rerender="searchResult" />
+      <apex:actionFunction name="gotoPrev" action="{!previous}" rerender="searchResult" />
+      <apex:actionFunction name="gotoNext" action="{!next}" rerender="searchResult" />
+      <apex:actionFunction name="gotoLast" action="{!last}" rerender="searchResult" />
+    </apex:outputpanel>
+  </apex:form>
+</apex:page>

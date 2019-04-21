@@ -1,0 +1,16 @@
+<apex:component controller="JEOL_GenericHistoryComponent_Ctrl">
+    <!-- Attribute Definition -->
+    <apex:attribute name="object" description="Object we wish to view the history of" type="SObject" required="true" assignTo="{!myObject}" />
+    <apex:attribute name="recordsLimit" description="Number of lines of history to display" type="Integer" required="false" assignTo="{!recordLimit}" />
+
+    <!-- Object History Related List -->
+    <apex:pageBlock title="{!historyTitle}">
+        <apex:pageBlockTable value="{!ObjectHistory}" var="History" >
+            <apex:column headerValue="{!$Label.JEOL_History_Column_CreatedDate}" value="{!History.thedate}"/>
+            <apex:column headerValue="{!$Label.JEOL_History_Column_User}">
+                <apex:outputLink value="/{!History.userId}"> {!History.who} </apex:outputLink>
+            </apex:column>
+            <apex:column headerValue="{!$Label.JEOL_History_Column_Action}"><apex:outputText escape="false" value="{!History.action}"/></apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+</apex:component>

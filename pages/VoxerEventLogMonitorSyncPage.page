@@ -1,0 +1,190 @@
+<apex:page showHeader="true" sidebar="true" standardStylesheets="false" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0" controller="EventMonitoringLogViewController">
+
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content=""/>
+    <meta name="author" content="Vaibhav,GW Inc."/>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.styles,'styles/jquery.dataTables.css')}"/>
+    <!--
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap,'bootstrap/css/bootstrap.min.css')}"/>
+        -->
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap_mod,'bootstrap/css/bootstrap.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.styles,'styles/bootstrap-datetimepicker.min.css')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/jquery-1.11.1.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/jquery.dataTables.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/moment-with-locales.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/bootstrap.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/bootstrap-datetimepicker.min.js')}"/>
+   
+    <style type="text/css">
+        .sidebarCell, #sidebarDiv {
+  			width: 220px;}
+            
+            body{
+            font-size: 13px}
+    </style>
+</head>
+<body>
+	<apex:pageBlock >
+		<apex:pageBlockSection >
+            <div class="row">
+    			<form role="form-targetDate">
+    				<div class = "row">
+                        <div class = "col-sm-12">
+                            <div id="div-alertMessage"></div>
+                        </div>
+    				</div>
+    				 <div class="row">
+                            <div class='col-sm-12'>
+                                <div class="form-group">
+                                    <label id="label-targetDate" for="targetDate">Target Date (optional)</label>
+                                    <div class='input-group date' id='datetimepicker-targetDate'>
+                                        <input id="input-targetDate" type='text' class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    					<div class="row">
+    	                    <div class='col-sm-12'>
+    	                    	<button id="input-pullLog-button" type="button" class="btn btn-primary btn-lg" onclick="pullLogBtnClicked()">Pull Log </button>
+    	                    </div>
+    	                </div>
+                </form>		
+            </div>	
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+</body>
+
+<script type="text/javascript">
+
+	var targetDateDisplayFormat = 'YYYY/MM/DD';
+	var targetDateAPIFormat = 'YYYY-MM-DD';
+	var targetDateString; //in sync with targetDate-picker's selected value
+
+    var $j = jQuery.noConflict();
+     $j(document).ready(function()
+        {
+            initAndCustomizeTargetDatePicker();
+            //localizes elements on this page
+            localizeElements();
+        });
+
+     //init and customize targetDate-date time picker
+     function initAndCustomizeTargetDatePicker()
+     {
+         var now = moment();
+             $j('#datetimepicker-targetDate').datetimepicker({
+                locale: 'ja',
+                format: targetDateDisplayFormat,
+                maxDate: now
+             });
+              //fetches and parses target date from targetDatePicker
+             $j("#datetimepicker-targetDate").on("dp.change", function (e) {
+                targetDateString = null;
+                targetDateString = e.date.utc().format(targetDateAPIFormat);
+             });
+     }
+
+     //localizes elements on this page
+     function localizeElements()
+     {
+        changePullLogBtnFeatures(false);//localizes the pull btn
+        $j('#label-targetDate').html('{!$Label.LBL_TargetDate}');
+     }
+
+     //returs query data for service platforms pull log request
+     function getQueryDataForPullLog()
+     {
+        var connectorHead = '{!$Setup.AuthenticationSettings__c.OrganizationId__c}';
+     	var connectorTail = '.eventlog.SFDCOAuth2Connector';
+        var connectorName = connectorHead + connectorTail;
+        var queryData = {sfdcConnectorName: connectorName};
+     	if(targetDateString != 'null' || targetDateString != 'undefined' || targetDateString != 'Invalid date')
+     		queryData['logDate'] = targetDateString;
+     	return queryData;
+     }
+
+     //Change the buttons behaviour&features depending on state of request
+     function changePullLogBtnFeatures(isProcessing)
+     {
+     	if(isProcessing)
+     	{
+	     	$j('#input-pullLog-button').html('{!$Label.BTN_Processing}');
+     		$j('#input-pullLog-button').prop('disabled',true);
+     	}
+     	else
+     	{
+ 			$j('#input-pullLog-button').html('{!$Label.BTN_PullLog}'); //resets button name to default
+	     	$j('#input-pullLog-button').prop('disabled',false);
+     	}
+     }
+    
+    //Returns requestURL for event log fetch service-platform request
+    function getRequestURL()
+    {
+        var url1 = "{!$Setup.AuthenticationSettings__c.ServicePlatformURL__c}";
+        var url2 = "rest/services/vx.sfdc.eventlog.EventLog/pull";
+      	var requestURL = url1 + url2;
+        //alert(requestURL);
+        return requestURL;}
+
+     //pull log btn click event handler
+     function pullLogBtnClicked()
+     {
+ 	    //Clear previous alerts
+        $j('#div-alertMessage').empty();
+     	changePullLogBtnFeatures(true);
+
+     	var queryData = getQueryDataForPullLog();
+     	var requestURL = getRequestURL();
+     	var authInfo = "Basic " + "{!authInfo}";
+     	//ajax begins
+        $j.ajax({
+            type: "POST",
+            data: JSON.stringify(queryData),
+            contentType : "application/json;charset=utf-8",
+            accepts : {"json" : "application/json"},
+            headers: {"accept-charset":"utf-8", "Authorization":authInfo},
+            //dataType: "json",
+            url: requestURL,
+            success: function (data, status) { 
+       			//alert(data);
+             	changePullLogBtnFeatures(false);
+             	addAlertMessage('{!$Label.SUC_ServerRequestSuccessful}',false);},
+            error: function(xhr,status,error)
+            {
+            	//alert('xhr:' + xhr + 'error:' + error + '\n status:' + status);
+		     	changePullLogBtnFeatures(false);
+                addAlertMessage('{!$Label.ERR_ServerRequestFailed}',true);
+            }
+        }); 
+        //ajax ends 
+     }
+
+   	//Adds warning message below the navigation bar
+     function addAlertMessage(message, isError)
+     {
+         //Clear previous alerts
+         $j('#div-alertMessage').empty();
+         if(isError)
+         {
+             $j('#div-alertMessage').append('<div id="WarningIncorrectInput" class= "alert alert-error bg-danger"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Error} ' + '</strong>' + message +'</div>');
+         }
+         else
+         {
+             $j('#div-alertMessage').append('<div id="WarningIncorrectInput" class= "alert alert-success fade in bg-success"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Success} '+ '</strong> ' + message +' </div>');
+         }
+     }
+</script>
+</html>
+
+</apex:page>

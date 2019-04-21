@@ -1,0 +1,3 @@
+<apex:page standardcontroller="AsiaProfitCalculation__c" extensions="JEOLAsia_QuotationRedirect_ctrl" action="{!redirect}" >
+  <h1>Please use the Quotation screen.</h1>
+</apex:page>

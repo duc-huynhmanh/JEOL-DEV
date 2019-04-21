@@ -1,0 +1,769 @@
+<apex:page renderAs="pdf" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOLAsia_EndUserInfoPrintPageCtrl">
+
+  <apex:outputPanel layout="none" id="contentPage">
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Salesforce - JEOLAsia_End User Informations</title>
+
+        <style>
+          body {
+            margin: 0pt;
+            padding: 0pt;
+            font-size: 11pt;
+            font-family: 'Arial Unicode MS';
+            line-height: 16px;
+          }
+
+          .contents {
+            width: 100%;
+            margin: 0 auto;
+          }
+          .field-label {
+          	margin: 1px;
+          }
+          .field-src {
+            margin: -5px;
+          }
+
+          .contents .contents-body .field .field-value {
+          	margin: 1px;
+          }
+          .radio-table-title {
+            vertical-align: top;
+          }
+
+          .field-label.checkLabel {
+            border-style: solid;
+            border-width: 1px;
+            border-color: black;
+          }
+          .field-label.noCheckLabel {
+            border-style: solid;
+            border-width: 0px;
+            border-color: black;
+          }
+          hr {
+            margin-top: 0px; 
+            margin-bottom: -5px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="contents">
+
+          <div class="contents-body">
+            <apex:form id="form">
+              <div class="field" style="padding: 10px 0 0 10px;" >
+                <table>
+                  <col span="1" style="width:30px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:50px;"/>
+<!-- Address -->
+                  <tr>
+                    <td style="vertical-align: top;">
+                      <label for="No" class="field-label No" >TO:</label>
+                    </td>
+                    <td colspan="9">
+                      <apex:outputField id="Address" styleClass="field-value Address" value="{!rec.JEOLAddress__c}" />
+                    </td>
+                  </tr>
+                  <tr><td><br/></td></tr>
+                  <tr>
+                    <td colspan="10">
+                      <div class="screenname" style="text-decoration: underline; text-align: center; font-weight: bold;">
+                        <apex:outputText value="END USER AND END USE INFORMATION" />
+                      </div>
+                    </td>
+                  </tr>
+                  <tr><td><br/></td></tr>
+
+<!-- 1.End User Order No. -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >1.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="EndUserOrderNo" class="field-label EndUserOrderNo" >Purchase Order No./Contract No. and Date (from the end user to JEOL Ltd./JEOL Overseas</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="3">
+                      <label for="EndUserOrderNo" class="field-label EndUserOrderNo" >Companies/JEOL Agents) :</label>
+                    </td>
+                    <td colspan="6" style="padding-left: 50px;">
+                      <apex:outputField id="EndUserOrderNo" styleClass="field-value EndUserOrderNo" value="{!rec.EndUserOrderNo__c}"/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                    </td>
+                    <td colspan="6">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- 2.Order No./ Order Date -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >2.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="OrderNo" class="field-label OrderNo" >Purchase Order No. &amp; Date (from your company to JEOL Ltd) :</label>
+                    </td>
+                    <td colspan="1">
+                      <apex:outputField id="OrderNo" styleClass="field-value OrderNo" value="{!rec.OrderNo__c}" />
+                    </td>
+                    <td colspan="1">
+                      <apex:outputField id="OrderDate" styleClass="field-value OrderDate" value="{!rec.OrderDate__c}" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="8">
+                    </td>
+                    <td colspan="2">
+                      <hr/>
+                    </td>
+                  </tr>
+
+<!-- 3.End User Info -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >3.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="EndUserInfo" class="field-label EndUserInfo" >Company / Organization Name &amp; Address of End User:</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <table style="table-layout: fixed;"><tr><td>
+                      <apex:outputLabel id="EndUserInfo" styleClass="field-value EndUserInfo" value="{!rec.EndUserInfo__c}"/>
+                      </td></tr></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="1">
+                    </td>
+                    <td colspan="9">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- 4.End User Install Info -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >4.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="EndUserInstallInfo" class="field-label EndUserInstallInfo" >Company / Organization Name &amp; Address of Installation Place:</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <table style="table-layout: fixed;"><tr><td>
+                        <apex:outputField id="EndUserInstallInfo" style="width: 900px;" styleClass="field-value EndUserInstallInfo" value="{!rec.EndUserInstallInfo__c}" />
+                      </td></tr></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="1">
+                    </td>
+                    <td colspan="9">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- 5-1.contractState -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >5-1.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >Does the contract state the intended purpose of use the ordered products and technology</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="ContractState" class="field-label ContractState" >by the end user?</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(ContractStateItems[0] == rec.ContractState__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ContractStateItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(ContractStateItems[1] == rec.ContractState__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ContractStateItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 5-2.AnyOtherDocuments -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >5-2.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="AnyOtherDocuments" class="field-label AnyOtherDocuments" >Are there any other documents, drawings, or recording media (such as floppy disk and / or </label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="AnyOtherDocuments" class="field-label AnyOtherDocuments" >magnetic disk, etc.) other than the contracts that describes the intended purpose of use of the</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="AnyOtherDocuments" class="field-label AnyOtherDocuments" >ordered products and technology by the end user?</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(AnyOtherDocumentsItems[0] == rec.AnyOtherDocuments__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!AnyOtherDocumentsItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(AnyOtherDocumentsItems[1] == rec.AnyOtherDocuments__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!AnyOtherDocumentsItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 5-3.PleaseDescribe -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >5-3.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="PleaseDescribe" class="field-label PleaseDescribe" >If yes, please describe the content (intended purpose of use) accordingly.</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <table style="table-layout: fixed;"><tr><td>
+                        <apex:outputField id="PleaseDescribe" style="width: 900px;" styleClass="field-value PleaseDescribe" value="{!rec.PleaseDescribe__c}" />
+                      </td></tr></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="1">
+                    </td>
+                    <td colspan="9">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- 6-1.ProductsAndTechnology -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >6-1.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="ProductsAndTechnology" class="field-label ProductsAndTechnology" >Has the end user verbally explained to you the intended purpose of use of the ordered</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="ProductsAndTechnology" class="field-label ProductsAndTechnology" >products and technology?</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(ProductsAndTechnologyItems[0] == rec.ProductsAndTechnology__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ProductsAndTechnologyItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(ProductsAndTechnologyItems[1] == rec.ProductsAndTechnology__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ProductsAndTechnologyItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 6-2.FaxOrTelephone -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >6-2.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="FaxOrTelephone" class="field-label FaxOrTelephone" >Has the end user informed you of the intended purpose of use of the ordered products and</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="FaxOrTelephone" class="field-label FaxOrTelephone" >technology by means of e-mail, fax and / or telephone?</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(FaxOrTelephoneItems[0] == rec.FaxOrTelephone__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!FaxOrTelephoneItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(FaxOrTelephoneItems[1] == rec.FaxOrTelephone__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!FaxOrTelephoneItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 6-3.DetailedInformation -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >6-3.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="DetailedInformation" class="field-label DetailedInformation" >If you have, please describe the detailed information (intended purpose of use) accordingly.</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <table style="table-layout: fixed;"><tr><td>
+                        <apex:outputField id="DetailedInformation" style="width: 900px;" styleClass="field-value DetailedInformation" value="{!rec.DetailedInformation__c}" />
+                      </td></tr></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="1">
+                    </td>
+                    <td colspan="9">
+                      <hr/>
+                    </td>
+                  </tr>
+                </table>
+<!-- 改ページ -->
+                  <div style="page-break-after: always;"/>
+
+<!-- 7.ContractState  -->
+                <table border="0">
+                  <col span="1" style="width:30px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:50px;"/>
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >Does the contract state that the end user is engaged in / or was engaged in any of</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >the following activities 7-1 to 7-6?</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >In addition / or is there any description in the end user's company profile, products catalogue,</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >drawings, recording media (such as floppy disk, magnetic disk, etc.) that they are engaged</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="ContractState" class="field-label ContractState" >in / or were engaged in any of the following activities 7-1 to 7-6?</label>
+                    </td>
+                  </tr>
+<!-- 7-1.NuclearWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-1.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="NuclearWeapons" class="field-label NuclearWeapons" >Development, production, use and / or storage of nuclear weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(NuclearWeaponsItems[0] == rec.NuclearWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!NuclearWeaponsItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(NuclearWeaponsItems[1] == rec.NuclearWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!NuclearWeaponsItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 7-2.BiologicalWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-2.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="BiologicalWeapons" class="field-label BiologicalWeapons" >Development, production, use and / or storage of biological weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(BiologicalWeaponsItems[0] == rec.BiologicalWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BiologicalWeaponsItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(BiologicalWeaponsItems[1] == rec.BiologicalWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BiologicalWeaponsItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 7-3.ChemicalWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-3.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="ChemicalWeapons" class="field-label ChemicalWeapons" >Development, production, use and / or storage of chemical weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(ChemicalWeaponsItems[0] == rec.ChemicalWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ChemicalWeaponsItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(ChemicalWeaponsItems[1] == rec.ChemicalWeapons__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ChemicalWeaponsItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 7-4.Bacilluses -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-4.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="Bacilluses" class="field-label Bacilluses" >Development, production, use and / or storage of equipment for strewing bacilluses</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="Bacilluses" class="field-label Bacilluses" >(used as biological weapons) or chemicals (used as chemical weapons)</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(BacillusesItems[0] == rec.Bacilluses__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BacillusesItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(BacillusesItems[1] == rec.Bacilluses__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BacillusesItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 7-5.BallisticMissiles -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-5.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="BallisticMissiles" class="field-label BallisticMissiles" >Development, production, use and / or storage of rockets including ballistic missiles, space</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="BallisticMissiles" class="field-label BallisticMissiles" >launch vehicles and sounding rocket that can cover a distance of more than 300km</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(BallisticMissilesItems[0] == rec.BallisticMissiles__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BallisticMissilesItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(BallisticMissilesItems[1] == rec.BallisticMissiles__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BallisticMissilesItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 7-6.RemotelyPilotedVehicle  -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >7-6.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="RemotelyPilotedVehicle" class="field-label RemotelyPilotedVehicle" >Development, production, use and / or storage of unmanned air vehicle including cruise missile,</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="RemotelyPilotedVehicle" class="field-label RemotelyPilotedVehicle" >remotely piloted vehicle and reconnaissance vehicle that can cover a distance of more than 300km</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(RemotelyPilotedVehicleItems[0] == rec.RemotelyPilotedVehicle__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!RemotelyPilotedVehicleItems[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(RemotelyPilotedVehicleItems[1] == rec.RemotelyPilotedVehicle__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!RemotelyPilotedVehicleItems[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8.Explained  -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="Explained" class="field-label Explained" >Has the end user verbally explained to you if they are currently engaged in / or have been</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="Explained" class="field-label Explained" >previously engaged in any of the following activities 8-1 to 8-6?</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="Explained" class="field-label Explained" >In addition / or has the end user informed you by means of e-mail, fax and / or telephone if</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="Explained" class="field-label Explained" >they are currently engaged in / or have been previously engaged in any of the following</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="Explained" class="field-label Explained" >activities 8-1 to 8-6?</label>
+                    </td>
+                  </tr>
+<!-- 8-1.NuclearWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-1.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="NuclearWeapons2" class="field-label NuclearWeapons2" >Development, production, use or storage of nuclear weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(NuclearWeapons2Items[0] == rec.NuclearWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!NuclearWeapons2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(NuclearWeapons2Items[1] == rec.NuclearWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!NuclearWeapons2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8-2.BiologicalWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-2.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="BiologicalWeapons2" class="field-label BiologicalWeapons2" >Development, production, use and / or storage of biological weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(BiologicalWeapons2Items[0] == rec.BiologicalWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BiologicalWeapons2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(BiologicalWeapons2Items[1] == rec.BiologicalWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BiologicalWeapons2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8-3.ChemicalWeapons -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-3.</label>
+                    </td>
+                    <td colspan="7">
+                      <label for="ChemicalWeapons2" class="field-label ChemicalWeapons2" >Development, production, use and / or storage of chemical weapons</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(ChemicalWeapons2Items[0] == rec.ChemicalWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ChemicalWeapons2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(ChemicalWeapons2Items[1] == rec.ChemicalWeapons2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!ChemicalWeapons2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8-4.Bacilluses -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-4.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="Bacilluses2" class="field-label Bacilluses2" >Development, production, use and / or storage of equipment for strewing bacilluses</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="Bacilluses2" class="field-label Bacilluses2" >(used as biological weapons) or chemicals (used as chemical weapons)</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(Bacilluses2Items[0] == rec.Bacilluses2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!Bacilluses2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(Bacilluses2Items[1] == rec.Bacilluses2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!Bacilluses2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8-5.BallisticMissiles -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-5.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="BallisticMissiles2" class="field-label BallisticMissiles2" >Development, production, use and / or storage of rockets including ballistic missiles, space</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="BallisticMissiles2" class="field-label BallisticMissiles2" >launch vehicles and sounding rocket that can cover a distance of more than 300km</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(BallisticMissiles2Items[0] == rec.BallisticMissiles2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BallisticMissiles2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(BallisticMissiles2Items[1] == rec.BallisticMissiles2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!BallisticMissiles2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+<!-- 8-6.RemotelyPilotedVehicle -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >8-6.</label>
+                    </td>
+                    <td colspan="9">
+                      <label for="RemotelyPilotedVehicle2" class="field-label RemotelyPilotedVehicle2" >Development, production, use and / or storage of unmanned air vehicle including cruise missile,</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="7">
+                      <label for="RemotelyPilotedVehicle2" class="field-label RemotelyPilotedVehicle2" >remotely piloted vehicle and reconnaissance vehicle that can cover a distance of more than 300km</label>
+                    </td>
+                    <td>
+                      <img src="{!IF(RemotelyPilotedVehicle2Items[0] == rec.RemotelyPilotedVehicle2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!RemotelyPilotedVehicle2Items[0]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                    <td>
+                      <img src="{!IF(RemotelyPilotedVehicle2Items[1] == rec.RemotelyPilotedVehicle2__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                      <apex:outputText value="{!RemotelyPilotedVehicle2Items[1]}" styleClass="field-label" style="position: relative;"/>
+                    </td>
+                  </tr>
+                  <tr><td><br/></td></tr>
+<!-- ScopeOfBusiness -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="ScopeOfBusiness" class="field-label ScopeOfBusiness" >Please describe the nature / scope of business of the end user accurately.</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <table style="table-layout: fixed;"><tr><td>
+                        <apex:outputLabel value="{!rec.ScopeOfBusiness__c}" for="ScopeOfBusiness" styleClass="field-label ScopeOfBusiness" />
+                      </td></tr></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="1">
+                    </td>
+                    <td colspan="9">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- Organization -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="Organization" class="field-label Organization" >Organization (Company) : </label>
+                    </td>
+                    <td colspan="2">
+                      <apex:outputLabel value="{!rec.OrganizationName__c}" for="OrganizationName" styleClass="field-label OrganizationName" />
+                    </td>
+                  </tr>
+<!-- Signature -->
+<!-- 署名用スペース -->
+                  <tr><td><br/></td></tr>
+
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="9">
+                      <label for="Signature" class="field-label Signature" >Signature : </label>
+                    </td>
+                  </tr>
+
+                  <tr><td><br/></td></tr>
+<!-- Printed Name -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="PrintedName" class="field-label PrintedName" >Printed Name : </label>
+                    </td>
+                    <td colspan="2">
+                      <apex:outputText id="ResponsibleUser" styleClass="field-value ResponsibleUser" value="{!rec.ResponsibleUser__r.Name}" />
+                    </td>
+                  </tr>
+<!-- Title/Position -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="TitlePosition" class="field-label TitlePosition" >Title/Position : </label>
+                    </td>
+                    <td colspan="2">
+                      <apex:outputText id="ResponsibleUserTitle" value="{!ResponsibleUserTitle}" styleClass="field-label ResponsibleUserTitle" />
+                    </td>
+                  </tr>
+<!-- DateResponsibleUser -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="DateResponsibleUser" class="field-label DateResponsibleUser" >Date : </label>
+                    </td>
+                    <td colspan="2">
+                      <apex:outputField id="DateResponsibleUser" styleClass="field-value DateResponsibleUser" value="{!rec.DateResponsibleUser__c}" />
+                    </td>
+                  </tr>
+
+                </table>
+              </div>
+
+            </apex:form>
+          </div>
+        </div>
+
+      </body>
+    </html>
+  </apex:outputPanel>
+</apex:page>

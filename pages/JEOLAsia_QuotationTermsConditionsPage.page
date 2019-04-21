@@ -1,0 +1,520 @@
+<apex:page showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" standardController="AsiaQuotationTermsConditions__c" extensions="JEOLAsia_QuotationTermsConditionsCtrl" >
+  <apex:outputPanel layout="none" id="contentPage">
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Salesforce - "Edit Terms &amp; Conditions" screen </title>
+
+        <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/css/bootstrap.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_CustomBaseStyle.css')}" />
+
+        <style>
+          .contents .page-header {
+            z-index: 2;
+            position :relative;
+            margin-bottom: 42px;
+          }
+          .contents .contents-body .section .section-body hr {
+            float: left;
+          }
+          .contents .contents-body .button-area .section-body .customButton {
+            float: left;
+          }
+          .contents .contents-body .navi-area {
+            background-color: #7e9bc1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            margin-top: 49px;
+          }
+          .contents .contents-body .navi-area.fixed-top {
+            z-index: 2;
+            position: fixed;
+            margin-top: 0px;
+          }
+          .contents .contents-body .navi-area .section-body {
+            padding: 4px 8px;
+            margin: 0px auto;
+            position: relative;
+            z-index: 1;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons {
+            float: left;
+            margin-right: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons.right {
+            float: right;
+            margin-right: 0px;
+            margin-left: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item {
+            margin-right: -1px;
+            float: left;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item>* {
+            border-radius: 0;
+          }
+
+
+          .contents .contents-body .section .section-body hr {
+            float: left;
+          }
+
+          .contents .contents-body .quotation-area .section-body .quotation-information {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            background-color: #ffffff;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item {
+            float: left;
+            padding: 8px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label {
+            font-weight: bold;
+            font-size: 12px;
+            width: 150px;
+            vertical-align: top;
+          }
+
+          .field-value {
+            float: left;
+            display: block;
+            padding: 8px;
+            width: 600px;
+          }
+
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Warranty {
+            height: 140px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.BankDetail {
+            height: 100px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Installation,
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Packing,
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Training,
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Manufacturer,
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.PriceField {
+            height: 28px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Export,
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Validity {
+            height: 64px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .field-value.Remarks {
+            height: 117px;
+          }
+
+          .field-td {
+            vertical-align: top;
+          }
+
+
+        </style>
+
+        <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+        <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/js/bootstrap.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/PagerHelper.js')}" />
+
+        <script>
+            var $j = jQuery.noConflict();
+            var safety = false;
+            var makeSafetyCheck = true;
+            var makeSafetyCheck2 = true;
+
+            $j(function(){
+                var windwTransitions = (function(e){
+                    if (makeSafetyCheck2 && (makeSafetyCheck || document.activeElement.type === 'text')) {
+                        var currentFocus = document.querySelector(':focus');
+                        if (currentFocus && typeof currentFocus !== 'undefined') {
+                            currentFocus.blur();
+                        }
+                        if (safety) {
+                            e.returnValue = '内容に変更がありました。保存せずにページから離れますか？';
+                        } else {
+                            safety = true;
+                        }
+                    }
+                });
+
+                if (window.addEventListener) {
+                    window.addEventListener('beforeunload', windwTransitions);
+                } else if (window.attachEvent) {
+                    window.attachEvent('onbeforeunload', windwTransitions);
+                } else {
+                    console.log("画面遷移時に警告を出せません。ご注意ください。");
+                }
+
+                var $window = $j(window);
+                $window.on('click', clearAction);
+
+                $window.on('scroll',function(e){
+                    var beforeTop = window.beforeTop;
+                    var currentTop = $window.scrollTop();
+                    if (!beforeTop) {
+                        beforeTop = 0;
+                    }
+                    if (beforeTop < currentTop && currentTop > 48) {
+                        $j('.navi-area').addClass('fixed-top');
+                    } else if ((beforeTop > currentTop && currentTop <= 48) || currentTop == 0) {
+                        $j('.navi-area').removeClass('fixed-top');
+                    }
+                    window.beforeTop = currentTop; 
+                });
+
+                $window.on('keydown',function(e){
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    if (/(38|40|27)/.test(e.which) && $dropdown.length) {
+
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (e.which == 27) {
+                            $dropdown.removeClass('open');
+                            $dropdown.find('[data-type="button"]').trigger('focus');
+                        }
+                        
+                        var $items = $dropdown.find('[data-type="list"] [data-type="item"]');
+                        var $target = $j(e.target);
+                        if ($target.attr('data-type') !== 'item') {
+                            $target = $target.closest('[data-type="item"]');
+                        }
+
+                        var target = null;
+                        if ($target.length) {
+                          target = $target[0];
+                        }
+                        var index = 0;
+                        if (target) {
+                            index = $items.index(target);
+                            if (e.which == 38 && index > 0) {
+                                index--;
+                            }
+                            if (e.which == 40 && index < $items.length - 1) {
+                                index++;
+                            }
+                        }
+                        $items.eq(index).find('a,input').trigger('focus');
+                    }
+                });
+            });
+
+            // アンロック
+            function unlockSafety() {
+                safety = false;
+            }
+            // ロック
+            function lockSafety() {
+                safety = true;
+            }
+            // ロック確認(フォーカスが離れた時にチェック)
+            function safetyLockCheck(targetNode) {
+
+                var value = targetNode.getAttribute('data-compare-value');
+                var type = targetNode.getAttribute('type');
+                var currentValue = null;
+                if (type === 'checkbox' || type === 'radio') {
+                    currentValue = targetNode.checked;
+                } else {
+                    currentValue = targetNode.value;
+                }
+                if (value !== currentValue) {
+                    lockSafety();
+                }
+            }
+
+            // アクションクリア
+            function clearAction(e) {
+                var $target = $j(e.target).closest('[data-type="dropdown"]');
+                if (!$target.hasClass('open')) {
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    $dropdown.removeClass('open');
+                }
+            }
+
+            // Window Close
+            function closeWindow(){
+              window.close();
+            }
+
+        </script>
+
+      </head>
+
+      <body>
+        <apex:outputPanel layout="block" styleClass="contents" id="contents" >
+          <div class="page-header">
+            <apex:include pageName="{!$Page.JEOL_VisualforceHeader}" />
+          </div>
+
+          <div class="contents-body">
+            <apex:form id="form">
+              <div class="section navi-area" >
+                <div class="section-body base-width clearfix">
+                  <ul class="navi-buttons clearfix">
+                    <li class="navi-item">
+<!-- Save Button -->
+                      <apex:commandLink action="{!saveAction}" styleClass="customButton save" onclick="unlockSafety();" status="ajaxPageStatus" >{!$Label.JEOL_QuotEdit_Label_Save}</apex:commandLink>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="section base-width">
+                <div class="screenname">
+                  <h1 class="small">Edit Terms &amp; Conditions</h1>
+                  <div class="big" >
+                    <apex:outputText value="{!$Label.JEOL_QuotEdit_Label_ReferringKeyword}">
+                      <apex:param value="{!quot.Name}"/>
+                    </apex:outputText>
+                  </div>
+                </div>
+              </div>
+
+<!-- パラメータ不正時 --> 
+              <apex:outputPanel layout="none" rendered="{!!isValid}">
+                <div class="section base-width" >
+                  <apex:messages layout="table" />
+                  <apex:outputText >
+                    <apex:outputLink value="{!$Page.JEOLAsia_ProfitCalculationEditorPage}" onclick="unlockSafety();">コチラ</apex:outputLink>
+                    <apex:outputText value="から再度操作を行ってください。" />
+                  </apex:outputText>
+                </div>
+              </apex:outputPanel>
+
+              <apex:outputPanel layout="none" id="listview" rendered="{!isValid}">
+
+                <div class="section button-area base-width" >
+                  <div class="section-body clearfix">
+                    <apex:commandLink oncomplete="closeWindow()" >&laquo;&nbsp;Close Window</apex:commandLink>
+<!--  Back To Quotation Detail -->
+<!--
+                    <apex:outputLink value="{!$Page.JEOLAsia_QuotationEditorPage}" >&laquo;&nbsp;Back To Quotation Detail
+                      <apex:param name="id" value="{!paramQuotId}"/>
+                    </apex:outputLink>
+-->
+                  </div>
+                </div>
+                <div class="section base-width error-area" >
+                  <apex:pageMessages id="apexMessage" />
+                </div>
+
+                <div class="section quotation-area base-width">
+                  <div class="section-header" style="margin-top: -30px;">
+                  </div>
+
+                  <div class="section-body">
+                           
+                    <div class="quotation-information clearfix">
+
+                      <div style="float: left;">
+
+                        <div class="quotation-item information-area">
+                          <div class="field">
+
+                            <table>
+<!-- PRICE -->
+                              <tr>
+                                <td class="field-td">
+                                  <label for="Price" class="field-label Price">PRICE:</label>
+                                </td>
+                                <td>
+                                  <apex:outPutField id="Price" styleClass="field-value Price" value="{!quot.Name}" />
+                                </td>
+                              </tr>
+<!-- Shipment -->
+                              <tr>
+                                <td class="field-td">
+                                  <label for="Shipment" class="field-label Shipment" >Shipment:</label>
+                                </td>
+                                <td>
+                                  <apex:outPutField id="Shipment_Arbitrarily" styleClass="field-value Shipment" value="{!quot.DeliveryDate_Arbitrarily__c}" rendered="{!quot.DeliveryDate_Arbitrarily__c != NULL}"/>
+                                  <apex:outPutField id="Shipment_DeliveryDeadline" styleClass="field-value Shipment" value="{!quot.DeliveryDeadline__c}" rendered="{!quot.DeliveryDate_Arbitrarily__c == NULL}"/>
+                                </td>
+                              </tr>
+<!-- Payment -->
+                              <tr>
+                                <td class="field-td">
+                                  <label for="Payment" class="field-label Payment" >Payment:</label>
+                                </td>
+                                <td>
+                                  <apex:outPutField id="Payment" styleClass="field-value Payment" value="{!quot.PaymentConditionSection__c}" />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+
+<!-- Warranty -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName == 'Unit'}">
+                              <tr>
+                                <td class="field-td Warranty">
+                                  <label for="Warranty" class="field-label Warranty" >Warranty:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Warranty" styleClass="field-value Warranty" value="{!rec.Warranty__c}" html-data-compare-value="{!baseRec.Warranty__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Installation -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName == 'Unit'}">
+                              <tr>
+                                <td class="field-td Installation">
+                                  <label for="Installation" class="field-label Installation" >Installation:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Installation" styleClass="field-value Installation" value="{!rec.Installation__c}" html-data-compare-value="{!baseRec.Installation__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Packing -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName == 'Unit'}">
+                              <tr>
+                                <td class="field-td Packing">
+                                  <label for="Packing" class="field-label Packing" >Packing:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Packing" styleClass="field-value Packing" value="{!rec.Packing__c}" html-data-compare-value="{!baseRec.Packing__c}" onblur="safetyLockCheck(this);"/>
+                               </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Training -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName == 'Unit'}">
+                              <tr>
+                                <td class="field-td Training">
+                                  <label for="Training" class="field-label Training" >Training:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Training" styleClass="field-value Training" value="{!rec.Training__c}" html-data-compare-value="{!baseRec.Training__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Export -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName == 'Unit'}">
+                              <tr>
+                                <td class="field-td Export">
+                                  <label for="Export" class="field-label Export" >Export:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Export" styleClass="field-value Export" value="{!rec.Export__c}" html-data-compare-value="{!baseRec.Export__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Price -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName != 'Unit'}">
+                              <tr>
+                                <td class="field-td PriceField">
+                                  <label for="PriceField" class="field-label PriceField" >Price:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="PriceField" styleClass="field-value PriceField" value="{!rec.Price__c}" html-data-compare-value="{!baseRec.Price__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Remarks -->
+                            <apex:outputPanel rendered="{!quot.RecordType.DeveloperName != 'Unit'}">
+                              <tr>
+                                <td class="field-td Remarks">
+                                  <label for="Remarks" class="field-label Remarks" >Remarks:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Remarks" styleClass="field-value Remarks" value="{!rec.Remarks__c}" html-data-compare-value="{!baseRec.Remarks__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Manufacturer -->
+                            <apex:outputPanel rendered="true">
+                              <tr>
+                                <td class="field-td Manufacturer">
+                                  <label for="Manufacturer" class="field-label Manufacturer" >Manufacturer:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="Manufacturer" styleClass="field-value Manufacturer" value="{!rec.Manufacturer__c}" html-data-compare-value="{!baseRec.Manufacturer__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+
+<!-- Bank Detail -->
+                            <apex:outputPanel rendered="true">
+                              <tr>
+                                <td class="field-td BankDetail">
+                                  <label for="BankDetail" class="field-label BankDetail" >Bank Detail:</label>
+                                </td>
+                                <td>
+                                  <apex:inPutField id="BankDetail" styleClass="field-value BankDetail" value="{!rec.BankDetail__c}" html-data-compare-value="{!baseRec.BankDetail__c}" onblur="safetyLockCheck(this);"/>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2"><br/></td>
+                              </tr>
+                            </apex:outputPanel>
+<!-- Validity -->
+                              <tr>
+                                <td class="field-td Validity">
+                                  <label for="Validity" class="field-label Validity" >Validity:</label>
+                                </td>
+                                <td>
+                                  <apex:outputText id="Validity" styleClass="Validity" value="{!validityPeriod}" />
+                                </td>
+                              </tr>
+
+
+                            </table>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </apex:outputPanel>
+<!-- footer -->
+              <div class="footer">
+                <apex:include pageName="{!$Page.JEOL_VisualforceFooter}" />
+              </div>
+
+            </apex:form>
+          </div>
+        </apex:outputPanel>
+
+      </body>
+    </html>
+  </apex:outputPanel>
+</apex:page>

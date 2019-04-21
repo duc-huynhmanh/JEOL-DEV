@@ -1,0 +1,68 @@
+<apex:page controller="JEOL_CustomRelatedListAllRecordViewCtrl" >
+  <style>
+    .accountRef {
+    	color: #015ba7;
+    	text-decoration: none;
+    }
+    .accountRef:hover {
+    	text-decoration: none;
+    }
+    .pagerDisabled {
+    	color: #999;
+    	font-size: 1em;
+    }
+    .pagerEnabled {
+    	color: #015ba7;
+    	text-decoration: none;
+    }
+    .pagerEnabled:hover {
+    	text-decoration: none;
+    }
+    .pagerWrap {
+    	text-align: right;
+    	margin: 15px 0 0 0;
+    }
+    .pageBlockTableStyle {
+    	margin: -7px 0px -8px -13px;
+    	border-radius: 4px;
+    }
+  </style>
+  <apex:form >
+    <apex:sectionHeader title="{!ListSobjectName}" subTitle="{!targetAccount.name}" />
+    <apex:outputLink styleClass="accountRef" value="/{!targetAccount.id}" >
+      <apex:outputText value="取引先: {!targetAccount.name}" />
+    </apex:outputLink>
+    <apex:outputPanel layout="block" styleClass="pagerWrap">
+      <apex:commandLink styleClass="pagerEnabled" value="<前のページ" action="{!pagePrev}" rendered="{!startCount > 0}" />
+      <apex:outputText styleClass="pagerDisabled" value="<前のページ" rendered="{!startCount <= 0}" />
+      <apex:outputText >&nbsp;|&nbsp;</apex:outputText>
+      <apex:commandLink styleClass="pagerEnabled" value="次のページ>" action="{!pageNext}" rendered="{!hasMoreRecords}"/>
+      <apex:outputText styleClass="pagerDisabled" value="次のページ>" rendered="{!!hasMoreRecords}" />
+    </apex:outputPanel>
+    <apex:pageblock mode="detail">
+      <apex:variable value="{!$ObjectType[sobjectName].Fields}" var="fieldDescribes" />
+      <apex:pageblocktable value="{!records}" var="rec" styleClass="pageBlockTableStyle" style="width: calc(100% + 26px);">
+        <apex:repeat value="{!fieldNames}" var="fieldName" >
+          <apex:column >
+            <apex:facet name="header" >
+              <apex:commandLink value="{!fieldDescribes[fieldName].Label}" action="{!sortAction}" >
+                <apex:param name="contIdParam" value="{!fieldName}" assignTo="{!sortTarget}"/>
+              </apex:commandLink>
+            </apex:facet>
+            <apex:outputField rendered="{!fieldName != 'name'}" value="{!rec[fieldName]}" />
+            <apex:outputLink rendered="{!fieldName == 'name'}" value="/{!rec['id']}">
+              <apex:outputText value="{!rec[fieldName]}" />
+            </apex:outputLink>
+          </apex:column>
+        </apex:repeat>
+      </apex:pageblocktable>
+    </apex:pageblock>
+    <apex:outputPanel layout="block" styleClass="pagerWrap">
+      <apex:commandLink styleClass="pagerEnabled" value="<前のページ" action="{!pagePrev}" rendered="{!startCount > 0}" />
+      <apex:outputText styleClass="pagerDisabled" value="<前のページ" rendered="{!startCount <= 0}" />
+      <apex:outputText >&nbsp;|&nbsp;</apex:outputText>
+      <apex:commandLink styleClass="pagerEnabled" value="次のページ>" action="{!pageNext}" rendered="{!hasMoreRecords}"/>
+      <apex:outputText styleClass="pagerDisabled" value="次のページ>" rendered="{!!hasMoreRecords}" />
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

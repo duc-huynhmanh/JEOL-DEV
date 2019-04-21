@@ -1,0 +1,439 @@
+<apex:page controller="JEOL_CustomerSearchPage_ctrl" docType="html-5.0" >
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+
+  <style>
+    .countryName {
+        display: inline-block;
+        padding: 4px;
+        margin: 0 0 0 15px;
+        border-bottom: 1px solid #989c9d;
+        
+    }
+    
+    .input {
+        font-size:14px;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 120px;
+    }
+
+    .item { width: 24px;}
+    .item1 { width: 120px;}
+    .item2 { width: 80px;}
+    .item3 { width: 120px;}
+    .item4 { width: 200px;} 
+    .item5 { width: 56px;}
+    .item6 { width: 72px;}
+    .item7 { width: 56px;}
+    
+    .areaSelect {
+        display: none;
+    }
+    
+    .areaItem {
+        display: inline-block;
+        width: 120px;
+        float: left;
+        text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin: 4px;
+        height: 1.3em;
+    }
+    .areaSelect-header {
+        background-color: #9ccada;
+        margin: 8px 0 0 0;
+        padding: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+    .selectButtons {
+        text-align: right;
+    }
+    .selectButtons .button {
+        float: right;
+    }
+  </style>
+  <c:JEOL_WaitSearchPanel text="検索中..." isModalMode="false"/>
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var viewFunction;
+
+    function mode() {
+        if ((typeof viewFunction).toLowerCase() === 'function') {
+            viewFunction();
+        }
+    }
+
+    function clearSearchCriteria1() {
+        $j("#search_criteria_table1 input").val('');
+    }
+    function clearSearchCriteria2() {
+        $j("#search_criteria_table2 input").val('');
+    }
+
+    function callChangeOrder(key) {
+        var obj = $j('.orderInput');
+        obj.val(key);
+        changeOrder();
+    }
+
+    function hideSearchCriteriaPanel() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+        viewFunction = hideSearchCriteriaPanel;
+    }
+
+    function showSearchCriteriaPanel() {
+        $j("#open_icon").hide();
+        $j("#close_icon").show();
+        $j("#search_criteria").slideDown(500);
+        $j(".fakeContainer").animate({height: '250px'},500);
+        viewFunction = showSearchCriteriaPanel;
+    }
+
+    function allViewMode() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+        viewFunction = allViewMode;
+    }
+
+    $j(document).ready(function(){
+        showSearchCriteriaPanel();
+    });
+    
+    function showAreaSelect() {
+        var target = $j('.areaSelect');
+        if (target) {
+            target.dialog({
+                appendTo: '.search_criteria_form',
+                autoOpen: false,
+                closeOnEscape: false,
+                closeText: 'hide',
+                draggable: true,
+                modal: true,
+                resizable: true,
+                title: '地域の選択',
+                width: 840,
+                open: function(){$j(".ui-dialog-titlebar-close").hide();}
+            });
+            target.dialog('open');
+        } else {
+            alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+        }
+    }
+
+    sfdcPage.onLoadQueue.push(function() {
+      var yearPicker = DatePicker.datePicker.yearPicker,
+          options = yearPicker.options;
+      value = +options[0].value;
+      for (var i = 1, len = 100; i <= len; i++) {
+        var o = document.createElement('option');
+        o.value = value - i;
+        o.text = value - i;
+        yearPicker.insertBefore(o, yearPicker.options[0]);
+      }
+    });
+  </script>
+  <apex:form >
+    <apex:outputPanel id="order">
+      <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+      <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult,pageMessages" />
+    </apex:outputPanel>
+
+    <!-- タイトル-->
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_customer.png')}" align="left" width="40px" />
+      <span id="title">取引先検索</span>
+    </div>
+
+
+    <!-- 営業向け検索エリア-->
+    <div id="searchPanel" >
+      <div>
+        <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+        <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+        <div id="serch_title">検索条件</div>
+      </div>
+      <div id="search_criteria">
+        <apex:outputPanel layout="block" id="search_criteria_form" styleClass="search_criteria_form">
+          <table id="search_criteria_table" class="search_criteria_table">
+            <tr>
+              <td class="label">取引先コード</td>
+              <td><apex:inputText html-class="input" value="{!code}" /></td>
+              <td class="label">取引先名</td>
+              <td><apex:inputText html-class="input" value="{!name}" /></td>
+              <td class="label">学部・事業所</td>
+              <td><apex:inputText html-class="input" value="{!undergraduate}" /></td>
+              <td class="label">取引先カテゴリ</td>
+              <td>
+                <apex:selectList value="{!customerCategory}" id="customerCategory" styleClass="input" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:selectoptions value="{!CCategoryOptions}" />
+                </apex:selectList>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">地域</td>
+              <td>
+                <apex:actionFunction name="areaSelect" oncomplete="showAreaSelect();" rerender="areaSelectPanel" />
+                <input id="areaSelectButton" onclick="areaSelect();" type="button" class="btn input" value="選択する" style="height: 22px; width:132px; padding: 2px 1px;" />
+                <!-- 
+                <apex:commandButton value="選択する" styleClass="input" oncomplete="showAreaSelect();" rerender="areaSelectPanel" style="height: 22px; width:132px; padding: 2px 1px;" />
+               -->
+              </td>
+              <td class="label">
+                <apex:outputtext value="国" />
+              </td>
+              <td colspan="5" >
+                <apex:SelectList value="{!countryCode}" styleClass="input"  id="countryCode" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:actionSupport event="onchange" action="{!changeCountry}" rerender="currentCountry" />
+                  <apex:selectOptions value="{!CountryOptions}" />
+                </apex:SelectList>
+                <apex:outputText styleClass="countryName" value="国名称：{!currentCountry}" id="currentCountry"/>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">
+                <apex:outputText value="選択地域" />
+              </td>
+              <td colspan="7" >
+                <div style="width: 860px; overflow: hidden; vertical-align: middle; text-overflow: ellipsis; white-space: nowrap; line-height: 29px;">
+                  <apex:outputText value="{!SelectedAreas}" id="SelectedAreas"/>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <div id="buttons">
+            <apex:commandLink value="クリア" styleClass="button_white" action="{!doFormClear}" rerender="search_criteria_form, searchResult, error" />
+            <apex:commandLink styleClass="button_green" onclick="showWaitPanel();" action="{!search1}" onComplete="hideWaitPanel();" rerender="searchResult, search_criteria_form" value="検索する"/>
+          </div>
+          <apex:outputPanel styleClass="areaSelect" layout="block">
+            <apex:outputPanel layout="block" styleClass="areaSelect-header">
+              <h2>検索したい地域を選んで下さい。</h2>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+              <apex:commandButton value="すべて選択" action="{!areaSelectAllSelect}" rerender="areaSelectPanel" />
+              <apex:commandButton value="選択解除" action="{!areaSelectAllDeselect}" rerender="areaSelectPanel" />
+              <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                <apex:outputText value="通信中..." />
+              </apex:outputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel id="areaSelectPanel" layout="block" styleClass="selectArea clearfix">
+              <apex:repeat value="{!AreaOptions}" var="areaComp">
+                <div class="areaItem">
+                  <apex:inputCheckBox id="selectTarget" value="{!areaComp.isSelected}" />
+                  <apex:outputLabel for="selectTarget" value="{!areaComp.option.Label}" />
+                </div>
+              </apex:repeat>
+            </apex:outputPanel>
+            <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+              <apex:commandlink styleClass="button_white" value="キャンセル" action="{!areaSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.areaSelect').dialog('close');$j('.processNow').hide();$j('#areaSelectButton').blur();" rerender="areaSelectPanel" />
+              <apex:commandlink styleClass="button_green" value="適用する" action="{!areaSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.areaSelect').dialog('close');$j('.processNow').hide();$j('#areaSelectButton').blur();" rerender="areaSelectPanel, SelectedAreas" />
+            </apex:outputPanel>
+          </apex:outputPanel>
+        </apex:outputPanel>
+      </div>
+    </div>
+    <apex:outputPanel layout="block" id="searchResult">
+      <apex:pageMessages id="pageMessages" />
+      <apex:outputpanel rendered="{!Account.size != 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+          <col class="item" />
+          <col class="item1" />
+          <col class="item2" />
+          <col class="item3" />
+          <col class="item4" />
+          <col class="item5" />
+          <col class="item6" />
+          <col class="item7" />
+          <tr class="contents_title">
+            <td  colspan="8">
+              <div class="in_contents_title">検索結果</div>
+            </td>
+          </tr>
+          <!-- 一覧のヘッダ -->
+          <tr class="koumoku">
+            <th >
+              <span>No</span>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('Name');">
+                <apex:outputText value="取引先名" />
+                <apex:outputText rendered="{!orderBy=='Name' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='Name' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('UndergraduateFormula__c');">
+                <apex:outputText value="学部・事業所" />
+                <apex:outputText rendered="{!orderBy=='UndergraduateFormula__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='UndergraduateFormula__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('Code__c');">
+                <apex:outputText value="取引先コード" />
+                <apex:outputText rendered="{!orderBy=='Code__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='Code__c' && orderDesc == true}" value="▽"/>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('Address__c');">
+                <apex:outputText value="住所" />
+                <apex:outputText rendered="{!orderBy=='Address__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='Address__c' && orderDesc == true}" value="▽"/>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('CountryCode__c');">
+                <apex:outputText value="国コード" />
+                <apex:outputText rendered="{!orderBy=='CountryCode__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='CountryCode__c' && orderDesc == true}" value="▽"/>
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('Area__c');">
+                <apex:outputText value="地域" />
+                <apex:outputText rendered="{!orderBy=='Area__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='Area__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('CustomerSituation__c');">
+                <apex:outputText value="取引先状況" />
+                <apex:outputText rendered="{!orderBy=='CustomerSituation__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='CustomerSituation__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+          </tr>
+        </table>
+        <!-- 一覧 -->
+        <div class="fakeContainer" >
+          <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+          <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+            <col class="item" />
+            <col class="item1" />
+            <col class="item2" />
+            <col class="item3" />
+            <col class="item4" />
+            <col class="item5" />
+            <col class="item6" />
+            <col class="item7" />
+            <apex:repeat value="{!Account}" var="wrap">
+              <tr class="contents">
+                <td>
+                  <apex:outputText value="{!baseRowNumber+wrap.rowNumber}"/>
+                </td>
+                <td>
+                  <apex:outputLink value="/{!wrap.rec.Id}">
+                    <apex:outputText value="{!wrap.rec.Name}" />
+                  </apex:outputLink>
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.UndergraduateFormula__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.Code__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.Address__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.CountryCode__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.Area__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.CustomerSituation__c}" />
+                </td>
+              </tr>
+            </apex:repeat>
+          </table>
+        </div>
+        <!-- ページ遷移欄-->
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="item" />
+          <col class="item1" />
+          <col class="item3" />
+          <col class="item4" />
+          <col class="item5" />
+          <apex:variable value="{!Account.size}" var="size" />
+          <tr class="menu">
+            <td colspan="5">
+              <table id="each_menu">
+                <tr>
+                  <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                    </apex:outputPanel>
+                    <apex:outputText value="     表示数" />
+                    <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                      <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                      <apex:selectOption itemValue="10" itemLabel="10"/>
+                      <apex:selectOption itemValue="20" itemLabel="20"/>
+                      <apex:selectOption itemValue="50" itemLabel="50"/>
+                    </apex:selectList>
+                    <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">件表示</apex:outputLink>
+                  </td>
+                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                      <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="｜◀" />
+                    </apex:outputLink>
+                    <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                      <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="◀ 前へ" />
+                    </apex:outputLink>
+                    <apex:outputText value="◀ 前へ" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="次へ ▶" />
+                    </apex:outputLink>
+                    <apex:outputText value="次へ ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="▶｜" />
+                    </apex:outputLink>
+                    <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                  </td>
+                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputText value="ページ　" />
+                    <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                      <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                    </apex:input>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+      <apex:outputpanel rendered="{!Account.size = 0}">
+        <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse">
+          <tr class="contents_title">
+            <td colspan="9">
+              <div class="in_contents_title">登録されたアイテムはありません</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

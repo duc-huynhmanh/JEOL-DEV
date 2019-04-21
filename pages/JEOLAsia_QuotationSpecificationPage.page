@@ -1,0 +1,637 @@
+<apex:page showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" standardController="AsiaQuotationDescription__c" extensions="JEOLAsia_QuotationSpecificationCtrl" >
+  <apex:outputPanel layout="none" id="contentPage">
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Salesforce - "Edit Specifications" screen</title>
+
+        <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/css/bootstrap.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_CustomBaseStyle.css')}" />
+
+        <style>
+          .contents .page-header {
+            z-index: 2;
+            position :relative;
+            margin-bottom: 42px;
+          }
+          .contents .contents-body .section .section-body hr {
+            float: left;
+          }
+          .contents .contents-body .button-area .section-body .customButton {
+            float: left;
+          }
+          .contents .contents-body .navi-area {
+            background-color: #7e9bc1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            margin-top: 49px;
+          }
+          .contents .contents-body .navi-area.fixed-top {
+            z-index: 2;
+            position: fixed;
+            margin-top: 0px;
+          }
+          .contents .contents-body .navi-area .section-body {
+            padding: 4px 8px;
+            margin: 0px auto;
+            position: relative;
+            z-index: 1;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons {
+            float: left;
+            margin-right: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-buttons.right {
+            float: right;
+            margin-right: 0px;
+            margin-left: 16px;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item {
+            margin-right: -1px;
+            float: left;
+          }
+          .contents .contents-body .navi-area .section-body .navi-item>* {
+            border-radius: 0;
+          }
+
+          .contents .contents-body .section .section-body hr {
+            float: left;
+          }
+
+          .contents .contents-body .quotation-area .section-body .quotation-information {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            background-color: #ffffff;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item {
+            float: left;
+            padding: 8px;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .field-label {
+            font-size: 12px;
+          }
+
+          .quotationDescription-header {
+            width: 100%;
+            border-radius: 2px;
+            background-color: #becde0;
+            margin: 0 0 4px 0;
+            border: 1px solid transparent;
+            text-align: left;
+          }
+          .header-title,
+          .field-value {
+            float: left;
+            display: block;
+            padding: 8px;
+          }
+          .header-title.Line,
+          .header-title.Qty {
+            text-align: center;
+          }
+          .header-title.DetailDescription {
+            text-align: left;
+          }
+          .header-title.ExtPrice {
+            text-align: center;
+            padding-left: 50px;
+          }
+          .field-value.line,
+          .field-value.qty {
+            font-weight: bold;
+            text-align: center;
+            margin-left: 20px;
+          }
+          .field-value.ItemName {
+            font-weight: bold;
+            text-align: left;
+          }
+          .field-value.Amount {
+            font-weight: bold;
+            text-align: right;
+            float: right;
+            padding-right: 50px;
+          }
+
+          .backgroundcolorgrey {
+            background-color: #dddddd !important;
+          }
+          .contents .contents-body .quotation-area .section-body .quotation-information .quotation-item .quotation-item-header .header-title {
+            float: left;
+            display: block;
+            padding: 8px;
+          }
+
+          .contents .contents-body .quotation-area .section-body .quotation-information .Detail-Description-area,
+          .contents .contents-body .quotation-area .section-body .quotation-information .Optical-Available-Detailed-Description-area
+          {
+            width: 100%;
+            text-align: center;
+          }
+
+          .ajax-status-start {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 1;
+            text-align: center;
+            font-size: 20px;
+            color: #666;
+          }
+          .ajax-status-start-page {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            z-index: 10000;
+            text-align: center;
+            font-size: 20px;
+            color: #666;
+          }
+          .ajax-status-start .ajax-status-start-inner {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            right: 0px;
+            height: 100%;
+            margin: auto;
+          }
+          .ajax-loading:before {
+            content: "";
+            background-repeat: no-repeat;
+            background-image: url("{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/images/ajax-2.gif')}");
+            background-position: center center;
+            display: block;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            right: 0px;
+            bottom: 0px;
+            height: 100%;
+            width: 100%;
+            z-index: 2;
+          }
+          .ajax-loading:after {
+            content: "";
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 1;
+            background-image: url("{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/images/alpha-bg.png')}");
+          }
+
+        </style>
+
+        <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+        <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/js/bootstrap.min.js')}" />
+        <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/PagerHelper.js')}" />
+
+        <script>
+            var $j = jQuery.noConflict();
+            var safety = false;
+            var makeSafetyCheck = true;
+            var makeSafetyCheck2 = true;
+
+            $j(function(){
+                var windwTransitions = (function(e){
+                    if (makeSafetyCheck2 && (makeSafetyCheck || document.activeElement.type === 'text')) {
+                        var currentFocus = document.querySelector(':focus');
+                        if (currentFocus && typeof currentFocus !== 'undefined') {
+                            currentFocus.blur();
+                        }
+                        if (safety) {
+                            e.returnValue = '内容に変更がありました。保存せずにページから離れますか？';
+                        } else {
+                            safety = true;
+                        }
+                    }
+                });
+
+                if (window.addEventListener) {
+                    window.addEventListener('beforeunload', windwTransitions);
+                } else if (window.attachEvent) {
+                    window.attachEvent('onbeforeunload', windwTransitions);
+                } else {
+                    console.log("画面遷移時に警告を出せません。ご注意ください。");
+                }
+
+                var $window = $j(window);
+                $window.on('click', clearAction);
+
+                $window.on('scroll',function(e){
+                    var beforeTop = window.beforeTop;
+                    var currentTop = $window.scrollTop();
+                    if (!beforeTop) {
+                        beforeTop = 0;
+                    }
+                    if (beforeTop < currentTop && currentTop > 48) {
+                        $j('.navi-area').addClass('fixed-top');
+                    } else if ((beforeTop > currentTop && currentTop <= 48) || currentTop == 0) {
+                        $j('.navi-area').removeClass('fixed-top');
+                    }
+                    window.beforeTop = currentTop;
+                });
+
+                $window.on('keydown',function(e){
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    if (/(38|40|27)/.test(e.which) && $dropdown.length) {
+
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (e.which == 27) {
+                            $dropdown.removeClass('open');
+                            $dropdown.find('[data-type="button"]').trigger('focus');
+                        }
+
+                        var $items = $dropdown.find('[data-type="list"] [data-type="item"]');
+                        var $target = $j(e.target);
+                        if ($target.attr('data-type') !== 'item') {
+                            $target = $target.closest('[data-type="item"]');
+                        }
+
+                        var target = null;
+                        if ($target.length) {
+                          target = $target[0];
+                        }
+                        var index = 0;
+                        if (target) {
+                            index = $items.index(target);
+                            if (e.which == 38 && index > 0) {
+                                index--;
+                            }
+                            if (e.which == 40 && index < $items.length - 1) {
+                                index++;
+                            }
+                        }
+                        $items.eq(index).find('a,input').trigger('focus');
+                    }
+                });
+            });
+
+            // アンロック
+            function unlockSafety() {
+                safety = false;
+            }
+            // ロック
+            function lockSafety() {
+                safety = true;
+            }
+            // ロック確認(フォーカスが離れた時にチェック)
+            function safetyLockCheck(targetNode) {
+
+                var value = targetNode.getAttribute('data-compare-value');
+                var type = targetNode.getAttribute('type');
+                var currentValue = null;
+                if (type === 'checkbox' || type === 'radio') {
+                    currentValue = targetNode.checked;
+                } else {
+                    currentValue = targetNode.value;
+                }
+                if (value !== currentValue) {
+                    lockSafety();
+                }
+            }
+
+            // アクションクリア
+            function clearAction(e) {
+                var $target = $j(e.target).closest('[data-type="dropdown"]');
+                if (!$target.hasClass('open')) {
+                    var $dropdown = $j('.open[data-type="dropdown"]');
+                    $dropdown.removeClass('open');
+                }
+            }
+
+            // Window Close
+            function closeWindow(){
+                window.close();
+            }
+
+            $j(document).ready(function(){
+                var $target = $j('.ajax-loading-main');
+                if ($target.hasClass('ajax-loading')) {
+                    $target.removeClass('ajax-loading');
+                }
+            });
+
+        </script>
+      </head>
+
+      <body>
+        <apex:actionStatus layout="block" onstop="contentInit();" id="ajaxPageStatus" startStyleClass="ajax-status-start-page">
+          <apex:facet name="start">
+            <div class="ajax-status-start-inner ajax-loading"></div>
+          </apex:facet>
+        </apex:actionStatus>
+
+        <apex:outputPanel layout="block" styleClass="contents ajax-loading ajax-loading-main" id="contents" >
+          <div class="page-header">
+            <apex:include pageName="{!$Page.JEOL_VisualforceHeader}" />
+          </div>
+
+          <div class="contents-body">
+            <apex:form id="form">
+              <div class="section navi-area" >
+                <div class="section-body base-width clearfix">
+                  <ul class="navi-buttons clearfix">
+                    <li class="navi-item">
+<!-- Save Button -->
+<!-- レコードが1件以上あれば表示 -->
+                      <apex:outputPanel layout="none" rendered="{!isRecord}" >
+　　                    <apex:commandLink action="{!saveActionxxe}" styleClass="customButton save" onclick="unlockSafety();" status="ajaxPageStatus" >{!$Label.JEOL_QuotEdit_Label_Save}</apex:commandLink>
+                      </apex:outputPanel>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="section base-width">
+                <div class="screenname">
+                  <h1 class="small">Edit Specification</h1>
+                  <div class="big" >
+                    <apex:outputText value="{!$Label.JEOL_QuotEdit_Label_ReferringKeyword}">
+                      <apex:param value="{!asiaQuotationName}"/>
+                    </apex:outputText>
+                  </div>
+                </div>
+              </div>
+
+<!-- パラメータ不正時 -->
+              <apex:outputPanel layout="none" rendered="{!!isValid}">
+                <div class="section base-width" >
+                  <apex:messages layout="table" />
+                  <apex:outputText >
+                    <apex:outputLink value="{!$Page.JEOLAsia_ProfitCalculationEditorPage}" onclick="unlockSafety();">コチラ</apex:outputLink>
+                    <apex:outputText value="から再度操作を行ってください。" />
+                  </apex:outputText>
+                </div>
+              </apex:outputPanel>
+
+              <apex:outputPanel layout="none" id="listview" rendered="{!isValid}">
+
+                <div class="section button-area base-width" >
+                  <div class="section-body clearfix">
+
+<!--  Back To Quotation Detail -->
+<!--
+                    <apex:outputLink value="{!$Page.JEOLAsia_QuotationEditorPage}" >&laquo;&nbsp;Back To Quotation Detail
+                      <apex:param name="id" value="{!paramId}"/>
+                    </apex:outputLink>
+-->
+                    <apex:commandLink onClick="window.close(); return false;" >&laquo;&nbsp;Close Window</apex:commandLink>
+                  </div>
+                </div>
+
+                <div class="section base-width error-area" >
+                  <apex:pageMessages id="apexMessage" />
+                </div>
+
+                <div class="section quotation-area base-width">
+                  <div class="section-header" style="margin-top: -30px;">
+                  </div>
+
+                  <div class="section-body">
+
+                    <div class="quotation-information clearfix">
+
+<!-- ■Detail Description section -->
+                      <div style="float: left; width:100%; padding: 8px;">
+                        <div class="quotation-item Detail-Description-area">
+                          <table class="quotationDescription-detail">
+                            <tr class="quotationDescription-header">
+                              <div class="quotation-item-header clearfix">
+                                <td>
+                                  <div class="header-title Line" style="margin-left: 20px;">Line</div>
+                                </td>
+                                <td>
+                                  <div class="header-title Qty" style="width: 100px;">Qty</div>
+                                </td>
+                                <td>
+                                  <div class="header-title DetailDescription" style="width: 635px;">Detail Description</div>
+                                </td>
+                                <td>
+                                  <div class="header-title ExtPrice" style="width: 200px;">Ext.Price<br/>({!salesCurrency})</div>
+                                </td>
+                              </div>
+                            </tr>
+                            <apex:variable value="{!0}" var="LineNo"/>
+                            <apex:repeat value="{!categoryA}" var="A">
+                              <apex:variable value="{!LineNo + 1}" var="LineNo"/>
+                              <tr class="quotationDescription-field">
+                                <td>
+                                  <div>
+                                    <apex:outputtext id="lineA" styleClass="field-value line" value="{!LineNo}"/>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="qtyA" styleClass="field-value qty" value="{0, number, #}" rendered="{!A.Id != NULL}">
+                                      <apex:param value="{!A.PCDQuantity__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="qtyA_Detail" styleClass="field-value qty" value="{0, number, #}" rendered="{!A.Id == NULL}">
+                                      <apex:param value="{!detail_categoryA[LineNo - 1].Quantity__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="ItemNameA" styleClass="field-value ItemName" value="{!A.PCDItemName__c}" rendered="{!A.Id != NULL}"/>
+                                    <apex:outputText id="ItemNameA_Detail" styleClass="field-value ItemName" value="{!detail_categoryA[LineNo - 1].Body__c}" rendered="{!A.Id == NULL}"/>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="AmountA" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!A.Id != NULL}">
+                                      <apex:param value="{!A.PCDAmount__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="AmountA_Detail" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!A.Id == NULL}">
+                                      <apex:param value="{!detail_categoryA[LineNo - 1].SalesPrice__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="4">
+                                  <div>
+<!--
+                                    <apex:inputTextarea richtext="false" rows="10" id="ProductSpecificationA" styleClass="field-value ProductSpecification" value="{!A.ProductSpecification__c}" style="height:100px" html-data-compare-value="{!baseCategoryA[LineNo - 1].ProductSpecification__c}" onblur="safetyLockCheck(this);"/>
+-->
+                                    <apex:inputTextarea richtext="true" id="ProductSpecificationA" styleClass="field-value ProductSpecification" value="{!A.ProductSpecification__c}" html-data-compare-value="{!baseCategoryA[LineNo - 1].ProductSpecification__c}" onblur="safetyLockCheck(this);"/>
+                                  </div>
+                                </td>
+                              </tr>
+                              <apex:outputPanel layout="none" rendered="{!LineNo < (CategoryASize + CategoryBSize)}">
+                                <tr>
+                                  <td colspan="4">
+                                    <div><br/><hr/><br/></div>
+                                  </td>
+                                </tr>
+                              </apex:outputPanel>
+                            </apex:repeat>
+
+                            <apex:variable value="{!0}" var="LineNoB"/>
+                            <apex:repeat value="{!categoryB}" var="B">
+                              <apex:variable value="{!LineNo + 1}" var="LineNo"/>
+                              <apex:variable value="{!LineNoB + 1}" var="LineNoB"/>
+                              <tr class="quotationDescription-field">
+                                <td>
+                                  <div>
+                                    <apex:outputtext id="lineB" styleClass="field-value line" value="{!LineNo}"/>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="qtyB" styleClass="field-value qty" value="{0, number, #}" rendered="{!B.Id != NULL}">
+                                      <apex:param value="{!B.PCDQuantity__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="qtyB_Detail" styleClass="field-value qty" value="{0, number, #}" rendered="{!B.Id == NULL}">
+                                      <apex:param value="{!detail_categoryB[LineNoB - 1].Quantity__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="ItemNameB" styleClass="field-value ItemName" value="{!B.PCDItemName__c}" rendered="{!B.Id != NULL}"/>
+                                    <apex:outputText id="ItemNameB_Detail" styleClass="field-value ItemName" value="{!detail_categoryB[LineNoB - 1].Body__c}" rendered="{!B.Id == NULL}"/>
+                                  </div>
+                                </td>
+                                <td style="text-align: right;">
+                                  <div>
+                                    <apex:outputText id="AmountB" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!B.Id != NULL}">
+                                      <apex:param value="{!B.PCDAmount__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="AmountB_Detail" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!B.Id == NULL}">
+                                      <apex:param value="{!detail_categoryB[LineNoB - 1].SalesPrice__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td  colspan="4">
+                                  <div>
+<!--
+                                    <apex:inputTextarea richtext="false" rows="10" id="ProductSpecificationB" styleClass="field-value ProductSpecification" value="{!B.ProductSpecification__c}" style="height:100px" html-data-compare-value="{!baseCategoryB[LineNoB - 1].ProductSpecification__c}" onblur="safetyLockCheck(this);"/>
+-->
+                                    <apex:inputTextarea richtext="true" id="ProductSpecificationB" styleClass="field-value ProductSpecification" value="{!B.ProductSpecification__c}" html-data-compare-value="{!baseCategoryB[LineNoB - 1].ProductSpecification__c}" onblur="safetyLockCheck(this);"/>
+                                  </div>
+                                </td>
+                              </tr>
+                              <apex:outputPanel layout="none" rendered="{!LineNoB < CategoryBSize}">
+                                <tr>
+                                  <td colspan="4">
+                                    <div><br/><hr/><br/></div>
+                                  </td>
+                                </tr>
+                              </apex:outputPanel>
+                            </apex:repeat>
+
+                          </table>
+                        </div>
+                      </div>
+
+<!-- ■Optical Available Detailed Description section -->
+                      <div style="float: left; width:100%; padding: 8px;">
+                        <div class="quotation-item Optical-Available-Detailed-Description-area">
+
+                          <table class="quotationDescription-detail">
+                            <tr class="quotationDescription-header">
+                              <div class="quotation-item-header clearfix">
+                                <td>
+                                  <div class="header-title Line" style="margin-left: 20px;">Line</div>
+                                </td>
+                                <td>
+                                  <div class="header-title Qty" style="width: 100px;">Qty</div>
+                                </td>
+                                <td>
+                                  <div class="header-title DetailDescription" style="width: 635px;">Optionally Available Detailed Description<br/>
+                                  (May replace above item(s) or be added to system)</div>
+                                </td>
+                                <td>
+                                  <div class="header-title ExtPrice" style="width: 200px;">Ext.Price<br/>({!salesCurrency})</div>
+                                </td>
+                              </div>
+                            </tr>
+                            <apex:variable value="{!0}" var="LineNoG"/>
+                            <apex:repeat value="{!categoryG}" var="G">
+                              <apex:variable value="{!LineNoG + 1}" var="LineNoG"/>
+                              <tr class="quotationDescription-field">
+                                <td>
+                                  <div>
+                                    <apex:outputtext id="lineG" styleClass="field-value line" value="{!LineNoG}"/>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="qtyG" styleClass="field-value qty" value="{0, number, #}" rendered="{!G.Id != NULL}">
+                                      <apex:param value="{!G.PCDQuantity__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="qtyG_Detail" styleClass="field-value qty" value="{0, number, #}" rendered="{!G.Id == NULL}">
+                                      <apex:param value="{!detail_categoryG[LineNoG - 1].Quantity__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="ItemNameG" styleClass="field-value ItemName" value="{!G.PCDItemName__c}" rendered="{!G.Id != NULL}"/>
+                                    <apex:outputText id="ItemNameG_Detail" styleClass="field-value ItemName" value="{!detail_categoryG[LineNoG - 1].Body__c}" rendered="{!G.Id == NULL}"/>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <apex:outputText id="AmountG" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!G.Id != NULL}">
+                                      <apex:param value="{!G.PCDAmount__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText id="AmountG_Detail" styleClass="field-value Amount" value="{0, number, ###,###,###,###,##0.00}" rendered="{!G.Id == NULL}">
+                                      <apex:param value="{!detail_categoryG[LineNoG - 1].SalesPrice__c}"></apex:param>
+                                    </apex:outputText>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td  colspan="4">
+                                  <div>
+                                    <apex:inputTextarea richtext="true" id="ProductSpecificationG" styleClass="field-value ProductSpecification" value="{!G.ProductSpecification__c}" html-data-compare-value="{!baseCategoryG[LineNoG - 1].ProductSpecification__c}" onblur="safetyLockCheck(this);"/>
+                                  </div>
+                                </td>
+                              </tr>
+                              <apex:outputPanel layout="none" rendered="{!LineNoG < CategoryGSize}">
+                                <tr>
+                                  <td colspan="4">
+                                    <div><br/><hr/><br/></div>
+                                  </td>
+                                </tr>
+                              </apex:outputPanel>
+                            </apex:repeat>
+
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </apex:outputPanel>
+<!-- footer -->
+              <div class="footer">
+                <apex:include pageName="{!$Page.JEOL_VisualforceFooter}" />
+              </div>
+            </apex:form>
+          </div>
+        </apex:outputPanel>
+      </body>
+    </html>
+  </apex:outputPanel>
+</apex:page>

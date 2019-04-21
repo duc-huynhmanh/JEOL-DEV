@@ -1,0 +1,279 @@
+<apex:page standardcontroller="SalesPipeline__c" extensions="JEOL_SalesPipelineEdit_ctrl">
+
+  <style type="text/css">
+    .wrapper {position: relative;}
+    .wrapper.child{background-color: #FFFFDA;}
+    .wrapper .linkerPanel {
+      text-align: center;
+      margin: 5px 6px 15px;
+    }
+    .wrapper .linkerPanel a.linker {
+      padding: 3px 0px 6px 4px;
+      position: relative;
+      white-space: nowrap;
+      display: inline-block;
+      border: none;
+    }
+    .floatPanel {
+      position: absolute !important;
+      left: 0px !important;
+      margin: 0px 6px !important;
+      width: 100% !important;
+    }
+    .floatPanel>*:first-child,
+    .floatPanel>div {
+      box-shadow: 0px 5px 10px #666 !important;
+    }
+  </style>
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var $window = $j(window);
+    var relatedListFloater = function(){
+        var currentLinker = null; 
+        $j(document).on('mouseover',function(e){
+            var $targets = $j(e.target).closest('a.linker, .floatPanel');
+            if ($targets.length) {
+                if ($targets.hasClass('linker')) {
+                    if (currentLinker !== $targets[0]) {
+                        currentLinker = $targets[0];
+                        $j('.floatPanel').removeClass('floatPanel');
+                    }
+                    var targetId = $targets.attr('href');
+                    var $targetRelatedList = $j(document.getElementById(targetId.substr(1,targetId.length))).children();
+                    $targetRelatedList.addClass('floatPanel');
+                    $targetRelatedList.css({top: ($targets.position().top + 22) + 'px'});
+                }
+            } else {
+                $j('.floatPanel').removeClass('floatPanel');
+            }
+        });
+    };
+    $window.on('load',function(){
+        relatedListFloater();
+    });
+  </script>
+  
+    <!-- To avoid the opening of the calendar at the beginning -->
+    <script>function setFocusOnLoad() {}</script>
+
+<div class="wrapper">
+
+    <apex:sectionHeader title="営業パイプライン(新)" subtitle="{!SalesPipeline__c.name}"/>
+
+    <div class="linkerPanel" >
+      <apex:outputPanel layout="none">
+        <a href="#c_Quotations" class="linker" >見積書情報</a>
+        <span>|</span>
+        <a href="#c_SalesOrder" class="linker" >販売オーダ</a>
+        <span>|</span>
+        <a href="#c_History" class="linker" >履歴</a>
+          </apex:outputPanel>
+    </div>    
+    
+    <apex:form >
+        <apex:pageBlock title="営業パイプライン(新)の詳細" mode="maindetail">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!edit}" value=" {!$Label.JEOL_BTN_Edit} " />
+                <apex:commandButton action="{!cloneData}" value=" {!$Label.JEOL_BTN_Clone} " />
+                <apex:commandButton action="{!delete}" immediate="false" onclick="if(!confirm('よろしいですか?')){return};" value=" {!$Label.JEOL_BTN_Delete} " rerender="false"/>    
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection title="基本情報" columns="2">
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.SalesPipeline__c.fields.KigyoTani__c.label}" />
+                    <apex:outputText value="{!CurrentOrgUnit}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:outputField label="登録日" value="{!SalesPipeline__c.CreatedDate__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.PipelineType__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.name}"/>
+                <apex:outputField value="{!SalesPipeline__c.Kokunai_Kaigai__c}"/>
+            
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.SalesPipeline__c.fields.CountryName__c.label}" />
+                    <apex:outputText value="{!CurrentCountry}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.SalesPipeline__c.fields.RegionName__c.label}" />
+                    <apex:outputText value="{!CurrentArea}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.SalesPipeline__c.fields.Series__c.label}" />
+                    <apex:outputText value="{!CurrentSerie}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:outputField value="{!SalesPipeline__c.SegmentName__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Department__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.ShodanSituation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.JuchuYoteiTsuki__c}"/>
+
+                <apex:pageBlockSectionItem rendered="{!SalesPipeline__c.CustomerAccount__c != null}">
+                    <apex:outputlabel value="{!$ObjectType.SalesPipeline__c.fields.CustomerAccount__c.label}"/>
+                    <apex:outputField value="{!SalesPipeline__c.CustomerAccount__c}"  />                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!SalesPipeline__c.CustomerAccount__c == null}">
+                    <apex:outputlabel value="{!$ObjectType.SalesPipeline__c.fields.CustomerAccountNameFormula__c.label}"/>
+                    <apex:outputField value="{!SalesPipeline__c.CustomerAccountNameFormula__c}" />
+                </apex:pageBlockSectionItem>
+                 <apex:outputField value="{!SalesPipeline__c.Undergraduate__c}"/>
+
+                
+                <apex:outputField value="{!SalesPipeline__c.CustomerResponsible__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.ShoshaKeiyuKubun__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CompanyName__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.YosanKakudoValue__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.JuchuKakudoValue__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.KakkoKubun__c}"/>
+                <apex:pageBlockSectionItem />
+
+                <apex:pageBlockSectionItem rendered="{!SalesPipeline__c.Shohin__c != null}">
+                    <apex:outputlabel value="{!$ObjectType.SalesPipeline__c.fields.Shohin__c.label}"/>
+                    <apex:outputField value="{!SalesPipeline__c.Shohin__c}"  />                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!SalesPipeline__c.Shohin__c == null}">
+                    <apex:outputlabel value="{!$ObjectType.SalesPipeline__c.fields.ShohinNameFormula__c.label}"/>
+                    <apex:outputField value="{!SalesPipeline__c.ShohinNameFormula__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:outputField value="{!SalesPipeline__c.ModelType__c}"/>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputlabel value="通貨"/>
+                    <apex:outputText value="{!CurrencyLabel}"/>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.JishaPrice__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.TashaPrice__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.TotalPrice__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.TaiTorihikiNebikigaku__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.EigyoTantoshaMain__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.Biko_Att__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Biko_Shodan__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.YosanKubun__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.YotoKubun__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Destination__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Delivery_deadline_export__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.SupplementaryBudget__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.UriageYoteiTsuki__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Quotation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.SalesOrderLkup__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CustomerResponsibleWinLoss__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.ShukkaYokyuTsuki__c}"/>
+                 <apex:outputField value="{!SalesPipeline__c.ShodanStatus__c}"/>
+               
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.ShitenchoShonin__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.HonbuKakunin__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.ReceiveMonthHonbu__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.ReceiveMonthGroupTop__c}"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="勝負因情報" columns="2">
+                <apex:outputField value="{!SalesPipeline__c.WinLossAddedDateFormula__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.NewUpdated__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Maker__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.DecisionModel__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Competitors_offer__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.WinLossReason__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!SalesPipeline__c.WinLossResponsibleComment__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.WinLossSuperiorComment__c}"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="その他" columns="2">
+                <apex:outputField value="{!SalesPipeline__c.HontaiDivision__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CompanyParticipation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.DiscountRate__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.HontaiNotPresent__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.HonbuBiko__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.DeviceName__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.GroupTopKakunin__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckHS__c}"/>
+               
+                <apex:outputField value="{!SalesPipeline__c.CheckPAL__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.LastQuotationNumber__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckTD__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckDI__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckCanister__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckPT__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckOther__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckPY__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.MakerInquiry__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckTG__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.OldEnvironmentSFID__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CheckCryogenic__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.MainPurpose__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.OtherEquipmentComment__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.MainPurposeSolid__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.LiquidFlag__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.DeliveryYear__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.SolidAttached__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.maruhu_yes_no__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.MainPurposeLiquid__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.LeaseParticipation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Account__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.EigyoTantoshaSub__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Disposal__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.niban_juchu__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Service_order__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Kinousouchi__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.LeasePeriod__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Competitors__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Eigyou__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.ContractDeliveryDate__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.shipping_date_NMR__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.OrderSituation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Competing_situation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Deal_price_yen__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CompetitionPresentationProduct__c }"/>
+                <apex:outputField value="{!SalesPipeline__c.ShippingScheduledDate__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Background__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Deal_price_local_cur__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.NegociationSituation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Closing_date__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Brand__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.LeadSource__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Seinou__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.NegotiationPhase__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Sousa__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.FutureMaintenanceContract__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Syouhaiin_Tasyakakaku__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.NewOrReuse__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.CarryingDate__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Ichiban_date__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Selection_path__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.AdditionalInformation__c}"/>
+                <apex:outputField value="{!SalesPipeline__c.Spectrometer_serial__c}"/>
+                          
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+
+    </apex:form>
+
+    <apex:outputPanel layout="none" >
+      <div id="c_Quotations" >
+        <apex:relatedList list="QuotationInformation_SalesPipeline__r" />
+      </div>
+      <div id="c_SalesOrder" >
+        <apex:relatedList list="SalesOrder_SalesPipeline__r" />
+      </div>
+      <div id="c_History" >
+        <c:JEOL_GenericHistoryComponent object="{!SalesPipeline__c}" recordsLimit="50"/>
+      </div>  
+       </apex:outputPanel>
+
+</div>
+
+</apex:page>

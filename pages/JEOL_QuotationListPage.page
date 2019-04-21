@@ -1,0 +1,638 @@
+<!--
+ * Updated : 2015/06/11 by Polus (Voxer) - Add of 税抜 in the label for the Total Amount column
+ -->
+<apex:page cache="false" showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" readOnly="true" controller="JEOL_QuotationListPageCtrl">
+  <html>
+    <head>
+      <meta http-equiv="Pragma" content="no-cache" />
+      <meta http-equiv="cache-control" content="no-cache" />
+      <meta http-equiv="expires" content="0" />
+      <!-- 
+      <meta name="viewport" content="width=device-width" />
+       -->
+      <title>{!$Label.JEOL_Quotation_Label_Title}-</title>
+      <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/css/bootstrap.min.css')}" />
+      <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_CustomBaseStyle.css')}" />
+      <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_QuotationListPage.css')}" />
+      <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+      <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/js/bootstrap.min.js')}" />
+      <style type="text/css">
+
+        .contents .section,
+        .jeol-visualforce-header .jeol-visualforce-header-content {
+          margin-left: 50px;
+        }
+        .hidden {
+          display: none;
+        }
+
+        .contents div[data-type="dropdown"] {
+          display: block;
+          position: relative;
+        }
+        .contents div[data-type="dropdown"]:after {
+          content: "";
+          display: block;
+          height: 0px;
+          clear: both;
+        }
+        .contents div[data-type="dropdown"] *[data-type="label"] {
+          display: block;
+          float: left;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"] {
+          display: block;
+          float: left;
+          border-radius: 4px 0px 0px 4px;
+          border: 1px solid silver;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15) inset;
+          transition: box-shadow 0.1s linear 0s;
+          height: 30px;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"] + .productSearchButton {
+          float: left;
+          border-radius: 0px;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"]:focus {
+          position: relative;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"] {
+          display: block;
+          float: left;
+          margin: 0px 0px 0px -1px;
+          border-radius: 0px 4px 4px 0px;
+          border: 1px solid silver;
+          height: 30px;
+          background-image: none;
+          font-weight: normal;
+          background-color: #fff;
+          padding: 0px;
+          text-aling: center;
+          color: #7FCC9E;
+          width: 20px;
+          transition: box-shadow 0.2s linear 0s, background-color 0.2s linear 0s, border 0.2s linear 0s;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:hover {
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+          background-color: #f2f5f8;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:active {
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2) inset;
+          background-color: #f2f5f8;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:focus {
+          background-color: #f2f5f8;
+          border-color: #00ABFF;
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2) inset, 0 1px 5px rgba(0,171,255,0.25);
+          outline: none;
+        }
+        .contents div[data-type="dropdown"].open ul[data-type="list"] {
+          display: block;
+          user-select: none;
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;  
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] {
+          display: none;
+          position: absolute;
+          height: auto;
+          background-color: #fff;
+          border: 1px solid silver;
+          border-radius: 0px 0px 4px 4px;
+          z-index: 2; <!-- Changed from 1 by Polus (2015/06/09) because the buttons "+" were appearing inside the dropdown -->
+          top: 32px;
+          right: 0px;
+          box-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+          overflow: hidden;
+        }
+        .contents div.top[data-type="dropdown"] ul[data-type="list"] {
+          bottom: 100%;
+          top: auto;
+          border-radius: 4px 4px 0px 0px;
+        }
+        .contents div[data-type="dropdown"] ul.scroll[data-type="list"] {
+          max-height: 158px;
+          overflow-y: auto;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li hr {
+          margin: 0px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] {
+          padding: 0px;
+          min-width: 76px;
+          text-align: left;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"]:hover {
+          background-color: #f2f5f8;
+        }
+
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"]:hover hr {
+          margin: 4px;
+        }
+        
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"].close-option {
+          text-align: center;
+          width: 100%;
+          margin: 0px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a {
+          padding: 4px 16px;
+          display: block;
+          width: 100%;
+          text-decoration: none;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a:empty {
+          height: 24px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a:focus {
+          background-color: #f2f5f8;
+          outline: none;
+        }
+        
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"].close-option .closeButton {
+          text-decoration: none;
+          display: block;
+          height: 30px;
+          line-height: 30px;
+          width: 100%;
+        }
+        
+        .contents .contents-body .search-area .section-body .field .field-value.widthdrop {
+            width: 139px;
+        }
+        
+      </style>
+      <script>
+        var $j = jQuery.noConflict();
+        
+        //読み込み直後動作をしたいとき
+        $j(function(){
+          $j(".focustarget").first().focus();
+        });
+        
+         function sortOrder(fieldname) {
+          $j(".orderTerget").val(fieldname);
+          switchingOrder();
+        }
+        function hideSearchCriteriaPanel() {
+            $j("#open_icon").show();
+            $j("#close_icon").hide();
+            $j("#search_criteria").slideUp(500);
+            $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+        }
+        function showSearchCriteriaPanel() {
+            $j("#open_icon").hide();
+            $j("#close_icon").show();
+            $j("#search_criteria").slideDown(500);
+            $j(".fakeContainer").animate({height: '250px'},500);
+        }
+
+        function dorpdownAction(target) {
+            var $target = $j(target).closest('[data-type="dropdown"]');
+            if ($target.hasClass('open')) {
+                $target.removeClass('open');
+            } else {
+                $j('.open').removeClass('open');
+                $target.addClass('open');
+            }
+        }
+        function clearAction(e) {
+            var $target = $j(e.target).closest('[data-type="dropdown"]');
+            if (!$target.hasClass('open')) {
+                var $dropdown = $j('.open[data-type="dropdown"]');
+                $dropdown.removeClass('open');
+                //$dropdown.find('[data-type="button"]').trigger('focus');
+            }
+        }
+        
+        function setInputField(target) {
+            var $target = $j(target);
+            var $dropdown = $target.closest('[data-type="dropdown"]');
+            var $inputField = $dropdown.find('[data-type="input-field"]');
+            if ($target.attr('data-type') !== 'item') {
+                $target = $target.closest('[data-type="item"]');
+            }
+            $inputField.val($target[0].getAttribute('data-value'));
+            $inputField.trigger('focus');
+            dorpdownAction(target);
+        }
+      </script>
+    </head>
+    <body>
+      <apex:form id="contents" styleClass="contents">
+        <c:JEOL_WaitSearchPanel text="{!$Label.JEOL_Quotation_Label_Searching}" />
+        <apex:variable value="{!ssc.PageNumber}" var="pageNum" />
+        <apex:variable value="{!IF(!ISNULL(ssc), ssc.ResultSize, 0)}" var="resultSize" />
+        <apex:variable value="{!resultSize > 0 }" var="hasRecords" />
+        <apex:actionFunction name="switchingOrder" action="{!switchingOrder}" rerender="recordList"/>
+        <div class="hidden">
+          <apex:inputText styleclass="orderTerget hidden" value="{!orderTarget}" />
+        </div>
+        <div class="header">
+          <apex:include pageName="{!$Page.JEOL_VisualforceHeader}" />
+        </div>
+        <div class="contents-body">
+          <div class="section base-width">
+            <div class="screenname">
+              <span>{!$Label.JEOL_Quotation_Label_ListQuotation}</span>
+            </div>
+          </div>
+          <div class="section button-area base-width">
+            <div class="section-body clearfix">
+              <apex:outputLink value="{!$Page.JEOL_QuotationEditorPage}" styleClass="customButton">＋&nbsp;{!$Label.JEOL_Quotation_Label_CreateNewQuotation}</apex:outputLink>
+            </div>
+          </div>
+          <div class="section search-area base-width">
+            <div class="section-header">
+              <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" width="36px" onclick="hideSearchCriteriaPanel()" />
+              <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" width="36px" onclick="showSearchCriteriaPanel()" style="display:none;"/>
+              <span>{!$Label.JEOL_Quotation_Label_QuotationSearchFilter}</span>
+            </div>
+            <ul class="section-body clearfix" id="search_criteria">
+              <li class="field radio-area">
+                <apex:selectRadio value="{!targetRecords}" styleClass="field-value">
+                  <apex:selectOptions value="{!targetRecordsOption}" />
+                </apex:selectRadio>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_SalesPersonCode}" for="salesPersonCode" styleClass="field-label"/>
+                <apex:inputText value="{!targetSalesPersonCode}" id="salesPersonCode" styleClass="field-value focustarget"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_SalesPersonName}" for="salesPerson" styleClass="field-label"/>
+                <apex:inputText value="{!targetSalesPerson}" id="salesPerson" styleClass="field-value"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_ContractorCode}" for="contractCode" styleClass="field-label"/>
+                <apex:inputText value="{!targetContractCode}" id="contractCode" styleClass="field-value"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_ContractorName}" for="contractName" styleClass="field-label"/>
+                <apex:inputText value="{!targetContractName}" id="contractName" styleClass="field-value"/>
+              </li>
+
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_SiteCode}" for="shipmentCode" styleClass="field-label"/>
+                <apex:inputText value="{!targetShipmentCode}" id="shipmentCode" styleClass="field-value"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_SiteName}" for="ShipmentName" styleClass="field-label"/>
+                <apex:inputText value="{!targetShipmentName}" id="ShipmentName" styleClass="field-value"/>
+              </li>
+              <li class="field" style="height: 30px; margin-top:0px;">
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_ProductCode}" for="series" html-data-type="label" styleClass="field-label" />
+                  <apex:inputText id="series" html-data-type="input-field" styleClass="field-value series widthdrop" onchange="this.value=transformInputText(this.value);" value="{!targetSeries}" />
+                  <button type="button" data-type="button" onclick="dorpdownAction(this);">▼</button>
+                  <ul class="scroll" data-type="list">
+                    <apex:repeat value="{!SeriesOptions}" var="option">
+                      <li data-type="item" data-value="{!option.value}" >
+                        <a href="javascript: void(0);" onclick="setInputField(this);return false;" ><apex:outputText value="{!option.label}" rendered="{!!ISBLANK(option.label)}"/></a>
+                      </li>
+                    </apex:repeat>
+                  </ul>
+                </div>                        
+<!--                          
+                  <apex:selectList size="1" id="series" styleClass="field-value series" value="{!targetSeries}">
+                    <apex:selectOptions value="{!SeriesOptions}" />
+                  </apex:selectList>
+-->
+              </li>
+              <li class="field" style="height: 30px; margin-top:0px;">
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_AreaCode}" for="SalesArea" html-data-type="label" styleClass="field-label" />
+                  <apex:inputText id="SalesArea" html-data-type="input-field" styleClass="field-value series widthdrop" onchange="this.value=transformInputText(this.value);" value="{!targetSalesArea}" />
+                  <button type="button" data-type="button" onclick="dorpdownAction(this);">▼</button>
+                  <ul class="scroll" data-type="list">
+                    <apex:repeat value="{!SalesAreaOptions}" var="option">
+                      <li data-type="item" data-value="{!option.value}" >
+                        <a href="javascript: void(0);" onclick="setInputField(this);return false;" ><apex:outputText value="{!option.label}" rendered="{!!ISBLANK(option.label)}"/></a>
+                      </li>
+                    </apex:repeat>
+                  </ul>
+                </div>   
+<!--                              
+                  <apex:outputLabel value="地域" for="SalesArea" styleClass="field-label" />
+                  <apex:selectList size="1" id="SalesArea" styleClass="field-value SalesArea" value="{!targetSalesArea}">
+                    <apex:selectOptions value="{!SalesAreaOptions}" />
+                  </apex:selectList>
+-->
+              </li>
+              <li class="field" style="height: 30px; margin-top:0px;margin-bottom:8px;">
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_QuotationType}" for="quotationType" html-data-type="label" styleClass="field-label" />
+                  <apex:inputText id="quotationType" html-data-type="input-field" styleClass="field-value series widthdrop" onchange="this.value=transformInputText(this.value);" value="{!targetQuotationType}" />
+                  <button type="button" data-type="button" onclick="dorpdownAction(this);">▼</button>
+                  <ul class="scroll" data-type="list">
+                    <apex:repeat value="{!QuoteTypeOptions}" var="option">
+                      <li data-type="item" data-value="{!option.label}" >
+                        <a href="javascript: void(0);" onclick="setInputField(this);return false;" ><apex:outputText value="{!option.label}" rendered="{!!ISBLANK(option.label)}"/></a>
+                      </li>
+                    </apex:repeat>
+                  </ul>
+                </div>   
+<!--
+                   <apex:outputLabel value="見積種別" for="quotationType" styleClass="field-label" />
+                   <apex:selectList size="1" id="quotationType" styleClass="field-value quotationType" value="{!targetQuotationType}">
+                     <apex:selectOptions value="{!QuoteTypeOptions}" />
+                   </apex:selectList>
+-->
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_QuotationNo}" for="quoteNo" styleClass="field-label"/>
+                <apex:inputText value="{!targetQuoteNo}" id="quoteNo" styleClass="field-value"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_EndUserQuotationNo}" for="customerQuotationRequestedNo" styleClass="field-label"/>
+                <apex:inputText value="{!targetCustomerQuotationRequestedNo}" id="customerQuotationRequestedNo" styleClass="field-value"/>
+              </li>
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_QuotationTitle}" for="salesAccount" styleClass="field-label"/>
+                <apex:inputText value="{!targetName}" id="salesAccount" styleClass="field-value"/>
+              </li> 
+              <li class="field" style="height: 30px; margin-top:0px;">
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_Type}" for="recordType" html-data-type="label" styleClass="field-label" />
+                  <apex:inputText id="recordType" html-data-type="input-field" styleClass="field-value series widthdrop" onchange="this.value=transformInputText(this.value);" value="{!targetRecordType}" />
+                  <button type="button" data-type="button" onclick="dorpdownAction(this);">▼</button>
+                  <ul class="scroll" data-type="list">
+                    <apex:repeat value="{!RecordTypeOptions}" var="option">
+                      <li data-type="item" data-value="{!option.value}" >
+                        <a href="javascript: void(0);" onclick="setInputField(this);return false;" ><apex:outputText value="{!option.label}" rendered="{!!ISBLANK(option.label)}"/></a>
+                      </li>
+                    </apex:repeat>
+                  </ul>
+                </div>   
+<!--
+                <apex:outputLabel value="タイプ" for="recordType" styleClass="field-label"/>
+                   <apex:selectList size="1" id="recordType" styleClass="field-value quotationType" value="{!targetRecordType}">
+                     <apex:selectOptions value="{!RecordTypeOptions}" />
+                   </apex:selectList>
+-->
+              </li> 
+              <li class="field">
+                <apex:outputLabel value="{!$Label.JEOL_Quotation_Label_DateRegister}" for="registeredDate" styleClass="field-label"/>
+                <apex:inputText id="RegisteredDateFrom" styleClass="field-value" value="{!RegisteredDateFrom}" style="width: 8em;" onfocus="DatePicker.pickDate(false, '{!$Component.RegisteredDateFrom}', false);"/>
+                <apex:outputText value="　〜　" />
+                <apex:inputText id="RegisteredDateTo" styleClass="field-value" value="{!RegisteredDateTo}" style="width: 8em;" onfocus="DatePicker.pickDate(false, '{!$Component.RegisteredDateTo}', false);"/>                
+              </li>
+              <li>
+                <hr class="horizontal-rule"/>
+              </li>
+              <li class="buttonArea">
+                <apex:commandLink action="{!searchItemClear}" rerender="contents" styleClass="customButton">{!$Label.JEOL_Quotation_Label_Clear}</apex:commandLink>
+                <apex:commandLink action="{!recordSearch}" rerender="contents" styleClass="customButton" onclick="showWaitPanel();">{!$Label.JEOL_Quotation_Label_Search}</apex:commandLink>
+              </li>
+            </ul>
+          </div>
+          <apex:outputPanel layout="block" styleClass="section base-width" rendered="{!resultSize >= 10000}">
+            <apex:outputText value="{!$Label.JEOL_Quotation_Message_TooManyRows}" />
+          </apex:outputPanel>
+          <apex:outputPanel id="recordList" layout="block" styleClass="section list-area base-width">
+          <apex:pageMessages />
+            <div class="section-header clearfix">
+              <div class="title">{!$Label.JEOL_Quotation_Label_ListQuotation}</div>
+              <apex:outputPanel layout="block" styleClass="pager-area clearfix" rendered="{!hasRecords}">
+                <apex:commandLink action="{!ssc.previous}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasPrevious}" >&laquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasPrevious}" >&laquo;</apex:outputPanel>
+                <div class="current-page-number">{!pageNum}</div>
+                <div class="separator">/</div>
+                <div class="max-page-number">{!FLOOR(((resultSize - 1) / ssc.PageSize) + 1)}</div>
+                <apex:commandLink action="{!ssc.next}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasNext}" >&raquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasNext}" >&raquo;</apex:outputPanel>
+              </apex:outputPanel>
+            </div>
+            <div class="section-body">
+              <apex:outputPanel layout="block" rendered="{!hasRecords}">
+                <div class="recordList" >
+                  <table class="record-table" style="table-layout:fixed" >
+                      <col span="1" style="width:86px;"/>
+                      <col span="1" style="width:165px;"/>
+                      <col span="1" style="width:94px;"/>
+                      <col span="1" style="width:60px;"/>
+                      <col span="1" style="width:115px;"/>
+                      <col span="1" style="width:80px;"/>
+                      <col span="1" style="width:130px;"/>
+                      <col span="1" style="width:135px;"/>
+                      <col span="1" style="width:120px;"/>                      
+                    <tr class="header-row">
+                      <th >
+                        <span>{!$Label.JEOL_Quotation_Label_Action}</span>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('QuoteNo__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_QuotBranchNo}" />
+                          <apex:outputText rendered="{!orderTarget == 'QuoteNo__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'QuoteNo__c' && orderDesc == true}" value="▽" />
+                        </a>
+                        <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('QuotationType__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_QuotType}" />
+                          <apex:outputText rendered="{!orderTarget == 'QuotationType__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'QuotationType__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('CreatedDateFormula__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_DateRegistr}" />
+                          <apex:outputText rendered="{!orderTarget == 'CreatedDateFormula__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'CreatedDateFormula__c' && orderDesc == true}" value="▽" />
+                        </a>
+                        <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('IssueDate__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_DateIssue}" />
+                          <apex:outputText rendered="{!orderTarget == 'IssueDate__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'IssueDate__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('Series__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_ProductCodeShort}" />
+                          <apex:outputText rendered="{!orderTarget == 'Series__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'Series__c' && orderDesc == true}" value="▽" />
+                        </a>
+                        <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('RecordType.DeveloperName');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_Type}" />
+                          <apex:outputText rendered="{!orderTarget == 'RecordType.DeveloperName' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'RecordType.DeveloperName' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('SalesPerson__r.Name');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_SalesPerson}" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesPerson__r.Name' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesPerson__r.Name' && orderDesc == true}" value="▽" />
+                        </a>
+                        <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('SalesAssistant__r.Name');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_SalesAssistant}" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesAssistant__r.Name' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesAssistant__r.Name' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('DepartmentName__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_Division}" />
+                          <apex:outputText rendered="{!orderTarget == 'DepartmentName__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'DepartmentName__c' && orderDesc == true}" value="▽" />
+                        </a>
+                        <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('SalesArea__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_Area}" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesArea__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'SalesArea__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('ContractName__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_Contractor}" />
+                          <apex:outputText rendered="{!orderTarget == 'ContractName__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'ContractName__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('ShipmentName__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_EndUser}" />
+                          <apex:outputText rendered="{!orderTarget == 'ShipmentName__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'ShipmentName__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="sortOrder('name');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_QuotationTitle}" />
+                          <apex:outputText rendered="{!orderTarget == 'name' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'name' && orderDesc == true}" value="▽" />
+                        </a>
+                      <br/>
+                        <a href="javascript:void(0)" onclick="sortOrder('CustomerQuotationRequestedNo__c');">
+                          <apex:outputText value="{!$Label.JEOL_Quotation_Label_EndUserQuotationNoShort}" />
+                          <apex:outputText rendered="{!orderTarget == 'CustomerQuotationRequestedNo__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'CustomerQuotationRequestedNo__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <!--Modification-VAIB-Begins(2015/05/27 UAT_QA_List No.80) -->
+                        <!-- <a href="javascript:void(0)" onclick="sortOrder('TotalTaxAmount__c');">
+                          <apex:outputText value="合計金額" />
+                          <apex:outputText rendered="{!orderTarget == 'TotalTaxAmount__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'TotalTaxAmount__c' && orderDesc == true}" value="▽" />
+                        </a> -->
+                        <a href="javascript:void(0)" onclick="sortOrder('TotalAmount__c');">
+                          <apex:outputText escape="false" value="{!$Label.JEOL_Quotation_Label_TotalAmount}" />
+                          <apex:outputText rendered="{!orderTarget == 'TotalAmount__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderTarget == 'TotalAmount__c' && orderDesc == true}" value="▽" />
+                        </a>
+                        <!--Modification-VAIB-Ends(2015/05/27 UAT_QA_List No.80) -->
+                      </th>
+                    </tr>
+                    <apex:repeat value="{!Records}" var="rec" >
+                      <tr class="body-row">
+                        <td class="action-col">
+                          <div class="dropdown {!IF(rec.RecordType.DeveloperName == 'PCS', 'hidden', '')}">
+                            <button type="button" style="padding: 2px 10px;" class="customButton" data-toggle="dropdown" aria-expanded="false">
+                              <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                              <li>
+                                <apex:outputLink styleClass="field-body" value="{!$Page.JEOL_QuotationEditorPage}" >
+                                  <apex:param name="id" value="{!rec.id}" />
+                                  <apex:param name="{!UrlParamFromEditorCopy}" value="true" />
+                                  <apex:outputText value="{!$Label.JEOL_Quotation_Label_NewQuotNo}" />
+                                </apex:outputLink>
+                              </li>
+                              <li>
+                                <apex:outputLink styleClass="field-body" value="{!$Page.JEOL_QuotationEditorPage}" >
+                                  <apex:param name="id" value="{!rec.id}" />
+                                  <apex:param name="{!UrlParamFromEditorCopy}" value="true" />
+                                  <apex:param name="{!UrlParamFromEditorBranch}" value="true" />
+                                  <apex:outputText value="{!$Label.JEOL_Quotation_Label_NewBranchNo}" />
+                                </apex:outputLink>
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+                        <td >
+                          <apex:outputLink styleClass="field-body" value="{!$Page.JEOL_QuotationEditorPage + '?id=' + rec.id}" >
+                            <apex:outputText value="{!IF(ISBLANK(rec.QuoteNo__c), '_', rec.QuoteNo__c)}" />
+                            <apex:outputText value=" / " />
+                            <apex:outputText value="{!IF(ISBLANK(rec.BranchNo__c), '_', rec.BranchNo__c)}" />
+                          </apex:outputLink>
+                          <br/>
+                          <apex:outputField styleClass="field-body" value="{!rec.QuotationType__c}" />
+                        </td>
+                        <td >
+                          <apex:outputText styleClass="field-body" value="{0, date, yyyy/MM/dd}" >
+                            <apex:param value="{!rec.CreatedDateFormula__c}" />
+                          </apex:outputText>
+                          <br/>
+                          <apex:outputText styleClass="field-body" value="{0, date, yyyy/MM/dd}" >
+                            <apex:param value="{!rec.IssueDate__c}" />
+                          </apex:outputText>
+                        </td>
+                        <td style="text-align:center; padding:4px 8px;">
+                          <apex:outputText value="{!rec.Series__c}" />
+                          <br/>
+                          <apex:outputText styleclass="{!IF(rec.RecordType.DeveloperName != 'BaaN' && rec.RecordType.DeveloperName != 'PCS', 'hidden', '')}" value="{!rec.RecordType.DeveloperName}" />
+                          <apex:outputText styleclass="{!IF(rec.RecordType.DeveloperName != 'BaaN' && rec.RecordType.DeveloperName != 'PCS', '', 'hidden')}" value=" " />
+                        </td>
+                        <td >
+                          <apex:outputField styleClass="field-body" value="{!rec.SalesPerson__c}" />
+                          <br/>
+                          <apex:outputField styleClass="field-body" value="{!rec.SalesAssistant__c}" />
+                        </td>
+                        <td >
+                          <apex:outputField styleClass="field-body" value="{!rec.DepartmentName__c}" />
+                          <br/>
+                          <apex:outputField styleClass="field-body" value="{!rec.SalesArea__c}" />
+                        </td>
+                        <td >
+                          <apex:outputField styleClass="field-body" value="{!rec.ContractName__c}" />
+                        <br/>
+                          <apex:outputField styleClass="field-body" value="{!rec.ShipmentName__c}" />
+                        </td>
+                        <td >
+                          <apex:outputField styleClass="field-body" value="{!rec.name}" />
+                        <br/>
+                          <apex:outputField styleClass="field-body" value="{!rec.CustomerQuotationRequestedNo__c}" />
+                        </td>
+                        <td style="text-align:right; padding:4px 8px;">
+                          <apex:outputText styleClass="field-body" value="{0, number, ###,###,###,###,##0}">
+                        <!--Modification-VAIB-Begins(2015/05/27 UAT_QA_List No.80) -->
+                            <apex:param value="{!rec.TotalAmount__c}" />
+                            <!-- <apex:param value="{!rec.TotalTaxAmount__c}" /> -->
+                        <!--Modification-VAIB-Ends(2015/05/27 UAT_QA_List No.80) -->
+                          </apex:outputText>
+                        </td>
+                      </tr>
+                    </apex:repeat>
+                  </table>
+                </div>
+                <div class="footer-row"></div>
+              </apex:outputPanel>
+              <apex:outputPanel layout="block" rendered="{!!hasRecords}">
+                <apex:outputText value="{!$Label.JEOL_Quotation_Message_NoQuotationFound}" />
+              </apex:outputPanel>
+            </div>
+            <div class="section-footer footer-pager clearfix">
+              <apex:outputPanel layout="block" styleClass="pager-area clearfix" rendered="{!hasRecords}">
+                <apex:commandLink action="{!ssc.previous}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasPrevious}" >&laquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasPrevious}" >&laquo;</apex:outputPanel>
+                <div class="current-page-number">{!pageNum}</div>
+                <div class="separator">/</div>
+                <div class="max-page-number">{!FLOOR(((resultSize - 1) / ssc.PageSize) + 1)}</div>
+                <apex:commandLink action="{!ssc.next}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasNext}" >&raquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasNext}" >&raquo;</apex:outputPanel>
+              </apex:outputPanel>
+            </div>
+          </apex:outputPanel>
+        </div>
+        <div class="footer">
+          <apex:include pageName="{!$Page.JEOL_VisualforceFooter}" />
+        </div>
+      </apex:form>
+    </body>
+  </html>
+</apex:page>

@@ -1,0 +1,1031 @@
+<apex:page renderAs="{!renderTarget}" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOL_QuotationPrintPageCtrl" rendered="{!outputType == 'preview' || outputType == 'print'}">
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        @page {
+          size: A4;
+          margin: 39pt;
+        }
+        <!--
+        @page {
+          @top-right {
+            content: "Page " counter(page) " / " counter(pages);
+           }
+        }
+        -->
+        @media print,screen {
+          html, body {
+            margin: 0pt;
+            padding: 0pt;
+            font-size: 10pt;
+            font-family: 'Arial Unicode MS';
+            height: 100%;
+          }
+          * {
+            color: #000;
+            padding: 0pt;
+            font-weight: 400;
+          }
+          
+          .contents {
+            display: none;
+            width: 100%;
+            margin: 0 auto;
+          }
+          .page{
+            page-break-after: always;
+            padding: 1pt;
+          }
+          .page.last{
+            page-break-after: avoid;
+          }
+          .header {
+            width: 100%;
+          }
+          
+          .title {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15pt;
+            margin-top: 20pt;
+          }
+          .header .title span {
+            font-size: 13pt;
+            font-weight: normal;
+          }
+          .info {
+            width: 100%;
+            overflow: hidden;
+            height: 295pt; <!-- It was 294 -->
+          }
+          .info .customer-info {
+            float: left;
+            width: 60%;
+            height: 100%;
+            line-height: 13pt;
+          }
+          .info .customer-info .customer-name {
+            width: 200%;
+            font-size: 12pt;
+            margin-bottom: 2pt; //20pt;
+            overflow: hidden;
+          }
+          .customer-name1 {
+              margin-top: -5pt;
+          }
+          .customer-name2 {
+              margin-top: -3pt;
+          }
+          .customer-name3 {
+              margin-top: -3pt;
+              margin-bottom: 13pt !important;
+          }
+          .info .customer-info .customer-name .name,
+          .info .customer-info .customer-name .addressee {
+            float: left;
+          }
+          .info .customer-info .customer-name .addressee {
+            margin-left: 16pt;
+          }
+          .info .customer-info .description {
+            width: 100%;
+            margin-bottom: 16pt;
+          }
+          .info .customer-info .proposed-price {
+            overflow: hidden;
+            border: 1pt solid transparent;
+            border-bottom: 1pt solid #000;
+            font-size: 12pt;
+            overflow: hidden;
+            margin-bottom: 12pt;
+            margin-top: 13pt;
+            width: auto;
+            line-height: 14pt;
+          }
+          .info .customer-info .proposed-price .price-head {
+            float: left;
+            text-align: left;
+            width: {!IF(language <> 'ja', '150pt', '90pt')};
+          }
+          .info .customer-info .proposed-price .amount {
+            float: left;
+            text-align: right;
+            width: {!IF(language <> 'ja', '120pt', '140pt')};
+          }
+          .info .customer-info .others-info {
+            line-height: 10pt;
+          }
+          .info .customer-info .others-info .field {
+            margin-bottom: 2pt;
+          }
+          .info .jeol-info {
+            float: right;
+            width: 270px;
+            height: 100%;
+          }
+          .quotation-info {
+            position: absolute;
+            top: 0pt;
+            right: 0pt;
+            text-align: right;
+            font-size: 9pt;
+          }
+          .quotation-info .field .label {
+            width: auto;
+            display: inline-block;
+            float: none;
+          }
+          .quotation-info .field .value {
+            float: none;
+            margin-left: 8pt;
+            display: inline-block;
+          }
+          .info .company-info {
+            width: 100%;
+            margin-top: 20pt;
+            position: relative;
+            line-height: 13pt;
+          }
+          .info .company-info .company-name {
+            font-size: 12pt;
+            line-height: 14pt;
+          }
+          .info .company-info .phone {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 8pt;
+          }
+          .info .company-info .phone .field {
+            width: 50%;
+            float: left;
+          }
+          .info .company-info .phone .field .label {
+            width: auto;
+          }
+          .info .company-info .area {
+            width: 100%;
+          }
+          .info .company-info .parson-in-charge {
+            width: 100%;
+            margin-bottom: 8pt;
+          }
+          .info .company-info .support {
+            width: 100%;
+          }
+          .middle-area {
+            overflow: hidden;
+            position: absolute;
+            top: 161pt;
+            right: 0pt;
+          }
+          .middle-area .stamp {
+            float: right;
+            overflow: hidden;
+          }
+          .middle-area .stamp .area {
+            width: 42pt;
+            height: 46pt;
+            border-top: 1pt solid #000;
+            border-left: none;
+            border-right: 1pt solid #000;
+            border-bottom: 1pt solid #000;
+            float: left;
+          }
+          .middle-area .stamp .area:first-child {
+            margin-left: 0px;
+            border-left: 1pt solid #000;
+          }
+          table.quotation-name {
+            margin: 8pt 0pt 10pt;
+          }
+          table.quotation-name col:first-child {
+            width: {!IF(language <> 'ja', '100pt', '60pt')};
+          }
+          table.quotation-name td {
+            border: none;
+            border-bottom: 1pt solid #000;
+          }
+          table.quotation-name td:first-child {
+            vertical-align: top;
+          }
+          table,tbody,tr,td,th {
+            border-collapse: collapse;
+            border-spacing: 0;
+          }
+          table td {
+            border: 0.6px solid #000;
+          }
+          table .result-row td {
+            border-width: 0.6px;
+          }
+          table .noborder td {
+            border-width: 0pt;
+          }
+          table th {
+            text-align: left;
+            font-weight: normal;
+          }
+          table {
+            width: 514pt;
+            border: none;
+            table-layout: fixed;
+          }
+          td {
+            overflow: hidden;
+          }
+          col {
+            height: 16pt;
+          }
+          .detail-table tr td,
+          .detail-table tr th {
+            padding: 0pt 2pt;
+            line-height: 12pt;
+            font-size: 10pt;
+            height: 16pt;
+          }
+          .detail-table tr td.depth-0 {
+            padding-left: 4pt;
+          }
+          .detail-table tr td.depth-1 {
+            padding-left: 12pt;
+          }
+          .detail-table tr td.depth-2 {
+            padding-left: 20pt;
+          }
+          .detail-table tr td.depth-3 {
+            padding-left: 28pt;
+          }
+          .detail-table tr td.depth-4 {
+            padding-left: 36pt;
+          }
+          .detail-table tr td.depth-5 {
+            padding-left: 44pt;
+          }
+          .detail-table tr td.number {
+            text-align: right;
+          }
+          .detail-table tr td.space {
+            border: none;
+            text-align: right;
+          }
+          .detail-table .hidden {
+            display: none;
+          }
+          .detail-table tr td.label {
+            text-align: right;
+          }
+          .border-left-hidden {
+            border-left: none;
+          }
+          .border-right-hidden {
+            border-right: none;
+          }
+          .border-all-hidden {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+          }
+          .field {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+          }
+          .details.addMargin {
+            margin-top: 38pt;
+          }
+          .field .label,
+          .field .value {
+            float: left;
+            display: block;
+          }
+          .field .label {
+            width: 70pt;
+          }
+          .field .value {
+            margin-left: 8pt;
+            width: auto;
+          }
+          .clear {
+            clear: both;
+          }
+          .section {
+            overflow: hidden;
+          }
+          .section>* {
+            float: left;
+          }
+          .postal-mark:before {
+            content: "〒";
+            margin-right: 4pt;
+          }
+          .memo-area {
+            margin-top: 28pt;
+          }
+          .memo {
+            padding: 8pt 6pt;
+            border: 1pt solid #000;
+            line-height: 14pt;
+          }
+          .page {
+            position: relative;
+            page-break-before: always;
+          }
+          .page.last {
+            page-break-before: avoid;
+          }
+        }
+      </style>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'preview'}">
+        <style>
+          @media screen {
+            html,body {
+              background-color: #ccc;
+            } 
+            .contents {
+              display: block;
+              margin: 0px auto;
+              width: 100%;
+            }
+            .page {
+              background-color: #fff;
+              margin: 4px auto;
+              padding: 40pt;
+              width: 514pt;
+              box-shadow: 0px 4px 6px 3px rgba(0,0,0,0.3);
+              border: 1pt solid #eee;
+              height: 768pt;
+            }
+            .quotation-info {
+              top: 40pt;
+              right: 40pt;
+            }
+          }
+        </style>
+      </apex:outputPanel>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'print'}">
+        <style>
+          @media print {
+            .contents { 
+              display: block; 
+            }
+          }
+        </style>
+      </apex:outputPanel>
+      <apex:outputPanel layout="none" rendered="{!isShowPriceExpress}">
+        <style>
+          col.product-name {width: 198pt;}
+          col.product-code {width: 75pt;}
+          col.quantity {width: 34pt;}
+          col.quantity-unit {width: 26pt;}
+          col.unitprice {width: 60pt;}
+          col.discount-amount {width: 50pt;}
+          col.total-amount {width: 70pt;}
+        </style>
+      </apex:outputPanel>
+      <apex:outputPanel layout="none" rendered="{!!isShowPriceExpress}">
+        <style>
+          col.product-name {width: 258pt;}
+          col.product-code {width: 75pt;}
+          col.quantity {width: 34pt;}
+          col.quantity-unit {width: 26pt;}
+          col.unitprice {width: 60pt;}
+          col.discount-amount {width: 50pt;}
+          col.total-amount {width: 70pt;}
+        </style>
+      </apex:outputPanel>
+    </head>
+    <body>
+      <div class="contents" >
+        <apex:repeat value="{!pdfPages}" var="page">
+          <apex:variable value="{!page.head}" var="head" />
+          <div class="page {!IF(page.isLast,'last','')}">
+
+            <apex:outputPanel layout="none" rendered="{!(outputType == 'print' && head.rec.RecordType.DeveloperName == 'PCS')}">
+              <img src="{!URLFOR($Resource.Watermark)}" width="95%" height="100%" style="position: fixed;background-repeat:repeat;left: 0.5cm; top:0cm; z-index:0"/>
+            </apex:outputPanel>
+
+            <div >
+              <div class="quotation-info" >
+                <div class="field" >
+                  <div class="label">
+                    <span>Page</span>
+                  </div>
+                  <div class="value">
+                    <span>
+                      <apex:outputText value="{!page.pageNo}" />
+                      <apex:outputText value="/" />
+                      <apex:outputText value="{!pageSize}" />
+                    </span>
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="label">
+                    <span>No.</span>
+                  </div>
+                  <div class="value">
+                    <span>
+                      <apex:outputText value="{!head.rec.QuoteNo__c}" />
+                      <apex:outputText value="-" />
+                      <apex:outputText value="{!head.rec.BranchNo__c}" />
+                    </span>
+                  </div>
+                </div>
+                <div class="field" >
+                  <div class="value">
+                    <span>
+                      <apex:outputText value="{!head.IssueDate}" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <apex:outputPanel styleClass="header" layout="block" rendered="{!page.isFirst}">
+              <div class="title" >
+                <span >{!$Label.JEOL_QuotPrint_Label_Quotation}</span>
+              </div>
+              <div class="info">
+                <div class="section customer-info">
+                  <div class="customer-name customer-name1">
+                    <div class="name">
+                      <span>
+                        <apex:outputText value="{!customerName}" />
+                      </span>
+                    </div>
+<!--                  
+                    <div class="name">
+                      <apex:outputText value="{!head.rec.ContractName__c}" rendered="{!head.rec.CustomerExpress__c == '契約先'}"/>
+                      <apex:outputText value="{!head.rec.ShipmentName__c}" rendered="{!head.rec.CustomerExpress__c == '納入先'}"/>
+                    </div>
+                    <div class="addressee">
+                      <apex:outputText value="{!head.rec.Addressee__c}" rendered="{!!(language <> 'ja')}"/>
+                    </div>
+-->
+                  </div>
+
+                  <div class="customer-name customer-name2">
+                    <div class="name">
+                      <span>
+                        <apex:outputText value="{!customerName2}" />
+                      </span>
+                    </div>
+                  </div>
+                  <div class="customer-name customer-name3">
+                    <div class="name">
+                      <span>
+                        <apex:outputText value="{!customerName3}" />
+                      </span>
+                    </div>
+                  </div>
+                                  
+                  <div class="description">
+                    <div>
+                      <span>{!$Label.JEOL_QuotPrint_Label_DetailRow1}</span>
+                    </div>
+                    <div>
+                      <apex:outputtext rendered="true" escape="false" value="{!$Label.JEOL_QuotPrint_Label_DetailRow2}" />
+                    </div>
+                  </div>
+                  <div class="proposed-price">
+                    <div class="price-head">
+                      <span>{!$Label.JEOL_QuotPrint_Label_PriceTotal}</span>
+                    </div>
+                    <div class="amount">
+                      <span>&yen;</span>
+                      <span>
+                        <apex:outputText value="{0,number,###,###,###,###,##0}" rendered="{!head.rec.OutputTotalTaxAmount__c}">
+                          <apex:param value="{!head.rec.TotalTaxAmount__c}" />
+                        </apex:outputText>
+                        <apex:outputText value="{0,number,###,###,###,###,##0}" rendered="{!!head.rec.OutputTotalTaxAmount__c && head.rec.OutputTotalAmount__c}">
+                          <apex:param value="{!head.rec.TotalAmount__c}" />
+                        </apex:outputText>
+                        <apex:outputText value="{0,number,###,###,###,###,##0}" rendered="{!!head.rec.OutputTotalTaxAmount__c && !head.rec.OutputTotalAmount__c && head.rec.OutputSubtotalReduction2__c}">
+                          <apex:param value="{!head.rec.SubtotalReductionAmount2__c}" />
+                        </apex:outputText>
+                        <apex:outputText value="{0,number,###,###,###,###,##0}" rendered="{!!head.rec.OutputTotalTaxAmount__c && !head.rec.OutputTotalAmount__c && !head.rec.OutputSubtotalReduction2__c && head.rec.OutputSubtotalReduction1__c}">
+                          <apex:param value="{!head.rec.SubtotalReductionAmount1__c}" />
+                        </apex:outputText>
+
+                        <apex:outputText value="{0,number,###,###,###,###,##0}" rendered="{!!head.rec.OutputTotalTaxAmount__c && !head.rec.OutputTotalAmount__c && !head.rec.OutputSubtotalReduction2__c && !head.rec.OutputSubtotalReduction1__c && head.rec.OutputSubtitle__c}">
+                          <apex:param value="{!head.rec.Subtitle__c}" />
+                        </apex:outputText>
+                      </span>
+                      <span>-</span>
+                    </div>
+                  </div>
+                  <div class="others-info">
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_ModeDelivery}</span>
+                      </div>
+                      <div class="value">
+                        <apex:repeat value="{!head.DeliveryLocation}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_DeliveryTerm}</span>
+                      </div>
+                      <div class="value">
+                        <apex:repeat value="{!head.DeliveryCondition}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_InstallationDuration}</span>
+                      </div>
+                      <div class="value">
+                        <apex:repeat value="{!head.DeliveryPeriod}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_PaymentTerm}</span>
+                      </div>
+                      <div class="value">
+                        <apex:repeat value="{!head.PaymentCondition}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_QuotationValidity}</span>
+                      </div>
+                      <div class="value">
+                       <apex:repeat value="{!head.QuotationVlidityPeriod}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                    <apex:outputPanel layout="block" styleClass="field" rendered="{!!ISNULL(head.rec.CustomerQuotationRequestedNo__c)}">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_QuotationNo}</span>
+                      </div>
+                      <div class="value">
+                       <apex:repeat value="{!head.CustomerQuotationRequestedNo}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" />
+                          </div>
+                        </apex:repeat>
+                      </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel layout="block" styleClass="field" rendered="{!!ISNULL(head.rec.QuotationRequestedDate__c)}">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_QuotationDate}</span>
+                      </div>
+                      <div class="value">
+                        <span>
+                          <apex:outputText value="{!head.QuotationRequestDate}" />
+                        </span>
+                      </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel layout="block" styleClass="field" rendered="{!head.rec.UnitbodyExpress__c}">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_UnitBody}</span>
+                      </div>
+                      <div class="value">
+                        <apex:outputField value="{!head.rec.UnitBody__c}" />
+                      </div>
+                    </apex:outputPanel>
+                    <div class="field">
+                      <div class="label">
+                        <span>{!$Label.JEOL_QuotPrint_Label_OtherRemarks}</span>
+                      </div>
+                      <div class="value othertext">
+                        <apex:repeat value="{!head.otherTextLines}" var="line">
+                          <apex:outputText value="{!line}" /><br/>
+                        </apex:repeat>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="section jeol-info">
+                  <div class="company-info">
+                    <div class="company-postal-code postal-mark">
+                      <span>
+                        <apex:outputText value="{!head.rec.PostalCode__c}" />
+                      </span>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText value="{!head.rec.AddressLine1__c}" rendered="{!!ISNULL(head.rec.AddressLine1__c)}" />
+                      </span>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText value="{!head.rec.AddressLine2__c}" rendered="{!!ISNULL(head.rec.AddressLine2__c)}" />
+                      </span>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText value="{!head.rec.AddressLine3__c}" rendered="{!!ISNULL(head.rec.AddressLine3__c)}" />
+                      </span>
+                    </div>
+                    <div class="phone org-phone-number">
+                      <div class="field">
+                        <div class="label">
+                          <span>TEL</span>
+                        </div>
+                        <div class="value">
+                          <span>
+                            <apex:outputText value="{!head.rec.Phone__c}" />
+                          </span>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <div class="label">
+                          <span>FAX</span>
+                        </div>
+                        <div class="value">
+                          <span>
+                            <apex:outputText value="{!head.rec.Fax__c}" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText escape="false" value="&nbsp;" rendered="{!ISNULL(head.rec.AddressLine1__c)}" />
+                      </span>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText escape="false" value="&nbsp;" rendered="{!ISNULL(head.rec.AddressLine2__c)}" />
+                      </span>
+                    </div>
+                    <div class="company-address">
+                      <span>
+                        <apex:outputText escape="false" value="&nbsp;" rendered="{!ISNULL(head.rec.AddressLine3__c)}" />
+                      </span>
+                    </div>
+
+                    <div class="company-name">
+                      <span>
+                        <apex:outputText value="{!head.rec.OrgName__c}" />
+                      </span>
+                    </div>
+                    <div style="margin-left: 13px;" class="area">
+                      <apex:outputText value="{!head.rec.SalesArea__c}" />
+                    </div>
+                    <apex:outputPanel layout="block" rendered="{!head.rec.RepresentativeNameExpress__c}" >
+                      <div style="margin-left: 26px;" class="parson-in-charge field">
+                        <div class="label">
+                          <span>
+                            <apex:outputText value="{!head.rec.SupervisorPosition__c}" />
+                          </span>
+                        </div>
+                        <div class="value">
+                          <apex:outputText value="{!head.rec.SupervisorName__c}" />
+                        </div>
+                      </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel layout="block" rendered="{!head.rec.ReferenceExpress__c}" >
+                      <div class="support">
+                        <span>{!$Label.JEOL_QuotPrint_Label_InquiriesContact}</span>
+                      </div>
+                      <div class="phone support-phone-number">
+                        <div class="field">
+                          <div class="label">
+                            <span>TEL</span>
+                          </div>
+                          <div class="value">
+                            <span>
+                              <apex:outputText value="{!head.rec.SalesPerson__r.Phone}" />
+                            </span>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <div class="label">
+                            <span>FAX</span>
+                          </div>
+                          <div class="value">
+                            <span>
+                              <apex:outputText value="{!head.rec.SalesPerson__r.Fax}" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </apex:outputPanel>
+                    <div class="middle-area">
+                      <div class="stamp">
+                        <div class="area"></div>
+                        <div class="area"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </apex:outputPanel>
+            <apex:variable value="{!page.DetailSize > 0}" var="hasDetails" />
+            <apex:outputPanel styleClass="accompanying-paper" layout="block" rendered="{!page.isAccompanyingPaper && hasDetails}">
+              <div class="title" >
+                <span >{!$Label.JEOL_QuotPrint_Label_Annex}</span>
+              </div>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" rendered="{!page.isFirst}">
+              <table class="quotation-name" >
+                <col />
+                <col />
+                <tr>
+                  <td>
+                    <span>{!IF(head.rec.QuotationNameExpress__c, $Label.JEOL_QuotPrint_Label_QuotationTitle + '：','')}</span>
+                  </td>
+                  <td>
+                    <apex:repeat value="{!page.quotatinNameLines}" var="line">
+                      <apex:outputText value="{!IF(head.rec.QuotationNameExpress__c,line,'')}" /><br />
+                    </apex:repeat>
+                  </td>
+                </tr>
+              </table>
+            </apex:outputPanel>
+            <apex:outputPanel layout="block" styleClass="details {!IF(!page.isFirst && !page.isAccompanyingPaper, 'addMargin', '')}" > <!-- rendered="{!hasDetails}" -->
+              <apex:variable value="{!page.details}" var="details" />
+              <apex:variable value="{!head.rec.ProductCodeExpress__c}" var="isShowProductCode" />
+              <table class="detail-table" >
+                <col class="product-name" />
+                <col class="product-code" />
+                <col class="quantity" />
+                <col class="quantity-unit" />
+                <col class="unitprice {!IF(isShowPriceExpress,'','hidden')}" />
+                <col class="discount-amount" />
+                <col class="total-amount" />
+
+                <tr class="{!IF(hasDetails,'','hidden')}" >
+                  <th class="border-right-hidden">{!$Label.JEOL_QuotPrint_Label_ItemName}</th>
+                  <th class="border-left-hidden"></th>
+                  <th class="border-right-hidden">{!$Label.JEOL_QuotPrint_Label_Quantity}</th>
+                  <th class="border-left-hidden"></th>
+                  <th class="{!IF(isShowPriceExpress,'','hidden')}">{!$Label.JEOL_QuotPrint_Label_UnitPrice}</th>
+                  <th class="border-right-hidden" colspan="2">{!$Label.JEOL_QuotPrint_Label_Price}</th>
+<!--                  <th class="border-left-hidden"></th> -->
+                </tr>
+
+                <apex:repeat value="{!details}" var="detail">
+
+
+                  <apex:outputPanel layout="none" rendered="{!detail.rec.Type__c == '1'}">
+                    <tr>
+                      <td class="border-right-hidden {!'depth-' + Text(detail.rec.Depth__c)}" colspan="{!IF(isShowProductCode, 1, 2)}">
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" style="white-space: pre;" />
+                          </div>
+                        </apex:repeat>
+                      </td>
+                      <td class="border-left-hidden {!IF(isShowProductCode, '', 'hidden')}" >
+                        <apex:outputText value="{!detail.rec.ProductCode__c}" rendered="{!detail.isProductCodeStartsWithNumber}" /> <!--Modification-VAIB-(2015/05/26 UAT_QA_List No.81)-->
+                      </td>
+                      <td class="number border-right-hidden">
+                        <apex:outputText value="{!detail.QuantityFormat}" rendered="{!detail.rec.Quantity__c != null && detail.rec.Quantity__c > 0}"/>
+                      </td>
+                      <td class="border-left-hidden">
+                        <apex:outputText value="{!detail.rec.QuantityUnit__c}" rendered="{!detail.rec.Quantity__c != null && detail.rec.Quantity__c > 0}"/>
+                      </td>
+                      <td class="number {!IF(isShowPriceExpress,'','hidden')}">
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.UnitPrice__c != null && detail.rec.UnitPrice__c != 0}"> <!--Modification-VAIB-(2015/05/26 UAT_QA_List No.87)-->
+                          <apex:param value="{!detail.rec.UnitPrice__c}" />
+                        </apex:outputText>
+                      </td>
+                      <td class="number border-right-hidden">
+                        <apex:outputPanel layout="none" rendered="{!detail.rec.IsShowDetailAmount__c}" >
+                          <apex:outputPanel layout="none" rendered="{!detail.rec.DiscountRate__c != null && detail.rec.DiscountRate__c > 0}" >
+                            <span>▲</span>
+                            <apex:outputText value="{!detail.rec.DiscountRate__c}" />
+                            <span>%</span>
+                          </apex:outputPanel>
+                          <apex:outputPanel layout="none" rendered="{!detail.rec.DiscountAmount__c != null && detail.rec.DiscountAmount__c > 0}" >
+                            <span>▲</span>
+                            <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                              <apex:param value="{!detail.rec.DiscountAmount__c}" /> 
+                            </apex:outputText>
+                          </apex:outputPanel>
+                        </apex:outputPanel>
+                      </td>
+                      <td class="number border-left-hidden total-amount">
+
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.IsShowDetailAmount__c && detail.rec.TotalDiscountAmount__c > 0}" > <!--Modification-VAIB-(2015/05/26 UAT_QA_List No.71,87)-->
+                          <apex:param value="{!detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+
+                        <apex:outputText value="▲" rendered="{!detail.rec.IsShowDetailAmount__c && detail.rec.TotalDiscountAmount__c < 0}" />
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.IsShowDetailAmount__c && detail.rec.TotalDiscountAmount__c < 0}" >
+                          <apex:param value="{!-detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+
+                      </td>
+                    </tr>
+                  </apex:outputPanel>
+
+
+
+                  <apex:outputPanel layout="none" rendered="{!detail.rec.Type__c == '2'}">
+                    <tr>
+                      <td class="{!'depth-' + Text(detail.rec.Depth__c)}" colspan="2">
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <apex:outputText value="{!line}" /><br/>
+                        </apex:repeat>
+                      </td>
+                      <td colspan="2"></td>
+                      <td class="{!IF(isShowPriceExpress,'','hidden')}"></td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </apex:outputPanel>
+
+
+
+                  <apex:outputPanel layout="none" rendered="{!(detail.rec.Type__c == '3' || detail.rec.Type__c == '5')}">
+                    <tr>
+                      <td class="{!'depth-' + Text(detail.rec.Depth__c)}" colspan="2">
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" style="white-space: pre;"/>
+                          </div>
+                        </apex:repeat>
+                      </td>
+                      <td class="number border-right-hidden" >
+                        <apex:outputText value="{!detail.QuantityFormat}" />
+                      </td>
+                      <td class="border-left-hidden">
+                        <apex:outputText value="{!detail.rec.QuantityUnit__c}" />
+                      </td>
+                      <td class="{!IF(isShowPriceExpress,'','hidden')}"></td>
+                      <td class="number" colspan="2">
+
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.TotalDiscountAmount__c > 0}" >
+                          <apex:param value="{!detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+
+                        <apex:outputText value="▲" rendered="{!detail.rec.TotalDiscountAmount__c < 0}" />
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.TotalDiscountAmount__c < 0}" >
+                          <apex:param value="{!-detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+                      </td>
+                    </tr>
+                  </apex:outputPanel>
+
+
+
+                  <apex:outputPanel layout="none" rendered="{!detail.rec.Type__c == '4'}">
+                    <tr>
+                      <td class="subtitle {!'depth-' + Text(detail.rec.Depth__c)}" colspan="2">
+                        <apex:repeat value="{!detail.bodyLines}" var="line">
+                          <div>
+                            <apex:outputText value="{!line}" style="white-space: pre;"/>
+                          </div>
+                        </apex:repeat>
+                      </td>
+                      <td colspan="2"></td>
+                      <td class="{!IF(isShowPriceExpress,'','hidden')}"></td>
+                      <td class="subtitle number" colspan="2">
+
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.TotalDiscountAmount__c > 0}">
+                          <apex:param value="{!detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+
+                        <apex:outputText value="▲" rendered="{!detail.rec.TotalDiscountAmount__c < 0}" />
+                        <apex:outputText value="{0, number, ###,###,###,###,###,##0}" rendered="{!detail.rec.TotalDiscountAmount__c < 0}">
+                          <apex:param value="{!-detail.rec.TotalDiscountAmount__c}" />
+                        </apex:outputText>
+
+                      </td>
+                    </tr>
+                  </apex:outputPanel>
+                </apex:repeat>
+
+                <apex:outputPanel styleClass="last-page-section" layout="none" rendered="{!page.isShowTotal}">
+                
+                <tr class="{!IF(hasDetails,'hidden','noborder')}"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> 
+                  <tr class="result-row {!IF(head.rec.OutputSubtitle__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.SubtitleLabel__c}" />
+                    </td>
+                    <td class="number" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.Subtitle__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.CustomReductionAmount1__c != null && head.rec.CustomReductionAmount1__c > 0, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.CustomReductionName1__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <span>▲</span>
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.CustomReductionAmount1__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.OutputSubtotalReduction1__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.SubtotalReductionName1__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.SubtotalReductionAmount1__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.CustomReductionAmount2__c != null && head.rec.CustomReductionAmount2__c > 0, '', 'hidden')}">
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.CustomReductionName2__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <span>▲</span>
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.CustomReductionAmount2__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.OutputSubtotalReduction2__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.SubtotalReductionName2__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.SubtotalReductionAmount2__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.CustomReductionAmount3__c != null && head.rec.CustomReductionAmount3__c > 0, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.CustomReductionName3__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <span>▲</span>
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.CustomReductionAmount3__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.OutputTotalAmount__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.TotalAmountName__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.TotalAmount__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.OutputConsumptionTaxAmount__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <span>{!$Label.JEOL_QuotPrint_Label_Tax}</span>&nbsp;
+                      <span>
+                        <apex:outputText value="{!head.rec.TaxRate__c} %" />
+                      </span>
+                    </td>
+                    <td class="number value" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.ConsumptionTaxAmount__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                  <tr class="result-row {!IF(head.rec.OutputTotalTaxAmount__c, '', 'hidden')}" >
+                    <td class="space border-all-hidden" colspan="{!IF(head.rec.PriceExpress__c,'5','4')}">
+                      <apex:outputText value="{!head.rec.TotalTaxAmountName__c}" />
+                    </td>
+                    <td class="number value" colspan="2">
+                      <apex:outputText value="{0, number, ###,###,###,###,###,##0}" >
+                        <apex:param value="{!head.rec.TotalTaxAmount__c}" />
+                      </apex:outputText>
+                    </td>
+                  </tr>
+                </apex:outputPanel>
+
+              </table>
+            </apex:outputPanel>
+            <apex:outputPanel styleClass="memo-area" layout="block" rendered="{!page.HasNoteText}" >
+              <apex:outputText value="{!$Label.JEOL_QuotPrint_Label_Remarks}" rendered="{!page.isShowNoteLabel}" />
+              <apex:outputPanel styleClass="memo" layout="block" rendered="{!page.isShowNote}">
+                <apex:repeat value="{!page.noteTextLines}" var="line">
+                  <div>
+                    <apex:outputText value="{!line}" />
+                  </div>
+                </apex:repeat>
+              </apex:outputPanel>
+            </apex:outputPanel>
+          </div>
+        </apex:repeat>
+      </div>
+    </body>
+  </html>
+</apex:page>

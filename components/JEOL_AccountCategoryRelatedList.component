@@ -1,0 +1,56 @@
+<apex:component controller="JEOL_AccountCategoryRelatedListCtrl">
+  <apex:attribute name="targetParentId" description="" type="String" assignTo="{!parentId}" required="true"/>
+  <apex:attribute name="targetTitle" description="" type="String" assignTo="{!title}" required="true"/>
+  <apex:attribute name="targetEdit" description="" type="Boolean" assignTo="{!isEdit}" default="false" required="false"/>
+  <apex:form >
+    <apex:pageblock id="customRelatedList">
+      <apex:variable value="{!relatedListCtrl}" var="ctrl" />
+      <apex:pageMessages rendered="{!!isSuccess}" />
+      <apex:outputPanel rendered="{!isSuccess}">
+        <apex:variable value="{!ctrl.ResultSize != null && ctrl.ResultSize > 0}" var="hasListItem" />
+        <table style="margin: -5px -7px 12px; table-layout: fixed; width: 100%;">
+          <tr>
+            <td style="width: 30%;">
+              <div >
+                <h3 style="font-size: 1.3em;">{!ctrl.title}</h3>
+              </div>
+            </td>
+            <td>
+              <div style="display: inline-block; padding: 0px 12px; vertical-align: middle;">
+                <apex:componentBody />
+              </div>
+            </td>
+          </tr>
+        </table>
+        <div>
+          <apex:pageBlockTable value="{!ctrl.Records}" var="rec" style="margin-left: -5px;" rendered="{!hasListItem}">
+            <apex:repeat value="{!ctrl.fieldNames}" var="fieldName" >
+              <apex:column rendered="{!fieldName != 'name'}">
+                <apex:facet name="header">
+                  <apex:outputLabel value="{!$ObjectType.Category__c.Fields[fieldName].Label}" />
+                </apex:facet>
+                <apex:outputField value="{!rec[fieldName]}" />
+              </apex:column>
+              <apex:column rendered="{!fieldName == 'name'}">
+                <apex:facet name="header">
+                  <apex:outputLabel value="{!$ObjectType.Category__c.Fields[fieldName].Label}" />
+                </apex:facet>
+                <apex:outputLink value="/{!rec['id']}">
+                  <apex:outputtext value="{!rec[fieldName]}" />
+                </apex:outputLink>
+              </apex:column>
+             </apex:repeat>
+          </apex:pageBlockTable>
+          <apex:outputPanel style="border: 1px solid #e0e3e5;margin: 0px -7px;padding: 5px 2px 4px 5px;text-align: left;" layout="block" rendered="{!!hasListItem}">
+            <apex:outputtext >表示するレコードはありません</apex:outputtext>
+          </apex:outputPanel>
+        </div>
+        <apex:variable value="{!ctrl.CurrentViewSize < ctrl.ResultSize}" var="isSmallViewSize" />
+        <apex:outputPanel style="margin: 0px -7px;padding: 9px 0 2px 5px;text-align: left;" layout="block" rendered="{!hasListItem && isSmallViewSize}">
+          <apex:commandLink rendered="{!isSmallViewSize && ctrl.CurrentViewSize < 125}" rerender="customRelatedList" action="{!ctrl.AddViewSize}">表示件数を{!if(ctrl.CurrentViewSize < 80, if(ctrl.CurrentViewSize*2 < ctrl.ResultSize, ctrl.CurrentViewSize, ctrl.ResultSize - ctrl.CurrentViewSize),if(ctrl.CurrentViewSize*2 < ctrl.ResultSize, 45, ctrl.ResultSize - ctrl.CurrentViewSize))}件増やす &raquo;</apex:commandLink>
+          <apex:outputtext rendered="{!isSmallViewSize && ctrl.CurrentViewSize < 125}">&nbsp;|&nbsp;</apex:outputtext>
+        </apex:outputPanel>
+      </apex:outputPanel>
+    </apex:pageblock>
+  </apex:form>
+</apex:component>

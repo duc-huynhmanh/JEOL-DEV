@@ -1,0 +1,5 @@
+<apex:page >
+  <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/jeol_visualforce_footer_style.css')}" />
+  <div class="jeol-visualforce-footer">
+  </div>
+</apex:page>

@@ -1,0 +1,335 @@
+<apex:page renderAs="{!renderTarget}" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" controller="JEOL_QuotationDestinationPrintPageCtrl" doctype="html-5.0" rendered="{!outputType == 'preview' || outputType == 'print'}">
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        @page {
+          size: A4; /* 595pt * 841.5pt */
+          margin: 30pt 50pt; /* 515pt * 761.5pt */
+        }
+        @media print,screen {
+          html, body {
+            margin: 0pt;
+            padding: 0pt;
+            font-size: 11pt;
+            font-family: 'Arial Unicode MS';
+            height: 100%;
+          }
+          body * {
+            color: #000;
+            padding: 0pt;
+            margin: 0px;
+          }
+          
+          .contents {
+            display: none;
+            width: 100%;
+            margin: 0 auto;
+          }
+          .page{
+            page-break-after: always;
+          }
+          .page.last{
+            page-break-after: avoid;
+          }
+          .header {
+            overflow: hidden;
+            position: relative;
+          }
+          .header .left {
+            float: left;
+            width: 100%
+          }
+          .customer-info {
+            position: absolute;
+            margin-top: 0px;
+            margin-left: 52px;
+          }
+          .header .right {
+            float: right;
+            width: 242pt;
+          }
+
+          .addressright {
+            width: 300px;
+            float: right;
+            margin-top: 110pt;
+            word-wrap: break-word;
+          }           
+
+          .destination-date {
+            width: 100%;
+            text-align: right;
+          }
+          .postalcode:before {
+            content: "〒";
+          }
+          .company-info .compay-address,
+          .customer-address,
+          .postalcode {
+            font-size: 9pt;
+          }
+          .addressleft {
+            max-width: 204pt;
+            width: 204pt;
+            word-wrap: break-word;
+          }
+          
+          .destinationName .company-name {
+            font-size: 12pt;
+          }
+
+          .title:before {
+            content: "　";
+          }
+          h1 {
+            font-size: 14pt;
+          }
+          h2 {
+            font-size: 13pt;
+          }
+          .middle-area {
+            margin-top: 243pt;
+            overflow: hidden;
+          }
+          .middle-area .stamp {
+            float: right;
+            overflow: left;
+          }
+          .middle-area .stamp .area:first-child {
+            margin-left: 0px;
+            border-left: 1pt solid #000;
+          }
+          .middle-area .stamp .area {
+            width: 40pt;
+            height: 40pt;
+            border-top: 1pt solid #000;
+            border-left: none;
+            border-right: 1pt solid #000;
+            border-bottom: 1pt solid #000;
+            float: left;
+          }
+          .middle-area .stamp .area .charge {
+            padding-top: 2pt;
+            padding-left: 2pt;
+            font-size: 9pt;
+          }
+          .distination-body {
+            width: 100%;
+            margin-top: 20pt;
+          }
+          .distination-body h2 {
+            width: 100%;
+            margin-bottom: 20pt;
+            text-align: center;
+          }
+          .distination-body p {
+            width: 100%;
+          }
+          .distination-body .conclusion {
+            text-align: right;
+          }
+          .destination-subject {
+            width: 100%;
+            display: block;
+            height: 240pt;
+            position: relative;
+            margin-top: 40pt;
+          }
+          .destination-subject:before {
+            content: "記";
+            display: block;
+            padding: 8pt;
+            text-align: center;
+            border-bottom: 1pt solid #000;
+          }
+          .destination-subject:after {
+            content: "以上";
+            display: block;
+            padding: 8pt 0pt;
+            text-align: right;
+            border-bottom: 1pt solid #000;
+            position: absolute;
+            width: 100%;
+            bottom: 0pt;
+          }
+          .contact-address {
+            overflow: hidden;
+            margin-top: 4pt;
+            font-size: 10pt;
+          }
+          .contact-address>* {
+            float: left;
+          }
+          .contact-address .info {
+            width: 100%;
+          }
+          .contact-address .tel,
+          .contact-address .fax {
+            width: 50%;
+          }
+          .contact-address .fax {
+            margin-left: -1pt;
+          }
+          .contact-address .tel:before {
+            content: "TEL：";
+            padding-right: 8pt;
+          }
+          .contact-address .fax:before {
+            content: "FAX：";
+            padding-right: 18pt;
+          }
+        }
+      </style>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'preview'}">
+        <style>
+          @media screen {
+            html,body {
+              background-color: #ccc;
+            } 
+            .contents {
+              display: block;
+              margin: 0px auto;
+              width: 100%;
+            }
+            .page,
+            .page.last {
+              background-color: #fff;
+              margin: 4px auto;
+              padding: 40pt 50pt;
+              width: 515pt;
+              box-shadow: 0px 4px 6px 3px rgba(0,0,0,0.3);
+              border: 1pt solid #eee;
+              height: 761.5pt;
+            }
+          }
+        </style>
+      </apex:outputPanel>
+      <apex:outputPanel layout="none" rendered="{!outputType == 'print'}">
+        <style>
+          @media print {
+            .contents {
+              display: block;
+            }
+          }
+        </style>
+      </apex:outputPanel>
+    </head>
+    <body>
+
+    <div class="contents">
+        <apex:variable value="{!pdfdata}" var="page" />
+            <apex:outputPanel layout="block" styleClass="page last" >
+                <div class="header">
+                
+                    <div class="destination-date right">
+                        <span>
+                            <apex:outputText value="{!page.DestinationGuideDate}" />
+                        </span>
+                    </div>
+                    
+                    <div class="customer-info left">
+                        <div class="addressleft">
+                            <span >
+                                <apex:outputText value="{!page.rec.DestinationPostalCode__c}" styleClass="postalcode" />
+                            </span>
+                        </div>
+                        <div class="customer-address addressleft">
+                            <span>
+                                <apex:outputText value="{!page.rec.DestinationAddress__c}" escape="false" />
+                            </span>
+                        </div>
+                        <div class="addressleft">
+                            <span>
+                                <apex:outputText value="{!page.rec.DestinationAccountName__c}" />
+                            </span>
+                        </div>
+                        <div class="addressleft" >                            
+                            <span>
+                                <apex:outputText value="{!page.rec.DestinationUndergraduate__c}" />
+                            </span>
+                        </div>
+                        <div class="addressleft" >
+                            <span>
+                                <apex:outputText value="{!page.rec.DestinationBelong__c}" />
+                            </span>
+                        </div>
+                            <div class="destinationName">
+                                <span>
+                                    <apex:outputText value="{!page.rec.DestinationName__c}" />
+                                </span>
+                                <span>
+                                    <apex:outputText value="{!page.rec.DestinationNameTitle__c}" styleClass="title"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right addressright">
+                        <div class="company-info">
+                            <div class="compay-address">
+                                <apex:outputPanel layout="block" styleCLass="postalcode" rendered="{!!ISBLANK(page.rec.PostalCode__c)}">
+                                    <apex:outputText value="{!page.rec.PostalCode__c}" />
+                                </apex:outputPanel>
+<!--                            <div style="max-width: 243px;"> -->
+                                <div><apex:outputText value="{!page.rec.AddressLine1__c}" rendered="{!!isnull(page.rec.AddressLine1__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine2__c}" rendered="{!!isnull(page.rec.AddressLine2__c)}" /></div>
+                                <div><apex:outputText value="{!page.rec.AddressLine3__c}" rendered="{!!isnull(page.rec.AddressLine3__c)}" /></div>
+<!--                           </div>  -->
+                        </div>
+                        <div class="company-name">
+                            <apex:outputText value="{!page.rec.OrgName__c}" />
+                        </div>
+                        <div class="contact-address">
+                            <div class="info">
+                                <apex:outputText value="{!page.rec.SalesArea__c}" />
+                            </div>
+                            <apex:outputPanel layout="block" styleClass="tel" rendered="{!!ISBLANK(page.rec.Phone__c)}">
+                                <apex:outputText value="{!page.rec.Phone__c}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel layout="block" styleClass="fax" rendered="{!!ISBLANK(page.rec.Fax__c)}">
+                                <apex:outputText value="{!page.rec.Fax__c}" />
+                            </apex:outputPanel>
+                        </div>
+                        <apex:outputPanel layout="block" styleClass="contact-address" rendered="{!!ISNULL(page.rec.SalesPerson__r)}">
+                            <apex:variable value="{!!ISBLANK(page.rec.SalesPerson__r.Phone)}" var="hasPhone"/>
+                            <apex:variable value="{!!ISBLANK(page.rec.SalesPerson__r.Fax)}" var="hasFax"/>
+                            <apex:outputPanel layout="block" styleClass="info" rendered="{!hasPhone && hasFax}" >お問い合わせ先</apex:outputPanel>
+                            <apex:outputPanel layout="block" styleClass="tel" rendered="{!hasPhone}">
+                                <apex:outputText value="{!page.rec.SalesPerson__r.Phone}" />
+                            </apex:outputPanel>
+                            <apex:outputPanel layout="block" styleClass="fax" rendered="{!hasFax}">
+                                <apex:outputText value="{!page.rec.SalesPerson__r.Fax}" />
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+                
+                    
+                    
+          <div class="middle-area">
+            <div class="stamp">
+              <div class="area"></div>
+              <div class="area">
+                <span class="charge">担当</span>
+              </div>
+            </div>
+          </div>
+          <div class="distination-body">
+            <h2>書類送付ご案内</h2>
+            <p>　拝啓、ますますご清祥のこととお慶び申し上げます。</p>
+            <p>　下記書類を送付申し上げますのでご査収ください。</p>
+            <p class="conclusion">敬具</p>
+          </div>
+          <div class="destination-subject">
+            <apex:repeat value="{!page.BodyLines}" var="line" >
+              <p>
+                <apex:outputText value="{!line}" /><br/>
+              </p>
+            </apex:repeat>
+          </div>
+        </apex:outputPanel>
+      </div>
+    </body>
+  </html>
+</apex:page>

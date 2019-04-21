@@ -1,0 +1,441 @@
+<apex:page controller="JEOL_SchoolSeminarList_ctrl" docType="html-5.0" >
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+
+  <style>
+    .input {
+        font-size:14px;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 120px;
+    }
+
+    .clm00 { width: 33px;}
+    .clm01 { width: 110px;}
+    .clm02 { width: 82px;}
+    .clm03 { width: 120px;}
+    .clm04 { width: 93px;} 
+    .clm05 { width: 52px;}
+    .clm06 { width: 121px;} 
+    .clm07 { width: 100px;} 
+    .clm08 { width: 100px;}
+    .clm09 { width: 71px;}
+    .clm10 { width: 70px;}
+
+  </style>
+
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+	var viewFunction;
+
+    function mode() {
+    	if ((typeof viewFunction).toLowerCase() === 'function') {
+    		viewFunction();
+    	}
+    }
+
+    function clearSearchCriteria1() {
+        $j("#search_criteria_table1 input").val('');
+        $j("#search_criteria_table1 select").val('');
+    }
+
+    function callChangeOrder(key) {
+        var obj = $j('.orderInput');
+        obj.val(key);
+        changeOrder();
+    }
+
+    function hideSearchCriteriaPanel() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+        viewFunction = hideSearchCriteriaPanel;
+    }
+
+    function showSearchCriteriaPanel() {
+        $j("#open_icon").hide();
+        $j("#close_icon").show();
+        $j("#search_criteria").slideDown(500);
+        $j(".fakeContainer").animate({height: '250px'},500);
+        viewFunction = showSearchCriteriaPanel;
+    }
+
+    function allViewMode() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+        $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+        viewFunction = allViewMode;
+    }
+
+    $j(document).ready(function(){
+        showSearchCriteriaPanel();
+    });
+
+    sfdcPage.onLoadQueue.push(function() {
+        var yearPicker = DatePicker.datePicker.yearPicker,
+            options = yearPicker.options;
+        value = +options[0].value;
+        for (var i = 1, len = 100; i <= len; i++) {
+            var o = document.createElement('option');
+            o.value = value - i;
+            o.text = value - i;
+            yearPicker.insertBefore(o, yearPicker.options[0]);
+        }
+    });
+  </script>
+  <apex:form >
+    <!-- 検索中表示 -->
+    <c:JEOL_WaitSearchPanel text="検索中..." isModalMode="false"/>
+    <apex:outputPanel id="order">
+      <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+      <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult"/>
+    </apex:outputPanel>
+
+    <!-- タイトル-->
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_SchoolSeminar.png')}" align="left" width="40px" />
+      <span id="title">講習会・セミナー一覧</span>
+    </div>
+
+    <!-- 検索エリア-->
+    <div id="searchPanel" >
+      <div >
+        <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+        <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+        <div id="serch_title">検索条件</div>
+      </div>
+      <div id="search_criteria">
+        <apex:outputPanel layout="block" id="search_criteria_form">
+          <apex:actionFunction name="doSearch" action="{!search}" rerender="searchResult"/>
+          <table id="search_criteria_table" class="search_criteria_table">
+            <tr>
+              <td class="label">受講取引先名称</td>
+              <td><apex:inputText styleClass="input" value="{!jukoCustomerName}" id="jukoCustomerName" /></td>
+              <td class="label">系列</td>
+              <td>
+                <apex:selectList styleClass="input" value="{!seriesPI}" id="seriesPI" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:selectOptions value="{!seriesPIOptions}"/>
+                </apex:selectList>
+              </td>
+              <td class="label">受講者名</td>
+              <td><apex:inputText styleClass="input" value="{!jukoshaName}" id="jukoshaName" /></td>
+            </tr>
+            <tr>
+              <td class="label">講習種別</td>
+              <td>
+                <apex:selectList styleClass="input" value="{!Type}" id="SchoolSeminarType" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:selectOptions value="{!typeOptions}"/>
+                </apex:selectList>
+              </td>
+              <td class="label">講習名</td>
+              <td><apex:inputText styleClass="input" value="{!schoolSeminarName}" id="schoolSeminarName" /></td>
+              <td class="label">利用分野</td>
+              <td>
+                <apex:selectList styleClass="input" value="{!useField}" id="useField" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:selectOptions value="{!useFieldOptions}"/>
+                </apex:selectList>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">場所</td>
+              <td><apex:inputText styleClass="input" value="{!place}" id="place" /></td>
+              <td class="label">該当機種</td>
+              <td><apex:inputText styleClass="input" value="{!gaitoModel}" id="gaitoModel" /></td>
+            </tr>
+            <tr>
+              <td class="label">状態</td>
+              <td>
+                <apex:selectList styleClass="input" value="{!status}" id="Status" size="1" style="width:132px; padding: 2px 1px;">
+                  <apex:selectOptions value="{!statusOptions}"/>
+                </apex:selectList>
+              </td>
+              <td class="label">開催日（期間）</td>
+              <td colspan="4">
+                <apex:inputText styleClass="input" value="{!startDateFrom}" id="startDateFrom" style="width: 80px;" onfocus="DatePicker.pickDate(false, '{!$Component.startDateFrom}', false);"/>
+                <apex:outputText value="　～　" style="vertical-ailgn: middel;"/>
+                <apex:inputText styleClass="input" value="{!startDateTo}" id="startDateTo" style="width: 80px;" onfocus="DatePicker.pickDate(false, '{!$Component.startDateTo}', false);"/>
+              </td>
+            </tr>
+          </table>
+          <div id="buttons">
+            <apex:commandLink value="クリア" styleClass="button_white" style="text-decoration: none;" action="{!doFormClear}" rerender="search_criteria_form, searchResult, error" />
+            <apex:commandLink value="検索する" styleClass="button_green" style="text-decoration: none;" action="{!search}" rerender="searchResult, error" onclick="showWaitPanel();" oncomplete="hideWaitPanel();"/>
+          </div>
+        </apex:outputPanel>
+      </div>
+    </div>
+    <!-- エラーメッセージ -->
+    <apex:pageMessages showDetail="false" id="error"/>
+    <!-- 検索結果出力-->
+    <apex:outputPanel layout="block" id="searchResult">
+      <apex:outputpanel rendered="{!SchoolSeminarEntry.size != 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <col class="clm07" />
+          <col class="clm08" />
+          <col class="clm09" />
+          <col class="clm10" />
+          <tr class="contents_title">
+            <td colspan="11"><div class="in_contents_title">検索結果</div></td>
+          </tr>
+          <!-- 検索結果ヘッダー -->
+          <tr class="koumoku">
+            <th>
+              <span>No</span>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.SchoolSeminarType__c');">
+                <apex:outputText value="受講種別" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.SchoolSeminarType__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.SchoolSeminarType__c' && orderDesc == true}" value="▽" />
+              </a>
+              <br />
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.Name');">
+                <apex:outputText value="講習名" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Name' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Name' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.Place__c');">
+                <apex:outputText value="場所" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Place__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Place__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('JukoshaCustomerName__c');">
+                <apex:outputText value="受講取引先名称" />
+                <apex:outputText rendered="{!orderBy=='JukoshaCustomerName__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='JukoshaCustomerName__c' && orderDesc == true}" value="▽" />
+              </a>
+              <br/>
+              <a href="javascript:void(0)" onclick="callChangeOrder('JukoshaDepartment__c');">
+                <apex:outputText value="受講部課名" />
+                <apex:outputText rendered="{!orderBy=='JukoshaDepartment__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='JukoshaDepartment__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('JukoshaName__c');">
+                <apex:outputText value="受講者名" />
+                <apex:outputText rendered="{!orderBy=='JukoshaName__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='JukoshaName__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SeriesPI__c');">
+                <apex:outputText value="系列" />
+                <apex:outputText rendered="{!orderBy=='SeriesPI__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SeriesPI__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.GaitoModel__c');">
+                <apex:outputText value="該当機種" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.GaitoModel__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.GaitoModel__c' && orderDesc == true}" value="▽" />
+              </a>
+              <br />
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.UseField__c');">
+                <apex:outputText value="利用分野" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.UseField__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.UseField__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SalespersonName__c');">
+                <apex:outputText value="担当営業" />
+                <apex:outputText rendered="{!orderBy=='SalespersonName__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SalespersonName__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.StartDateFormula__c');">
+                <apex:outputText value="開催日" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.StartDateFormula__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.StartDateFormula__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.Days__c');">
+                <apex:outputText value="日数" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Days__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Days__c' && orderDesc == true}" value="▽" />
+              </a>
+              <br />
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.KakuteiNum__c');">
+                <apex:outputText value="確定数" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.KakuteiNum__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.KakuteiNum__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+            <th>
+              <a href="javascript:void(0)" onclick="callChangeOrder('SchoolSeminar__r.Status__c');">
+                <apex:outputText value="状態" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Status__c' && orderDesc == false}" value="△" />
+                <apex:outputText rendered="{!orderBy=='SchoolSeminar__r.Status__c' && orderDesc == true}" value="▽" />
+              </a>
+            </th>
+          </tr>
+        </table>
+        <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+          <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+          <table id="viewTable" class="record-list" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+            <col class="clm00" />
+            <col class="clm01" />
+            <col class="clm02" />
+            <col class="clm03" />
+            <col class="clm04" />
+            <col class="clm05" />
+            <col class="clm06" />
+            <col class="clm07" />
+            <col class="clm08" />
+            <col class="clm09" />
+            <col class="clm10" />
+            <apex:repeat value="{!SchoolSeminarEntry}" var="wrap">
+              <tr class="contents">
+                <td>
+                  <apex:outputText value="{!baseRowNumber+wrap.rowNumber}"/>
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.SchoolSeminar__r.SchoolSeminarType__c}" />
+                  <br />
+                   <a href="/{!wrap.rec.SchoolSeminar__r.Id}" ><apex:outputtext value="{!wrap.rec.SchoolSeminar__r.Name}" /></a>
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.SchoolSeminar__r.Place__c}" />
+                </td>
+                <td>
+                  <apex:outputtext value="{!wrap.rec.JukoshaCustomerName__c}" />
+                  <br />
+                  <apex:outputText value="{!wrap.rec.JukoshaDepartment__c}" />
+                </td>
+                <td>
+                  <apex:outputtext value="{!wrap.rec.JukoshaName__c}" />
+                </td>
+                <td>
+                  <apex:outputText value="{!wrap.rec.SeriesPI__c}" />
+                </td>
+                <td>
+                  <apex:outputtext value="{!wrap.rec.SchoolSeminar__r.GaitoModel__c}" />
+                  <br />
+                  <apex:outputText value="{!wrap.rec.SchoolSeminar__r.UseField__c}" />
+                </td>
+                <td>
+                  <apex:outputtext value="{!wrap.rec.SalespersonName__c}" />
+                </td>
+                <td>
+                  <apex:outputtext value="{0, date, yyyy/MM/dd}">
+                    <apex:param value="{!wrap.rec.SchoolSeminar__r.StartDateFormula__c}" />
+                  </apex:outputtext>
+                </td>
+                <td>
+                  <apex:outputtext value="{0,number,###,###,###,###,###}" >
+                    <apex:param value="{!wrap.rec.SchoolSeminar__r.Days__c}" />
+                  </apex:outputtext>
+                  <br />
+                  <apex:outputtext value="{0,number,###,###,###,###,###}" >
+                    <apex:param value="{!wrap.rec.SchoolSeminar__r.KakuteiNum__c}" />
+                  </apex:outputtext>
+                </td>
+                <td>
+                  <apex:outputtext value="{!wrap.rec.SchoolSeminar__r.Status__c}" />
+                </td>
+              </tr>
+            </apex:repeat>
+          </table>
+        </div>
+
+        <!-- ページ遷移欄-->
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+          <col class="clm00" />
+          <col class="clm01" />
+          <col class="clm02" />
+          <col class="clm03" />
+          <col class="clm04" />
+          <col class="clm05" />
+          <col class="clm06" />
+          <col class="clm07" />
+          <col class="clm08" />
+          <col class="clm09" />
+          <col class="clm10" />
+          <apex:variable value="{!SchoolSeminarEntry.size}" var="size" />
+          <tr class="menu">
+            <td colspan="11">
+              <table id="each_menu">
+                <tr>
+                  <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                    </apex:outputPanel>
+                    <apex:outputText value="     表示数" />
+                    <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                      <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                      <apex:selectOption itemValue="10" itemLabel="10"/>
+                      <apex:selectOption itemValue="20" itemLabel="20"/>
+                      <apex:selectOption itemValue="50" itemLabel="50"/>
+                    </apex:selectList>
+                    <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">件表示</apex:outputLink>
+                  </td>
+                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                      <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="｜◀" />
+                    </apex:outputLink>
+                    <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                      <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="◀ 前へ" />
+                    </apex:outputLink>
+                    <apex:outputText value="◀ 前へ" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="次へ ▶" />
+                    </apex:outputLink>
+                    <apex:outputText value="次へ ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                    <apex:outputText value=" " />
+                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                      <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                      <apex:outputText value="▶｜" />
+                    </apex:outputLink>
+                    <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                  </td>
+                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                    <apex:outputText value="ページ　" />
+                    <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                      <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                    </apex:input>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+      <!-- 取得件数0件時メッセージ -->
+      <apex:outputpanel rendered="{!SchoolSeminarEntry.size = 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse">
+          <tr class="contents_title">
+            <td colspan="10">
+              <div class="in_contents_title">登録されたアイテムはありません</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

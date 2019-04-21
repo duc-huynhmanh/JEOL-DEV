@@ -1,0 +1,39 @@
+<apex:page >
+  <html>
+    <head>
+      <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+      <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+      <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+
+      <script>
+        var $j = jQuery.noConflict();
+        
+        function showSeriesSelect() {
+            var target = $j('.seriesSelect');
+
+            target.dialog({
+                autoOpen: true
+            });
+        }
+             
+      </script>
+    </head>
+    <body>
+      <apex:form id="contents" styleClass="contents">
+
+          <div>
+            <apex:outputLabel value="{!$Label.JEOLAsia_ProjectMasterList_Label_Series}" for="series" html-data-type="label" styleClass="field-label" />
+            <apex:actionFunction name="seriesSelect" oncomplete="showSeriesSelect();" rerender="dummy" />
+            <input id="seriesSelectButton" onclick="seriesSelect();" type="button" value="Select" />
+          </div>
+
+          <apex:outputPanel styleClass="seriesSelect" layout="block">
+            <apex:outputPanel layout="block">
+              <h2>Coucou</h2>
+            </apex:outputPanel>
+          </apex:outputPanel>
+
+      </apex:form>
+    </body>
+  </html>
+</apex:page>

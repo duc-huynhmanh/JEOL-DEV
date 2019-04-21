@@ -1,0 +1,604 @@
+<apex:page showHeader="false" standardStylesheets="true" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOLAsia_CustomerSearchPage_ctrl" >
+  <html>
+<!--
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />-->
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/css/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_CustomBaseStyle.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/JEOL_QuotationListPage.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JEOL_CustomizedMaterials, 'JEOL_CustomizedMaterials/bootstrap/js/bootstrap.min.js')}" />
+
+    <style>
+        .countryName {
+          display: inline-block;
+          padding: 4px;
+          margin: 0 0 0 15px;
+          border-bottom: 1px solid #989c9d;   
+        }
+        .areaSelect {
+          display: none;
+        }
+        .areaItem {
+          display: inline-block;
+          width: 120px;
+          float: left;
+          text-align: left;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          margin: 4px;
+          height: 1.3em;
+        }
+        .areaSelect-header {
+          background-color: #9ccada;
+          margin: 8px 0 0 0;
+          padding: 8px;
+          font-size: 18px;
+          font-weight: bold;
+          border-radius: 4px;
+        }
+
+        .item { width: 28px;}
+        .item1 { width: 96px;}
+        .item2 { width: 84px;}
+        .item3 { width: 94px;}
+        .item4 { width: 150px;} 
+        .item5 { width: 84px;}
+        .item6 { width: 48px;}
+        .item7 { width: 68px;}
+
+        .hidden {
+          display: none;
+        }
+
+        .contents div[data-type="dropdown"] {
+          display: block;
+          position: relative;
+        }
+        .contents div[data-type="dropdown"]:after {
+          content: "";
+          display: block;
+          height: 0px;
+          clear: both;
+        }
+        .contents div[data-type="dropdown"] *[data-type="label"] {
+          display: block;
+          float: left;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"] {
+          display: block;
+          float: left;
+          border-radius: 4px 0px 0px 4px;
+          border: 1px solid silver;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15) inset;
+          transition: box-shadow 0.1s linear 0s;
+          height: 30px;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"] + .productSearchButton {
+          float: left;
+          border-radius: 0px;
+        }
+        .contents div[data-type="dropdown"] input[type="text"][data-type="input-field"]:focus {
+          position: relative;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"] {
+          display: block;
+          float: left;
+          margin: 0px 0px 0px -1px;
+          border-radius: 0px 4px 4px 0px;
+          border: 1px solid silver;
+          height: 30px;
+          background-image: none;
+          font-weight: normal;
+          background-color: #fff;
+          padding: 0px;
+          text-aling: center;
+          color: #7FCC9E;
+          width: 20px;
+          transition: box-shadow 0.2s linear 0s, background-color 0.2s linear 0s, border 0.2s linear 0s;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:hover {
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+          background-color: #f2f5f8;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:active {
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2) inset;
+          background-color: #f2f5f8;
+        }
+        .contents div[data-type="dropdown"] button[data-type="button"]:focus {
+          background-color: #f2f5f8;
+          border-color: #00ABFF;
+          box-shadow: 0px 1px 3px rgba(0,0,0,0.2) inset, 0 1px 5px rgba(0,171,255,0.25);
+          outline: none;
+        }
+        .contents div[data-type="dropdown"].open ul[data-type="list"] {
+          display: block;
+          user-select: none;
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;  
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] {
+          display: none;
+          position: absolute;
+          height: auto;
+          background-color: #fff;
+          border: 1px solid silver;
+          border-radius: 0px 0px 4px 4px;
+          z-index: 2;
+          top: 32px;
+          right: 0px;
+          box-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+          overflow: hidden;
+        }
+        .contents div.top[data-type="dropdown"] ul[data-type="list"] {
+          bottom: 100%;
+          top: auto;
+          border-radius: 4px 4px 0px 0px;
+        }
+        .contents div[data-type="dropdown"] ul.scroll[data-type="list"] {
+          max-height: 158px;
+          overflow-y: auto;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li hr {
+          margin: 0px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] {
+          padding: 0px;
+          min-width: 76px;
+          text-align: left;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"]:hover {
+          background-color: #f2f5f8;
+        }
+
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"]:hover hr {
+          margin: 4px;
+        }
+        
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"].close-option {
+          text-align: center;
+          width: 100%;
+          margin: 0px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a {
+          padding: 4px 16px;
+          display: block;
+          width: 100%;
+          text-decoration: none;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a:empty {
+          height: 24px;
+        }
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"] a:focus {
+          background-color: #f2f5f8;
+          outline: none;
+        }
+        
+        .contents div[data-type="dropdown"] ul[data-type="list"] li[data-type="item"].close-option .closeButton {
+          text-decoration: none;
+          display: block;
+          height: 30px;
+          line-height: 30px;
+          width: 100%;
+        }
+        
+        .contents .contents-body .search-area .section-body .field .field-value.widthdrop {
+            width: 139px;
+        }
+
+        .optionListHoriz tbody tr td label {
+            vertical-align: -2px;
+            padding-left: 5px;
+            padding-right: 20px;                
+        }
+
+        .seriesSelect {
+            display: none;
+        }
+        .seriesSelect-header {
+            background-color: #9ccada;
+            margin: 8px 0 0 0;
+            padding: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .seriesItem {
+            display: inline-block;
+            width: 120px;
+            float: left;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            margin: 4px;
+            height: 1.3em;
+        }
+
+        .selectButtons {
+            text-align: right;
+        }
+        .selectButtons .button {
+            float: right;
+        }
+
+        #search_criteria {
+            background-color:#7e9bc1;
+        }           
+
+        .button_green {
+            font-size: 14px;
+            padding:6px 35px;
+            border: 1px solid #13783b;
+            background-color: #1aa362;
+            background-image: -webkit-linear-gradient(top, #1aa362, #13783b);
+            background-image: linear-gradient(to bottom, #1aa362, #13783b);
+            border-radius: 4px;
+            text-decoration: none;
+            color: #fff;
+            line-height: 50px;
+            -webkit-transition: none;
+            transition: none;
+            margin:0px 5px;
+        }
+
+        .button_white {
+            font-size: 14px;
+            padding:6px 22px;
+            border: 1px solid #aebdbf;
+            background-color: #ffffff;
+            background-image: -webkit-linear-gradient(top, #ffffff, #dce0e1);
+            background-image: linear-gradient(to bottom, #ffffff, #dce0e1);
+            text-decoration: none;
+            border-radius: 4px;
+            color: #000000;
+            line-height: 50px;
+            -webkit-transition: none;
+            transition: none;
+            margin:0px 5px;
+        }
+
+        .contents .field> .field-label{
+            width: 180px;
+        }
+
+        .record-table {
+            border: 1px solid #d1d1d1;
+            width: 995px;
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+        .contents .contents-body .list-area .section-body .recordList .record-table .body-row td {
+            white-space: normal;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+      var $j = jQuery.noConflict();
+      var viewFunction;
+
+      function mode() {
+          if ((typeof viewFunction).toLowerCase() === 'function') {
+              viewFunction();
+          }
+      }
+
+      function clearSearchCriteria1() {
+          $j("#search_criteria_table1 input").val('');
+      }
+      function clearSearchCriteria2() {
+          $j("#search_criteria_table2 input").val('');
+      }
+      function callChangeOrder(key) {
+          var obj = $j('.orderInput');
+          obj.val(key);
+          changeOrder();
+      }
+      function hideSearchCriteriaPanel() {
+          $j("#open_icon").show();
+          $j("#close_icon").hide();
+          $j("#search_criteria").slideUp(500);
+          $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+          viewFunction = hideSearchCriteriaPanel;
+      }
+
+      function showSearchCriteriaPanel() {
+          $j("#open_icon").hide();
+          $j("#close_icon").show();
+          $j("#search_criteria").slideDown(500);
+          $j(".fakeContainer").animate({height: '250px'},500);
+          viewFunction = showSearchCriteriaPanel;
+      }
+
+      function allViewMode() {
+          $j("#open_icon").show();
+          $j("#close_icon").hide();
+          $j("#search_criteria").slideUp(500);
+          $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+          viewFunction = allViewMode;
+      }
+
+      $j(document).ready(function(){
+          showSearchCriteriaPanel();
+      });
+    
+      function showAreaSelect() {
+          var target = $j('.areaSelect');
+          if (target) {
+              target.dialog({
+                  appendTo: '.search_criteria_form',
+                  autoOpen: false,
+                  closeOnEscape: false,
+                  closeText: 'hide',
+                  draggable: true,
+                  modal: true,
+                  resizable: true,
+                  title: 'Selection of Areas',
+                  width: 840,
+                  open: function(){$j(".ui-dialog-titlebar-close").hide();}
+              });
+              target.dialog('open');
+          } else {
+              alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+          }
+      }
+    </script>
+    <body>
+      <apex:form id="contents" styleClass="contents">
+        <c:JEOL_WaitSearchPanel text="{!$Label.JEOL_Quotation_Label_Searching}" isModalMode="false"/>
+        <apex:outputPanel id="order">
+          <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+          <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="recordList,pageMessages" />
+        </apex:outputPanel>
+
+        <div class="header">
+          <apex:include pageName="{!$Page.JEOL_VisualforceHeader}" />
+        </div>
+
+        <div class="contents-body">
+          <div class="section base-width">
+
+            <!-- タイトル-->
+            <div class="screenname">
+              <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_customer.png')}" align="left" width="40px" />
+              <span id="title" style="margin: 20px 0 0 10px; vertical-align: middle;">Customer Search</span>
+            </div>
+          </div>
+
+          <!-- 営業向け検索エリア-->
+          <div class="section search-area base-width">
+            <div class="section-header">
+              <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" width="36px" onclick="hideSearchCriteriaPanel()"/>
+              <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" width="36px" onclick="showSearchCriteriaPanel()"/>
+              <span>Customer Search Filters</span>
+            </div>
+
+            <div class="section-body clearfix" id="search_criteria">
+              <apex:outputPanel layout="block" id="search_criteria_form" styleClass="search_criteria_form">
+                <div class="field">  
+                  <apex:outputLabel value="Customer Code" styleClass="field-label"/>
+                  <apex:inputText value="{!code}" styleClass="field-value"/>
+                </div>
+                <div class="field">  
+                  <apex:outputLabel value="Customer Name" styleClass="field-label"/>
+                  <apex:inputText value="{!name}" styleClass="field-value"/>
+                </div>
+                <div class="field">  
+                  <apex:outputLabel value="Branch Office" styleClass="field-label"/>
+                  <apex:inputText value="{!undergraduate}" styleClass="field-value"/>
+                </div>
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="Customer Category" html-data-type="label" styleClass="field-label" />
+                  <apex:selectList value="{!customerCategory}" id="customerCategory" styleClass="field-value" size="1" style="color: #000000;">
+
+                    <apex:selectoptions value="{!CCategoryOptions}" />
+                  </apex:selectList>
+                </div>
+                <div class="field" data-type="dropdown">
+                  <apex:outputLabel value="Country" html-data-type="label" styleClass="field-label" />
+                  <apex:SelectList value="{!countryCode}" styleClass="field-value"  id="countryCode" size="1" style="color: #000000;">
+                    <apex:actionSupport event="onchange" action="{!changeCountry}" rerender="currentCountry" />
+                    <apex:selectOptions value="{!CountryOptions}" />
+                  </apex:SelectList>
+                  <apex:outputText styleClass="countryName" value="Country Name：{!currentCountry}" id="currentCountry"/>
+                </div>
+
+                <div class="field">  
+                  <apex:outputLabel value="Area" styleClass="field-label"/>
+                  <apex:actionFunction name="areaSelect" oncomplete="showAreaSelect();" rerender="areaSelectPanel" />
+                  <input id="areaSelectButton" onclick="areaSelect();" type="button" class="btn input" value="{!$Label.JEOLAsia_ProjectMasterList_Label_Select}" style="height: 30px; width:152px; padding: 0px 0px;" />
+                </div>
+                <div class="field">  
+                  <apex:outputLabel value="Selected Areas" styleClass="field-label"/>
+                  <apex:outputText value="{!SelectedAreas}" id="SelectedAreas"/>
+                </div>
+
+                <div>
+                  <hr class="horizontal-rule"/>
+                </div>
+
+                <div class="buttonArea">
+                  <apex:commandLink action="{!doFormClear}" rerender="search_criteria_form, recordList, error" styleClass="customButton">{!$Label.JEOLAsia_ProjectMasterList_Label_Cancel}</apex:commandLink>
+                  <apex:commandLink action="{!search1}" rerender="recordList, search_criteria_form" styleClass="customButton" onclick="showWaitPanel();" onComplete="hideWaitPanel();">{!$Label.JEOLAsia_ProjectMasterList_Label_Search}</apex:commandLink>
+                </div>
+
+                <apex:outputPanel styleClass="areaSelect" layout="block">
+                  <apex:outputPanel layout="block" styleClass="areaSelect-header">
+                    <h2>Please check the areas you want to search.</h2>
+                  </apex:outputPanel>
+                  <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+                    <apex:commandButton value="{!$Label.JEOLAsia_ProjectMasterList_Label_CheckAll}" action="{!areaSelectAllSelect}" rerender="areaSelectPanel" />
+                    <apex:commandButton value="{!$Label.JEOLAsia_ProjectMasterList_Label_UncheckAll}" action="{!areaSelectAllDeselect}" rerender="areaSelectPanel" />
+                    <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                      <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                      <apex:outputText value="{!$Label.JEOLAsia_ProjectMasterList_Label_Searching}" />
+                    </apex:outputPanel>
+                  </apex:outputPanel>
+
+                  <apex:outputPanel id="areaSelectPanel" layout="block" styleClass="selectArea clearfix">
+                    <apex:repeat value="{!AreaOptions}" var="areaComp">
+                      <div class="areaItem">
+                        <apex:inputCheckBox id="selectTarget" value="{!areaComp.isSelected}" />
+                        <apex:outputLabel for="selectTarget" value="{!areaComp.option.Label}" />
+                      </div>
+                    </apex:repeat>
+                  </apex:outputPanel>
+                  <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+                    <apex:commandlink styleClass="button_white" value="{!$Label.JEOLAsia_ProjectMasterList_Label_Cancel}" action="{!areaSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.areaSelect').dialog('close');$j('.processNow').hide();$j('#areaSelectButton').blur();" rerender="areaSelectPanel" />
+                    <apex:commandlink styleClass="button_green" value="{!$Label.JEOLAsia_ProjectMasterList_Label_Search}" action="{!areaSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.areaSelect').dialog('close');$j('.processNow').hide();$j('#areaSelectButton').blur();" rerender="areaSelectPanel, SelectedAreas" />
+                  </apex:outputPanel>
+                </apex:outputPanel>
+              </apex:outputPanel>
+            </div>
+          </div>
+
+          <apex:outputPanel id="recordList" layout="block" styleClass="section list-area base-width">
+            <apex:pageMessages id="pageMessages" />
+
+            <div class="section-header clearfix">
+              <div class="title">Search Result</div>
+
+              <apex:outputPanel layout="block" styleClass="pager-area clearfix" rendered="{!Account.size != 0}">
+                <apex:commandLink action="{!ssc.previous}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasPrevious}" >&laquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasPrevious}" >&laquo;</apex:outputPanel>
+                <div class="current-page-number">{!ssc.PageNumber}</div>
+                <div class="separator">/</div>
+                <div class="max-page-number">{!FLOOR(((ssc.ResultSize - 1) / ssc.PageSize) + 1)}</div>
+                <apex:commandLink action="{!ssc.next}" rerender="recordList" styleClass="customButton" rendered="{!ssc.HasNext}" >&raquo;</apex:commandLink>
+                <apex:outputPanel layout="block" styleClass="disabled-button" rendered="{!!ssc.HasNext}" >&raquo;</apex:outputPanel>
+              </apex:outputPanel>
+            </div>
+
+            <div class="section-body">
+              <apex:outputpanel rendered="{!Account.size != 0}">
+                <div class="recordList">
+                  <table class="record-table" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+                    <col class="item" />
+                    <col class="item1" />
+                    <col class="item2" />
+                    <col class="item3" />
+                    <col class="item4" />
+                    <col class="item5" />
+                    <col class="item6" />
+                    <col class="item7" />
+
+                    <!-- 一覧のヘッダ -->
+                    <tr class="header-row">
+                      <th>
+                        <span>No</span>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('Name');">
+                          <apex:outputText value="Customer Name" />
+                          <apex:outputText rendered="{!orderBy=='Name' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='Name' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('UndergraduateFormula__c');">
+                          <apex:outputText value="Branch Office" />
+                          <apex:outputText rendered="{!orderBy=='UndergraduateFormula__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='UndergraduateFormula__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('Code__c');">
+                          <apex:outputText value="Customer Code" />
+                          <apex:outputText rendered="{!orderBy=='Code__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='Code__c' && orderDesc == true}" value="▽"/>
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('Address__c');">
+                          <apex:outputText value="Address" />
+                          <apex:outputText rendered="{!orderBy=='Address__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='Address__c' && orderDesc == true}" value="▽"/>
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('CountryCode__c');">
+                          <apex:outputText value="Country Code" />
+                          <apex:outputText rendered="{!orderBy=='CountryCode__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='CountryCode__c' && orderDesc == true}" value="▽"/>
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('Area__c');">
+                          <apex:outputText value="Area" />
+                          <apex:outputText rendered="{!orderBy=='Area__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='Area__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                      <th>
+                        <a href="javascript:void(0)" onclick="callChangeOrder('CustomerSituation__c');">
+                          <apex:outputText value="Situation" />
+                          <apex:outputText rendered="{!orderBy=='CustomerSituation__c' && orderDesc == false}" value="△" />
+                          <apex:outputText rendered="{!orderBy=='CustomerSituation__c' && orderDesc == true}" value="▽" />
+                        </a>
+                      </th>
+                    </tr>
+
+                    <!-- 一覧 -->
+                    <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+
+                    <apex:repeat value="{!Account}" var="wrap">
+                      <tr class="body-row">
+                        <td>
+                          <apex:outputText value="{!baseRowNumber+wrap.rowNumber}"/>
+                        </td>
+                        <td>
+                          <apex:outputLink value="/{!wrap.rec.Id}">
+                            <apex:outputText value="{!wrap.rec.Name}" />
+                          </apex:outputLink>
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.UndergraduateFormula__c}" />
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.Code__c}" />
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.Address__c}" />
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.CountryCode__c}" />
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.Area__c}" />
+                        </td>
+                        <td>
+                          <apex:outputText value="{!wrap.rec.CustomerSituation__c}" />
+                        </td>
+                      </tr>
+                    </apex:repeat>
+                  </table>
+                </div>
+              </apex:outputpanel>
+
+<!-- Not Found -->              
+              <apex:outputPanel layout="block" rendered="{!Account.size = 0}">
+                <apex:outputText value="No customer has been found." />
+              </apex:outputPanel>
+
+            </div>
+          </apex:outputPanel>
+
+        </div>
+
+<!-- footer -->        
+        <div class="footer" >
+          <apex:include pageName="{!$Page.JEOL_VisualforceFooter}" />
+        </div>
+
+      </apex:form>
+    </body>
+  </html>
+
+</apex:page>

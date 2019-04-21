@@ -1,0 +1,228 @@
+<apex:page standardController="AsiaMaintenanceContractManagement__c" extensions="JEOLAsia_MaintenanceDetailCtrl">
+    <script>
+        function setFocusOnLoad() {}
+        // Enter key disable
+        function NoSubmit(e){
+        if(!e) var e = window.event;
+            if(e.keyCode==13){
+                if(e.srcElement.type!='submit' && e.srcElement.type!='textarea'){
+                    if(e.srcElement.type!='image'){
+                        return false;
+                    }
+                 }
+            }
+        }
+    </script>
+
+    <style>
+        .bgcolor-orange {
+            background-color: #F5B027 !important;
+        }
+    </style>
+    <apex:form onkeydown="return NoSubmit(event);">
+        <apex:pageMessages escape="false" />
+        <apex:pageBlock title="{!$Label.JEOLAsia_MaintDetail_RenewalPipeline}" rendered="{!so != NULL}">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!save}" tabindex="3000" value="{!$Label.JEOLAsia_MaintDetail_Save}" />
+                <apex:commandButton action="{!cancel}" tabindex="3000" value="{!$Label.JEOLAsia_MaintDetail_Cancel}" />
+            </apex:pageBlockButtons>
+
+            <!-- Project Master Info section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_ProjectMasterInfo}" columns="2" id="statusheader">
+                <!--Row 1-->
+                <!--PJ No.-->
+                <apex:inputField value="{!so.ProjectMaster__c}" taborderhint="1"/>
+                <!--Company-->
+                <apex:inputField value="{!so.CompanyName__c}" taborderhint="2"/>
+                <!--Row 2-->
+                <!--Model-->
+                <apex:inputField value="{!so.NewOdrFlagshipProduct__c}" taborderhint="3"/>
+                <!--Company Name-->
+                <apex:inputField value="{!so.OrgName__c}" taborderhint="4"/>
+                <!--Row 3-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Series-->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.NewOdrSeries__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+
+                        <apex:selectList value="{!so.NewOdrSeries__c}"
+                                         size="1" 
+                                         tabIndex="40">
+                            <apex:selectOptions value="{!SeriesOptions}" />
+                        </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <!--Row 4-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Sales-->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.NewOdrSalesStaff__c.Label}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                        <apex:inputField value="{!so.NewOdrSalesStaff__c}" taborderhint="5"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <!--Row 5-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Sales-->
+                <apex:inputField value="{!so.NewOdrAssistant__c}" taborderhint="6"/>
+            </apex:pageBlockSection>
+
+            <!--Contraction Info section-->
+            <apex:pageBlockSection id="sectionContractPlan" columns="2" title="{!$Label.JEOLAsia_MaintDetail_CustomerInfo}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.NewOdrSalesAccount__c.Label}" />
+                        <apex:outputPanel layout="block" styleClass="requiredInput">
+                            <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                            <apex:inputField value="{!so.NewOdrSalesAccount__c}" taborderhint="7"/>
+                            <apex:actionSupport event="onchange"
+                                                action="{!ImportDataFromSalesAccount}"
+                                                rerender="sectionContractPlan"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.NewOdrShipmentAccount__c.Label}" />
+                        <apex:outputPanel layout="block" styleClass="requiredInput">
+                            <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                            <apex:inputField value="{!so.NewOdrShipmentAccount__c}" taborderhint="14"/>
+                            <apex:actionSupport event="onchange"
+                                                action="{!ImportDataFromShipmentAccount}"
+                                                rerender="sectionContractPlan"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Office}"/>
+                        <apex:outputField value="{!so.NewOdrSalesAccount__r.Undergraduate__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Office}"/>
+                        <apex:outputField value="{!so.NewOdrShipmentAccount__r.Undergraduate__c}" />
+                    </apex:pageBlockSectionItem>
+
+                    <apex:outputField value="{!so.NewOdrSalesAccount__r.Address__c}" />
+                    <apex:outputField value="{!so.NewOdrShipmentAccount__r.Address__c}" />
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Department}"/>
+                        <apex:inputField value="{!so.NewOdrSalesContactPosition__c}" taborderhint="8"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Department}"/>
+                        <apex:inputField value="{!so.NewOdrShipmentContactPosition__c}" taborderhint="15"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Title}" />
+                        <apex:inputField value="{!so.NewOdrSalesContactPost__c}" taborderhint="9"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Title}"/>
+                        <apex:inputField value="{!so.NewOdrShipmentContactPost__c}" taborderhint="16"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Responsible}" />
+                        <apex:inputField value="{!so.NewOdrSalesTantoshya__c}" taborderhint="10"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Responsible}"/>
+                        <apex:inputField value="{!so.NewOdrShipmentTantosha__c}" taborderhint="17"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!so.NewOdrSalesContactTel__c}" taborderhint="11"/>
+                    <apex:inputField value="{!so.NewOdrShipmentContact_Tel__c}" taborderhint="18"/>
+
+                    <apex:inputField value="{!so.NewOdrSalesContactFax__c}" taborderhint="12"/>
+                    <apex:inputField value="{!so.NewOdrShipmentContact_Fax__c}" taborderhint="19"/>
+
+                    <apex:inputField value="{!so.NewOdrSalesContactEmail__c}" taborderhint="13"/>
+                    <apex:inputField value="{!so.NewOdrShipmentContact_Email__c}" taborderhint="20"/>
+            </apex:pageBlockSection>
+
+            <!-- Previous Year Pipeline Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_PrevYearPLInfo}" columns="2" rendered="{!so.PreviousYearPipeline__c != null}">
+                <!-- Row 1 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_ContractNo}"/>
+                    <apex:outputText value="{!so.PreviousYearPipeline__r.Name}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.ContractPrice__c.Label}"/>
+                    <apex:outputtext value="{0, number, ###,###.00} {!so.PreviousYearPipeline__r.CurrencyContractPrice__c}">
+                        <apex:param value="{!so.PreviousYearPipeline__r.ContractPrice__c}"></apex:param>
+                    </apex:outputtext>
+                </apex:pageBlockSectionItem>
+                <!-- Row 2 -->
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NewContractStartDate__c}" />
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NewContractEndDate__c}" />
+                <!-- Row 3 -->
+                <apex:outputField value="{!so.PreviousYearPipeline__r.CustomerPONumber__c}" />
+                <apex:pageBlockSectionItem />
+                <!-- Row 4 -->
+                <apex:pageBlockSection columns="1">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_PrevYearNotes}"/>
+                        <apex:outputField value="{!so.PreviousYearPipeline__r.NextYearNotes__c}" style="width: 100%;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Memo__c}" style="width: 100%;"/>
+                </apex:pageBlockSection>
+            </apex:pageBlockSection>
+
+            <!-- Renewal Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_RenewalInfo}" columns="2">
+                <!-- Row 1 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_PipeLineNo}"/>
+                    <apex:outputText value="{!so.Name}" />
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!so.NewOdrSalesPipeline__c}" taborderhint="21"/>
+                <!-- Row 2 -->
+                <apex:inputField value="{!so.Status__c}" taborderhint="22"/>
+                <apex:inputField value="{!so.StatusMemo__c}" taborderhint="23"/>
+                <!-- Row 3 -->
+                <apex:inputField value="{!so.QuotationCreated__c}" taborderhint="24"/>
+                <apex:inputField value="{!so.QuotationSentDate__c}" taborderhint="25"/>
+                <!-- Row 4 -->
+                <apex:inputField value="{!so.NewOdrProfitCalculation__c}" taborderhint="26"/>
+                <apex:pageBlockSectionItem />
+                <!-- Row 5 -->
+                <apex:inputField value="{!so.SACreated__c}" taborderhint="27"/>
+                <apex:inputField value="{!so.ContractSentDate__c}" taborderhint="28"/>
+            </apex:pageBlockSection>
+                <!-- Row 6 -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!so.NextYearNotes__c}" style="width: 75%;" taborderhint="29"/>
+                    <apex:inputField value="{!so.Memo__c}" style="width: 75%;" taborderhint="30"/>
+                </apex:pageBlockSection>
+
+            <!-- Maintenance Contract Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_MaintenanceInfo}" columns="2">
+                <!-- Row 1 -->
+                <apex:inputField value="{!so.NewContractStartDate__c}" taborderhint="31"/>
+                <apex:inputField value="{!so.NewContractEndDate__c}" taborderhint="32"/>
+                <!-- Row 2 -->
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!so.ContractStopDate__c}" taborderhint="33"/>
+                <!-- Row 3 -->
+                <apex:inputField value="{!so.ContractPrice__c}" taborderhint="34"/>
+                <apex:inputField value="{!so.CurrencyContractPrice__c}" taborderhint="35"/>
+                <!-- Row 4 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!inspectionDoneOfInspectionLabel}"/>
+                    <apex:outputText value="{!inspectionDoneOfInspection}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <!-- Row 5 -->
+                <apex:inputField value="{!so.CustomerPONumber__c}" taborderhint="36"/>
+                <apex:pageBlockSectionItem />
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

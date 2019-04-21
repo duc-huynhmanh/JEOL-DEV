@@ -1,0 +1,119 @@
+<apex:page standardController="UnitBody__c" extensions="JEOL_NonyusakiShokai_ctrl" tabStyle="JEOL_NonyusakiListPage__tab" docType="html-5.0" >
+  <apex:pageBlock mode="maindetail">
+    <apex:sectionHeader title="納入先照会"/>
+    <apex:pageMessages id="pageMessages" />
+
+    <apex:outputPanel rendered="{!targetRec != null}">
+      <apex:pageBlock title="納入先照会" mode="maindetail">
+        <apex:pageBlockSection title="装置情報" columns="2">
+          <apex:outputField value="{!targetRec.UnitBody__c}" label="本体号機"/>
+          <apex:outputField value="{!targetRec.SerialNo__c}" label="販売オーダ番号" />
+          <apex:outputField value="{!targetRec.ItemLink__c}" label="品目"/>
+          <apex:outputField value="{!targetRec.ModelAbbreviation__c}" label="機種略称"/>
+          <apex:outputField value="{!targetRec.ItemLink__r.JapaneseName__c}" label="装置名称（和）"/>
+          <apex:outputField value="{!targetRec.ItemLink__r.EnglishName__c}" label="装置名称（英）"/>
+          <apex:outputField value="{!targetRec.ShippingDateFormula__c}" label="出荷日"/>
+          <apex:outputField value="{!targetRec.Series__c}" label="系列"/>
+          <apex:outputField value="{!targetRec.AcceptanceDateFormula__c}" label="検収日"/>
+          <apex:outputField value="{!targetRec.StatusOfUse__c}" label="使用状況"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.Code__c}" label="納入先コード"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.Name}" label="納入先名称"/>
+          <apex:outputField value="{!targetRec.SalesAccount__r.Code__c}" label="販売先コード"/>
+          <apex:outputField value="{!targetRec.SalesAccount__r.Name}" label="販売先名称"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.ServiceArea__c}" label="サービスエリア"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.Country__c}" label="国"/>
+          <br/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.State__c}" label="都道府県"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="納入先情報" columns="2">
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.DispatchTime__c}" label="派遣時間"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.DistanceSection__c}" label="距離区分"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.PostalCode__c}" label="郵便番号"/>
+          <apex:outputField value="{!targetRec.DeliveryAccount__r.Address__c}" label="住所"/>
+          <apex:outputField value="{!targetRec.SpecialContractNote__c}" label="備考"/>
+          <apex:outputField value="{!targetRec.SvcForm__c}" label="SVC形態"/>
+          <apex:outputField value="{!targetRec.EFProductNo__c}" label="EF製番"/>
+          <apex:outputField value="{!targetRec.EFEndDateFormula__c}" label="EF終了日"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="保守情報１" columns="2">
+          <apex:outputField value="{!ConservativeInfos[0].Name}" label="保守オーダ番号"/>
+          <apex:outputField value="{!ConservativeInfos[0].ProductNumber__c}" label="保守製番"/>
+          <apex:outputField value="{!ConservativeInfos[0].MaintenanceType__c}" label="保守種類"/>
+          <apex:outputField value="{!ConservativeInfos[0].FlagshipProduct__c}" label="受注代表商品名"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="保守情報２" columns="2">
+          <apex:outputField value="{!ConservativeInfos[1].Name}" label="保守オーダ番号"/>
+          <apex:outputField value="{!ConservativeInfos[1].ProductNumber__c}" label="保守製番"/>
+          <apex:outputField value="{!ConservativeInfos[1].MaintenanceType__c}" label="保守種類"/>
+          <apex:outputField value="{!ConservativeInfos[1].FlagshipProduct__c}" label="受注代表商品名"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="保守情報３" columns="2">
+          <apex:outputField value="{!ConservativeInfos[2].Name}" label="保守オーダ番号"/>
+          <apex:outputField value="{!ConservativeInfos[2].ProductNumber__c}" label="保守製番"/>
+          <apex:outputField value="{!ConservativeInfos[2].MaintenanceType__c}" label="保守種類"/>
+          <apex:outputField value="{!ConservativeInfos[2].FlagshipProduct__c}" label="受注代表商品名"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="本体号機別窓口：１" columns="2">
+          <apex:outputField value="{!targetRec.Contact1__r.TantoshaCode__c}" label="担当者コード"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Name}" label="担当者名"/>
+          <apex:outputField value="{!targetRec.Contact1__r.HeadquartersSection__c}" label="所属（本部）"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Affiliation__c}" label="所属"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Phone}" label="電話"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Extension__c}" label="内線"/>
+          <apex:outputField value="{!targetRec.Contact1__r.MobilePhone}" label="携帯電話"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Fax}" label="FAX"/>
+          <apex:outputField value="{!targetRec.Contact1__r.Email}" label="E-Mail"/>
+          <apex:outputField value="{!targetRec.Contact1__r.DM__c}" label="DM送付区分"/>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="本体号機別窓口：２" columns="2">
+          <apex:outputField value="{!targetRec.Contact2__r.TantoshaCode__c}" label="担当者コード"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Name}" label="担当者名"/>
+          <apex:outputField value="{!targetRec.Contact2__r.HeadquartersSection__c}" label="所属（本部）"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Affiliation__c}" label="所属"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Phone}" label="電話"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Extension__c}" label="内線"/>
+          <apex:outputField value="{!targetRec.Contact2__r.MobilePhone}" label="携帯電話"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Fax}" label="FAX"/>
+          <apex:outputField value="{!targetRec.Contact2__r.Email}" label="E-Mail"/>
+          <apex:outputField value="{!targetRec.Contact2__r.DM__c}" label="DM送付区分"/>
+        </apex:pageBlockSection>
+      </apex:pageBlock>
+      <apex:pageBlock title="納入品構成">
+        <apex:variable value="{!PartsItems}" var="items" />
+        <apex:variable value="{!PartsItems.size}" var="size" />
+        <apex:outputText value="表示するレコードはありません" rendered="{!size == 0}"/>
+        <apex:pageBlockTable value="{!items}" var="item" rendered="{!size > 0}">
+          <apex:column >
+            <apex:facet name="header">品目コード</apex:facet>
+            <apex:outputLink value="{!'/' + item.rec.id}" >
+              <apex:outputText value="{!item.rec.ItemLink__r.Name}" />
+            </apex:outputLink>
+          </apex:column>
+          <apex:column >
+            <apex:facet name="header">品名（和）</apex:facet>
+            <apex:outputField value="{!item.rec.ItemLink__r.JapaneseName__c}" />
+          </apex:column>
+          <apex:column >
+            <apex:facet name="header">型名・モデル</apex:facet>
+            <apex:outputText value="{!item.ModelText}" />
+          </apex:column>
+          <apex:column >
+            <apex:facet name="header">シリアル番号</apex:facet>
+            <apex:outputField value="{!item.rec.SerialNo__c}" />
+          </apex:column>
+          <apex:column >
+            <apex:facet name="header">出荷日</apex:facet>
+            <apex:outputField value="{!item.rec.ShippingDateFormula__c}" />
+          </apex:column>
+          <apex:column >
+            <apex:facet name="header">検収日</apex:facet>
+            <apex:outputField value="{!item.rec.AcceptanceDateFormula__c}" />
+          </apex:column>
+        </apex:pageBlockTable>
+      </apex:pageBlock>
+      <apex:relatedList list="Support__r" />
+      <apex:relatedList list="SalesOrder__r" />
+    </apex:outputPanel>
+  </apex:pageBlock>
+
+</apex:page>

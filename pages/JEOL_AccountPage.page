@@ -1,0 +1,452 @@
+<apex:page standardcontroller="Account" extensions="JEOL_AccountPageCtrl">
+  <style type="text/css">
+    .wrapper {position: relative;}
+    .wrapper.child{background-color: #FFFFDA;}
+    .wrapper .linkerPanel {
+      text-align: center;
+      margin: 5px 6px 15px;
+    }
+    .wrapper .linkerPanel a.linker {
+      padding: 3px 0px 6px 4px;
+      position: relative;
+      white-space: nowrap;
+      display: inline-block;
+      border: none;
+    }
+    .floatPanel {
+      position: absolute !important;
+      left: 0px !important;
+      margin: 0px 6px !important;
+      width: 100% !important;
+    }
+    .floatPanel>*:first-child,
+    .floatPanel>div {
+      box-shadow: 0px 5px 10px #666 !important;
+    }
+  </style>
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+    var $window = $j(window);
+    var relatedListFloater = function(){
+        var currentLinker = null; 
+        $j(document).on('mouseover',function(e){
+            var $targets = $j(e.target).closest('a.linker, .floatPanel');
+            if ($targets.length) {
+                if ($targets.hasClass('linker')) {
+                    if (currentLinker !== $targets[0]) {
+                        currentLinker = $targets[0];
+                        $j('.floatPanel').removeClass('floatPanel');
+                    }
+                    var targetId = $targets.attr('href');
+                    var $targetRelatedList = $j(document.getElementById(targetId.substr(1,targetId.length))).children();
+                    $targetRelatedList.addClass('floatPanel');
+                    $targetRelatedList.css({top: ($targets.position().top + 22) + 'px'});
+                }
+            } else {
+                $j('.floatPanel').removeClass('floatPanel');
+            }
+        });
+    };
+    $window.on('load',function(){
+        relatedListFloater();
+    });
+  </script>
+  <apex:variable value="{!isShowRelatedList != null && isShowRelatedList}" var="isChild" />
+  <div class="wrapper {!IF(isChild, 'child', 'parent')}">
+    <div class="linkerPanel" >
+      <apex:outputPanel layout="none" rendered="{!!isChild}">
+
+        <!-- 取引先カテゴリ -->
+        <apex:outputPanel rendered="{!$ObjectType.Category__c.accessible}" >
+          <a href="#categories" class="linker" >取引先カテゴリ</a>
+          <span>|</span>
+        </apex:outputPanel>
+
+        <!-- 取引先責任者 : Always visible -->
+        <a href="#contacts" class="linker" >取引先責任者</a>
+
+
+        <!-- 本体号機 (納入先取引先) -->
+        <apex:outputPanel rendered="{!$ObjectType.UnitBody__c.accessible}" >
+          <span>|</span>
+          <a href="#unitBodies_delivery" class="linker" >本体号機 (納入先取引先)</a>
+        </apex:outputPanel>
+
+        <!-- 本体号機 (販売先取引先) -->
+        <apex:outputPanel rendered="{!$ObjectType.UnitBody__c.accessible}" >
+          <span>|</span>
+          <a href="#unitBodies_sales" class="linker" >本体号機 (販売先取引先)</a>
+        </apex:outputPanel>
+
+        <!-- 本体番号 -->
+        <apex:outputPanel rendered="{!$ObjectType.CustomObject1__c.accessible}" >
+          <span>|</span>
+          <a href="#unitNos" class="linker" >本体番号</a>
+        </apex:outputPanel>
+
+        <!-- 競合装置情報 -->
+        <apex:outputPanel rendered="{!$ObjectType.CustomObject3__c.accessible}" >
+          <span>|</span>
+          <a href="#competitionProducts" class="linker" >競合装置情報</a>
+        </apex:outputPanel>
+
+        <!-- 活動履歴 -->
+        <span>|</span>
+        <a href="#activityHistories" class="linker" >活動履歴</a>
+
+        <!-- 活動予定 -->
+        <span>|</span>
+        <a href="#openActivities" class="linker" >活動予定</a>
+
+        <!-- メモ & 添付ファイル -->
+        <span>|</span>
+        <a href="#combinedAttachments" class="linker" >メモ &amp; 添付ファイル</a>
+
+        <!-- JRI営業パイプライン -->
+        <apex:outputPanel rendered="{!$ObjectType.Sales_pipeline__c.accessible}" >
+          <span>|</span>
+          <a href="#salesPipelines" class="linker" >JRI営業パイプライン</a>
+        </apex:outputPanel>
+
+        <!-- 営業パイプライン -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesPipeline__c.accessible}" >
+          <span>|</span>        
+          <a href="#salesPL" class="linker" >営業パイプライン</a>
+        </apex:outputPanel>
+
+        <!-- 見積書 -->
+        <apex:outputPanel rendered="{!$ObjectType.QuotationInformation__c.accessible}" >
+          <span>|</span>
+          <a href="#quotations" class="linker" >見積書</a>
+        </apex:outputPanel>
+
+        <!-- 販売オーダ (出荷先取引先) -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesOrder__c.accessible}" >
+          <span>|</span>
+          <a href="#salesOrders_shipment" class="linker" >販売オーダ (出荷先取引先)</a>
+        </apex:outputPanel>
+
+        <!-- 販売オーダ (販売先取引先) -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesOrder__c.accessible}" >
+          <span>|</span>
+          <a href="#salesOrders_sales" class="linker" >販売オーダ (販売先取引先)</a>
+        </apex:outputPanel>
+
+        <!-- 販売オーダ (請求先) -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesOrder__c.accessible}" >
+          <span>|</span>
+          <a href="#salesOrders_seikyusaki" class="linker" >販売オーダ (請求先)</a>
+        </apex:outputPanel>
+
+        <!-- 特殊工事見積回答 -->
+        <apex:outputPanel rendered="{!$ObjectType.SpecialConstructionQuoteAnswer__c.accessible}" >
+          <span>|</span>
+          <a href="#specialConstructionQuotes" class="linker" >特殊工事見積回答</a>
+        </apex:outputPanel>
+
+        <!-- 顧客対応票 -->
+        <apex:outputPanel rendered="{!$ObjectType.Support__c.accessible}" >
+          <span>|</span>
+          <a href="#supports" class="linker" >顧客対応票</a>
+        </apex:outputPanel>
+
+        <!-- 講習会・セミナー申込情報 -->
+        <apex:outputPanel rendered="{!$ObjectType.SchoolSeminarEntry__c.accessible}" >
+          <span>|</span>
+          <a href="#childAccounts" class="linker" >講習会・セミナー申込情報</a>
+        </apex:outputPanel>
+
+        <!-- 売上 (販売先) -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesResult__c.accessible}" >
+          <span>|</span>        
+          <a href="#salesResults_sales" class="linker" >売上 (販売先)</a>
+        </apex:outputPanel>
+
+        <!-- 売上 (出荷先) -->
+        <apex:outputPanel rendered="{!$ObjectType.SalesResult__c.accessible}" >
+          <span>|</span>
+          <a href="#salesResults_shipment" class="linker" >売上 (出荷先)</a>
+        </apex:outputPanel>
+
+        <!-- 債権情報 -->
+        <apex:outputPanel rendered="{!$ObjectType.ReceivableInformation__c.accessible}" >
+          <span>|</span>
+          <a href="#receivableInformaitons" class="linker" >債権情報</a>
+        </apex:outputPanel>
+
+        <!-- 問合せ -->
+        <apex:outputPanel rendered="{!$ObjectType.CaseInformation__c.accessible}" >
+          <span>|</span>
+          <a href="#caseInformations" class="linker" >問合せ</a>
+        </apex:outputPanel>
+
+      </apex:outputPanel>
+
+
+      <apex:outputPanel layout="none" rendered="{!isChild}">
+
+        <!-- 取引先カテゴリ -->
+        <apex:outputPanel rendered="{!$ObjectType.Category__c.accessible}" >
+          <a href="#c_categories" class="linker" >取引先カテゴリ</a>
+          <span>|</span>
+        </apex:outputPanel>
+
+        <!-- 取引先責任者 : Always visible -->
+        <a href="#c_contacts" class="linker" >取引先責任者</a>
+
+        <!-- 本体番号 -->
+        <apex:outputPanel rendered="{!$ObjectType.CustomObject1__c.accessible}" >
+          <span>|</span>
+          <a href="#c_unitNos" class="linker" >本体番号</a>
+        </apex:outputPanel>
+
+        <!-- 競合装置情報 -->
+        <apex:outputPanel rendered="{!$ObjectType.CustomObject3__c.accessible}" >
+          <span>|</span>
+          <a href="#c_competitionItemIfor" class="linker" >競合装置情報</a>
+        </apex:outputPanel>
+
+        <!-- 活動履歴 -->
+        <span>|</span>
+        <a href="#c_activityHistories" class="linker" >活動履歴</a>
+
+        <!-- 活動予定 -->
+        <span>|</span>
+        <a href="#c_openActivities" class="linker" >活動予定</a>
+
+        <!-- メモ & 添付ファイル -->
+        <span>|</span>
+        <a href="#c_combinedAttachments" class="linker" >メモ &amp; 添付ファイル</a>
+
+        <!-- JRI営業パイプライン -->
+        <apex:outputPanel rendered="{!$ObjectType.Sales_pipeline__c.accessible}" >
+          <span>|</span>
+          <a href="#c_salesPipelines" class="linker" >JRI営業パイプライン</a>
+        </apex:outputPanel>
+
+      </apex:outputPanel>
+    </div>
+    <apex:detail title="true" showChatter="true" relatedList="false" />
+    <apex:outputPanel layout="none" rendered="{!!isChild}">
+
+      <!-- 取引先カテゴリ -->
+      <div id="categories" >
+        <c:JEOL_AccountCategoryRelatedList targetTitle="取引先カテゴリ"
+                                           targetParentId="{!Account.id}"
+                                           rendered="{!$ObjectType.Category__c.accessible}" >
+          <apex:facet name="header" >test</apex:facet>
+        </c:JEOL_AccountCategoryRelatedList>
+      </div>
+
+      <!-- 取引先責任者 : Always visible -->
+      <div id="contacts" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="取引先責任者"
+                                          targetSobjectName="Contact"
+                                          targetSobjectFields="{!contactFields}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="Account" />
+      </div>
+
+      <!-- 本体号機 (納入先取引先) -->
+      <div id="unitBodies_delivery" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="本体号機 (納入先取引先)"
+                                          targetSobjectName="UnitBody__c"
+                                          targetSobjectFields="{!unitBodyFields_delivery}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="DeliveryAccount__r"
+                                          rendered="{!$ObjectType.UnitBody__c.accessible}" />
+      </div>
+
+      <!-- 本体号機 (販売先取引先) -->
+      <div id="unitBodies_sales" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="本体号機 (販売先取引先)"
+                                          targetSobjectName="UnitBody__c"
+                                          targetSobjectFields="{!unitBodyFields_sales}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="SalesAccount__r"
+                                          rendered="{!$ObjectType.UnitBody__c.accessible}"/>
+      </div>
+
+      <!-- 本体番号 -->
+      <div id="unitNos" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="本体番号"
+                                          targetSobjectName="CustomObject1__c"
+                                          targetSobjectFields="{!unitNoFields}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="Field7__r"
+                                          rendered="{!$ObjectType.CustomObject1__c.accessible}" />
+      </div>
+      
+      <!-- 競合装置情報 -->
+      <div id="competitionProducts" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="競合装置情報"
+                                          targetSobjectName="CustomObject3__c"
+                                          targetSobjectFields="{!competitionDeviceInfomationFields}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="Field3__r"
+                                          rendered="{!$ObjectType.CustomObject3__c.accessible}" />
+      </div>
+
+      <!-- 活動履歴 -->      
+      <div id="activityHistories" >
+        <apex:relatedList list="ActivityHistories" subject="{!Account.id}" />
+      </div>
+      
+      <!-- 活動予定 -->
+      <div id="openActivities" >
+        <apex:relatedList list="OpenActivities" subject="{!Account.id}" />
+      </div>
+      
+      <!-- メモ & 添付ファイル -->
+      <div id="combinedAttachments" >
+        <apex:relatedList list="CombinedAttachments" subject="{!Account.id}" />
+      </div>
+
+      <!-- JRI営業パイプライン -->
+      <div id="salesPipelines" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="JRI営業パイプライン"
+                                          targetSobjectName="Sales_pipeline__c"
+                                          targetSobjectFields="{!salesPipeLineFields}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="Field1__r"
+                                          targetEdit="true"
+                                          rendered="{!$ObjectType.Sales_pipeline__c.accessible}" >
+          <apex:commandButton value="新規営業パイプライン" 
+                              action="{!URLFOR($Action.Sales_pipeline__c.New,null,[name='test'])}"
+                              style="font-size: 0.9em; padding: 2px 3px;"/>
+        </c:JEOL_CustomRelatedListCompnent>
+      </div>
+      
+      <div id="salesPL" >
+        <apex:relatedList title="営業パイプライン"
+                          list="SalesPipeline__r"
+                          rendered="{!$ObjectType.SalesPipeline__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="quotations" >
+        <apex:relatedList title="見積書"
+                          list="ShipmentQuotationInformations__r"
+                          rendered="{!$ObjectType.QuotationInformation__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>      
+      
+      <div id="salesOrders_shipment" >
+        <apex:relatedList list="ShipmentAccount__r"
+                          rendered="{!$ObjectType.SalesOrder__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="salesOrders_sales" >
+        <apex:relatedList list="SalesAccount__r"
+                          rendered="{!$ObjectType.SalesOrder__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="salesOrders_seikyusaki" >
+        <apex:relatedList list="SalesOrders_SeikyusakiAccount__r"
+                          rendered="{!$ObjectType.SalesOrder__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="specialConstructionQuotes" >
+        <apex:relatedList list="SpecialConstructionQuotes__r"
+                          rendered="{!$ObjectType.SpecialConstructionQuoteAnswer__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="supports" >
+        <apex:relatedList list="SalesCustomer2__r"
+                          rendered="{!$ObjectType.Support__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="childAccounts" >
+        <apex:relatedList list="Accounts__r"
+                          rendered="{!$ObjectType.SchoolSeminarEntry__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="salesResults_sales" >
+        <apex:relatedList list="aaaS__r"
+                          rendered="{!$ObjectType.SalesResult__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="salesResults_shipment" >
+        <apex:relatedList list="bbbS__r"
+                          rendered="{!$ObjectType.SalesResult__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="receivableInformaitons" >
+        <apex:relatedList list="ReceivableInformaitons__r"
+                          rendered="{!$ObjectType.ReceivableInformation__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+
+      <div id="caseInformations" >
+        <apex:relatedList list="CaseInformations__r"
+                          rendered="{!$ObjectType.CaseInformation__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+
+    </apex:outputPanel>
+
+    <apex:outputPanel layout="none" rendered="{!isChild}">
+      <div id="c_categories" >
+        <c:JEOL_AccountCategoryRelatedList targetTitle="取引先カテゴリ"
+                                           rendered="{!$ObjectType.Category__c.accessible}"
+                                           targetParentId="{!Account.id}" />
+      </div>
+
+      <div id="c_contacts" >
+        <c:JEOL_CustomRelatedListCompnent targetTitle="取引先責任者"
+                                          targetSobjectName="Contact"
+                                          targetSobjectFields="{!contactFields}"
+                                          targetParentId="{!Account.id}"
+                                          targetParentRelationshipName="Account" />
+      </div>
+
+      <div id="c_unitNos" >
+        <apex:relatedList list="hontai__r"
+                          rendered="{!$ObjectType.CustomObject1__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <div id="c_competitionItemIfor" >
+        <apex:relatedList list="Competito_instruments_info__r"
+                          rendered="{!$ObjectType.CustomObject3__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <!-- 活動履歴 -->
+      <div id="c_activityHistories" >
+        <apex:relatedList list="ActivityHistories"
+                          subject="{!Account.id}" />
+      </div>
+      
+      <!-- 活動予定 -->
+      <div id="c_openActivities" >
+        <apex:relatedList list="OpenActivities"
+                          subject="{!Account.id}" />
+      </div>
+
+      <!-- メモ & 添付ファイル -->
+      <div id="c_combinedAttachments" >
+        <apex:relatedList list="CombinedAttachments"
+                          subject="{!Account.id}" />
+      </div>
+
+      <!-- JRI営業パイプライン -->
+      <div id="c_salesPipelines" >
+        <apex:relatedList title="JRI営業パイプライン"
+                          list="Account_sales_pipeline_relationship__r"
+                          rendered="{!$ObjectType.Sales_pipeline__c.accessible}"
+                          subject="{!Account.id}" />
+      </div>
+
+    </apex:outputPanel>
+  </div>
+</apex:page>

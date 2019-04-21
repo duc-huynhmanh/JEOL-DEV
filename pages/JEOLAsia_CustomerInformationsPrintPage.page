@@ -1,0 +1,949 @@
+<apex:page renderAs="pdf" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" doctype="html-5.0" controller="JEOLAsia_CustomerInfoPrintPageCtrl">
+
+  <apex:outputPanel layout="none" id="contentPage">
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Salesforce - JEOLAsia_CustomerInformations</title>
+
+        <style>
+            @page {
+                size: A4;
+                margin-top: 30pt;
+                margin-bottom: 38pt;
+                @bottom-right {
+                    content: "9606211B(04)";
+                    padding-bottom: 10pt;
+                    font-size: 9pt;
+                    font-family: 'Arial Unicode MS';
+                }
+            }
+          body {
+            margin: 0pt;
+            padding: 0pt;
+            font-size: 9pt;
+            font-family: 'Arial Unicode MS';
+            line-height: 9px;
+          }
+
+          .contents {
+            width: 100%;
+            margin: 0 auto;
+          }
+          .field-label {
+            margin: 1px;
+          }
+          .field-src {
+            margin: -5px;
+          }
+
+          .contents .field .field-value {
+            margin: 1px;
+          }
+          .radio-table-title {
+            vertical-align: top;
+          }
+
+          .field-label.checkLabel {
+            border-style: solid;
+            border-width: 1px;
+            border-color: black;
+          }
+          .field-label.noCheckLabel {
+            border-style: solid;
+            border-width: 0px;
+            border-color: black;
+          }
+          hr {
+            margin-top: 0px; 
+            margin-bottom: -5px;
+          }
+
+        </style>
+      </head>
+
+      <body>
+        <div class="contents">
+
+            <apex:form id="form" style="margin-bottom: 0;padding-bottom: 0;">
+
+              <div class="screenname" style="text-decoration: underline; text-align: center; font-weight: bold;">
+                <apex:outputText value="CUSTOMER INFORMATION" />
+              </div>
+              <br/>
+              <div class="field" style="padding: 0 0 0 10px;" >
+<!-- 1.Order No. -->
+                <table>
+                  <col span="1" style="width:10px;"/>
+                  <col span="1" style="width:180px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:110px;"/>
+                  <col span="1" style="width:290px;"/>
+
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >1.</label>
+                    </td>
+                    <td>
+                      <label for="OrderNo" class="field-label OrderNo" >Order No.  :</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="OrderNo" styleClass="field-value OrderNo" value="{!rec.OrderNo__c}" />
+                    </td>
+<!-- Date -->
+                    <td>
+                      <label for="OrderDate" class="field-label OrderDate" >Date : </label>
+                      <apex:outputField id="OrderDate" styleClass="field-value OrderDate" value="{!rec.OrderDate__c}" />
+                    </td>
+                    <td style="line-height: 10px;" >
+                      <apex:outputField value="{!rec.Revision__c}"/>
+                    </td>
+                  </tr>
+<!-- 2.Instrument -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >2.</label>
+                    </td>
+                    <td>
+                      <label for="Instrument" class="field-label Instrument" >Instrument  :</label>
+                    </td>
+                    <td colspan="3">
+                      <apex:outputField id="Instrument" styleClass="field-value Instrument" value="{!rec.Instrument__c}" />
+                    </td>
+                  </tr>
+<!-- 3.Configuration -->
+                  <tr>
+                    <td class="radio-table-title">
+                      <label for="No" class="field-label No" >3.</label>
+                    </td>
+                    <td class="radio-table-title">
+                      <label for="Configuration" class="field-label Configuration" >Configuration  :</label>
+                    </td>
+                    <td colspan="3" style="line-height: 10px;">
+                      <apex:outputField id="Configuration" style="width: 750px; margin-bottom: 4px;" styleClass="field-value Configuration" value="{!rec.Configuration__c}"/>
+                    </td>
+                  </tr>
+<!-- 4.Customer's Name -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >4.</label>
+                    </td>
+                    <td>
+                      <label for="CustomerName" class="field-label CustomerName" >Customer's Name  :</label>
+                    </td>
+                    <td colspan="3">
+                      <apex:outputField id="CustomerName" styleClass="field-value CustomerName" value="{!rec.CustomerName__c}"/>
+                    </td>
+                  </tr>
+<!-- 5.Address -->
+                  <tr>
+                    <td class="radio-table-title">
+                      <label for="No" class="field-label No" >5.</label>
+                    </td>
+                    <td class="radio-table-title">
+                      <label for="Address" class="field-label Address" >Address  :</label>
+                    </td>
+                    <td colspan="3" style="line-height: 1.1em;">
+                      <apex:outputField id="Address" style="width: 750px; margin-bottom: 4px;" styleClass="field-value Address" value="{!rec.Address__c}"/>
+                    </td>
+                  </tr>
+<!-- Nation -->
+                  <tr>
+                    <td colspan="3">
+                    </td>
+                    <td style="text-align: right;">
+                      <label for="Nation" class="field-label Nation" >Nation  :</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="Nation" styleClass="field-value Nation" value="{!rec.Nation__c}"/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                    </td>
+                    <td colspan="1">
+                      <hr/>
+                    </td>
+                  </tr>
+<!-- URL -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td style="text-align: right;">
+                      <label for="URL" class="field-label URL" >(URL)  :</label>
+                    </td>
+                    <td colspan="3" style="line-height:1.2em;">
+                        <apex:outputText value="{!dispUrl}" escape="false" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                    </td>
+                    <td colspan="3">
+                      <hr/>
+                    </td>
+                  </tr>
+                </table>
+<!-- 6.Customer's Status -->
+                <table>
+
+                  <col span="1" style="width:10px;"/>
+                  <col span="1" style="width:180px;"/>
+                  <col span="1" style="width:600px;"/>
+
+                  <tr>
+                    <td class="radio-table-title">
+                      <label for="No" class="field-label No" >6.</label>
+                    </td>
+                    <td class="radio-table-title">
+                      <label for="CustomerStatus" class="field-label CustomerStatus" >Customer's Status  :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table">
+                        <tr>
+                          <td>
+                            <img src="{!IF(CustomerStatusItems[0] == rec.CustomerStatus__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerStatusItems[0]}" styleClass="field-label" style="position: relative;"/>
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerStatusItems[1] == rec.CustomerStatus__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerStatusItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerStatusItems[2] == rec.CustomerStatus__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerStatusItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                      <table class="radio-table">
+                        <tr>
+                          <td>
+                            <img src="{!IF(CustomerStatusItems[3] == rec.CustomerStatus__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerStatusItems[3]}" styleClass="field-label" />
+                          </td>
+                          <td style="width:250px;">
+                            <img src="{!IF(CustomerStatusItems[4] == rec.CustomerStatus__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerStatusItems[4]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+
+                      </table>
+                    </td>
+                  </tr>
+<!-- 7.Type of Facility -->
+                  <tr>
+                    <td class="radio-table-title" >
+                      <label for="No" class="field-label No" >7.</label>
+                    </td>
+                    <td class="radio-table-title" >
+                      <label for="FacilityType" class="field-label FacilityType" >Type of Facility  :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table">
+                        <tr>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[0] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[1] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[2] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[2]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[3] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[3]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[4] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[4]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[5] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[5]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(FacilityTypeItems[6] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[6]}" styleClass="field-label" />
+                          </td>
+                          <td colspan="3">
+                            <img src="{!IF(FacilityTypeItems[7] == rec.FacilityType__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!FacilityTypeItems[7]}" styleClass="field-label" />
+<!-- Type of Facility Label -->
+                            (
+                            <apex:outputField id="FacilityTypeOtherLabel" styleClass="field-value FacilityTypeOtherLabel other" value="{!rec.FacilityTypeOtherLabel__c}"/>
+                            )
+                          </td>
+                        </tr>
+                      </table>
+
+                    </td>
+                  </tr>
+<!-- 8.Field of Customer -->
+                  <tr>
+                    <td class="radio-table-title" >
+                      <label for="No" class="field-label No" >8.</label>
+                    </td>
+                    <td class="radio-table-title" >
+                      <label for="CustomerField" class="field-label CustomerField" >Field of Customer  :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[0] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[1] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[2] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[2]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[3] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[3]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[4] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[4]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[5] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[5]}" styleClass="field-label" />
+                          </td>
+                          <td>
+                            <img src="{!IF(CustomerFieldItems[6] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[6]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <img src="{!IF(CustomerFieldItems[7] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[7]}" styleClass="field-label" />
+                          </td>
+                          <td colspan="2">
+                            <img src="{!IF(CustomerFieldItems[8] == rec.CustomerField__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerFieldItems[8]}" styleClass="field-label" />
+<!-- Field of Customer Label -->
+                            (
+                            <apex:outputField id="CustomerFieldOtherLabel" styleClass="field-value CustomerFieldOtherLabel other" value="{!rec.CustomerFieldOtherLabel__c}" />
+                            )
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+<!-- 9.Scope of Customer's Activity -->
+                <table>
+                  <col span="1" style="width:10px;"/>
+                  <col span="1" style="width:180px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:300px;"/>
+
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >9.</label>
+                    </td>
+                    <td colspan="4">
+                      <label for="CustomerActivityScope" class="field-label CustomerActivityScope" >Scope of customer's Activity (Type of products or research)  :</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4" style="line-height:1.1em;">
+                      <apex:outputField id="CustomerActivityScope"  style="margin-bottom: 4px;" styleClass="field-value CustomerActivityScope" value="{!rec.CustomerActivityScope__c}"/>
+                    </td>
+                  </tr>
+<!-- 10.Principal User of Customer's Products -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >10.</label>
+                    </td>
+                    <td colspan="2">
+                      <label for="CustomerProcMainUser" class="field-label CustomerProcMainUser" >Principal User of Customer's Products</label>
+                    </td>
+                    <td colspan="2">
+                      <apex:outputText value="N/A"
+                                       style="text-align: right;"
+                                       rendered="{!rec.CustomerProcMainUser__c == NULL}"/>
+                      <apex:outputField id="CustomerProcMainUser" styleClass="field-value CustomerProcMainUser other" value="{!rec.CustomerProcMainUser__c}"/>
+                    </td>
+                  </tr>
+<!-- 11.CapitalOrExecSomeCountry -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >11.</label>
+                    </td>
+                    <td colspan="4">
+                      <label for="CapitalOrExecSomeCountry" class="field-label CapitalOrExecSomeCountry" >Capital &amp;/ or Executives from ①Iran, ②Iraq, ③North Korea:</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4">
+                      <table>
+                        <tr>
+                          <td>
+                            <table class="radio-table">
+                              <tr>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(CapitalOrExecSomeCountryItems[0] == rec.CapitalOrExecSomeCountry__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!CapitalOrExecSomeCountryItems[0]}" styleClass="field-label" />
+<!-- CapitalOrExecSomeCountryLabel -->
+                                  (
+                                  <apex:outputField id="CapitalOrExecSomeCountryLabel" styleClass="field-value CapitalOrExecSomeCountryLabel other" value="{!rec.CapitalOrExecSomeCountryLabel__c}" />
+                                  )
+                                </td>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(CapitalOrExecSomeCountryItems[1] == rec.CapitalOrExecSomeCountry__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!CapitalOrExecSomeCountryItems[1]}" styleClass="field-label" />
+                                </td>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(CapitalOrExecSomeCountryItems[2] == rec.CapitalOrExecSomeCountry__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!CapitalOrExecSomeCountryItems[2]}" styleClass="field-label" />
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- 12.CapitalOrExecSomeCountry -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >12.</label>
+                    </td>
+                    <td colspan="2">
+                      <label for="CustomerPastTransaction" class="field-label CustomerPastTransaction" >Past Transaction with Customer:</label>
+                    </td>
+                    <td colspan="2">
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(CustomerPastTransactionItems[0] == rec.CustomerPastTransaction__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerPastTransactionItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(CustomerPastTransactionItems[1] == rec.CustomerPastTransaction__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerPastTransactionItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(CustomerPastTransactionItems[2] == rec.CustomerPastTransaction__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerPastTransactionItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- Instrument -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" ></label>
+                    </td>
+                    <td>
+                      <label for="CustomerPastTransactionInstrument" class="field-label CustomerPastTransactionInstrument" >Instrument :</label>
+                    </td>
+                    <td colspan="3">
+                      <apex:outputField id="CustomerPastTransactionInstrument" styleClass="field-value CustomerPastTransactionInstrument other" value="{!rec.CustomerPastTransactionInstrument__c}"/>
+                    </td>
+                  </tr>
+<!-- 13.InstrumentEndUseDescription -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >13.</label>
+                    </td>
+                    <td colspan="4">
+                      <label for="InstrumentEndUseDescription" class="field-label InstrumentEndUseDescription" >Specific and Detailed End-use of the Ordered Instrument :</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4" style="line-height:1.1em;">
+                      <apex:outputField id="InstrumentEndUseDescription" styleClass="field-value InstrumentEndUseDescription" value="{!rec.InstrumentEndUseDescription__c}" />
+                    </td>
+                  </tr>
+<!-- 14.IsResearchEntrustedMilitary -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >14.</label>
+                    </td>
+                    <td colspan="4">
+                      <label for="IsResearchEntrustedMilitary" class="field-label IsResearchEntrustedMilitary" >Researches Entrusted by the Military/Defense :</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4">
+                      <table>
+                        <tr>
+                          <td>
+                            <table class="radio-table">
+                              <tr>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(IsResearchEntrustedMilitaryItems[0] == rec.IsResearchEntrustedMilitary__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!IsResearchEntrustedMilitaryItems[0]}" styleClass="field-label" />
+<!-- IsResearchEntrustedMilitarySubject -->
+                                  (
+                                  <apex:outputField id="IsResearchEntrustedMilitarySubject" style="margin-left: 8px;" styleClass="field-value IsResearchEntrustedMilitarySubject" value="{!rec.IsResearchEntrustedMilitarySubject__c}" />
+                                  )
+                                </td>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(IsResearchEntrustedMilitaryItems[1] == rec.IsResearchEntrustedMilitary__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!IsResearchEntrustedMilitaryItems[1]}" styleClass="field-label" />
+                                </td>
+                                <td style="padding-left: 10px;">
+                                  <img src="{!IF(IsResearchEntrustedMilitaryItems[2] == rec.IsResearchEntrustedMilitary__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                                  <apex:outputText value="{!IsResearchEntrustedMilitaryItems[2]}" styleClass="field-label" />
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+<!-- 15.ABCMWeaponRelated -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >15.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="ABCMWeaponRelated" class="field-label ABCMWeaponRelated" >Possibility of A.B.C.M. Weapons Related Use :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ABCMWeaponRelatedItems[0] == rec.ABCMWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ABCMWeaponRelatedItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ABCMWeaponRelatedItems[1] == rec.ABCMWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ABCMWeaponRelatedItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ABCMWeaponRelatedItems[2] == rec.ABCMWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ABCMWeaponRelatedItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- ABCMWeaponRelatedLabel -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4">
+                      <label for="ABCMWeaponRelatedLabel" class="field-label ABCMWeaponRelatedLabel" >(A.B.C.M. Weapons: Atomic, Biological, Chemical, Missile Weapons)</label>
+                    </td>
+                  </tr>
+<!-- 16.ConventionalWeaponRelated -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >16.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="ConventionalWeaponRelated" class="field-label ConventionalWeaponRelated" >Possibility of Converntional Weapons Related to use :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ConventionalWeaponRelatedItems[0] == rec.ConventionalWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ConventionalWeaponRelatedItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ConventionalWeaponRelatedItems[1] == rec.ConventionalWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ConventionalWeaponRelatedItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(ConventionalWeaponRelatedItems[2] == rec.ConventionalWeaponRelated__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!ConventionalWeaponRelatedItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- 17.EndUseCertificateAvailable -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >17.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="EndUseCertificateAvailable" class="field-label EndUseCertificateAvailable" >Availability of End-use Certificate :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseCertificateAvailableItems[0] == rec.EndUseCertificateAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseCertificateAvailableItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseCertificateAvailableItems[1] == rec.EndUseCertificateAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseCertificateAvailableItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseCertificateAvailableItems[2] == rec.EndUseCertificateAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseCertificateAvailableItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- EndUseCertificateAvailableLabel -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="4">
+                      <label for="EndUseCertificateAvailableLabel" class="field-label EndUseCertificateAvailableLabel" >(In case of accident &amp; problem occurrence. Item18 &amp; 19 are same too)</label>
+                    </td>
+                  </tr>
+<!-- 18.AssuranceStatementAvailable -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >18.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="AssuranceStatementAvailable" class="field-label AssuranceStatementAvailable" >Availability of Statement of Assurance :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(AssuranceStatementAvailableItems[0] == rec.AssuranceStatementAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!AssuranceStatementAvailableItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(AssuranceStatementAvailableItems[1] == rec.AssuranceStatementAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!AssuranceStatementAvailableItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(AssuranceStatementAvailableItems[2] == rec.AssuranceStatementAvailable__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!AssuranceStatementAvailableItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- 19.EndUseInspectionPossibility -->
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >19.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="EndUseInspectionPossibility" class="field-label EndUseInspectionPossibility" >Possibility of End-use Inspection :</label>
+                    </td>
+                    <td>
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseInspectionPossibilityItems[0] == rec.EndUseInspectionPossibility__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseInspectionPossibilityItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseInspectionPossibilityItems[1] == rec.EndUseInspectionPossibility__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseInspectionPossibilityItems[1]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(EndUseInspectionPossibilityItems[2] == rec.EndUseInspectionPossibility__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!EndUseInspectionPossibilityItems[2]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+<!-- 20.RiskHighDisperse -->
+                <table>
+                  <col span="1" style="width:10px;"/>
+                  <col span="1" style="width:600px;"/>
+                  <col span="1" style="width:180px;"/>
+
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >20.</label>
+                    </td>
+                    <td colspan="2">
+                      <label for="RiskHighDisperse" class="field-label RiskHighDisperse" >High Disperse Risk Profile (Mark(ﾚ)if does not correspond) :</label>
+                    </td>
+                  </tr>
+<!-- RiskCustomerSmall -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskCustomerSmall" class="field-label RiskCustomerSmall" >Customer is small and not known well.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskCustomerSmall" styleClass="field-value RiskCustomerSmall" value="{!rec.RiskCustomerSmall__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskCustomerReluctantInfo -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskCustomerReluctantInfo" class="field-label RiskCustomerReluctantInfo" >Customer is reluctant to provide end-use information.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskCustomerReluctantInfo" styleClass="field-value RiskCustomerReluctantInfo" value="{!rec.RiskCustomerReluctantInfo__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskUnusualPayment -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskUnusualPayment" class="field-label RiskUnusualPayment" >Customer requests unusual payment term/currency.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskUnusualPayment" styleClass="field-value RiskUnusualPayment" value="{!rec.RiskUnusualPayment__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskAnormalPractice -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskAnormalPractice" class="field-label RiskAnormalPractice" >Order does not correspond to normal practice(amount, packing, etc.)</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskAnormalPractice" styleClass="field-value RiskAnormalPractice" value="{!rec.RiskAnormalPractice__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskCustomerKnowledgeSmall -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskCustomerKnowledgeSmall" class="field-label RiskCustomerKnowledgeSmall" >Customer's knowledge of ordered instrument is very small.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskCustomerKnowledgeSmall" styleClass="field-value RiskCustomerKnowledgeSmall" value="{!rec.RiskCustomerKnowledgeSmall__c}" />
+                    </td>
+                  </tr>
+<!-- RiskInstrumentIncompatible -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskInstrumentIncompatible" class="field-label RiskInstrumentIncompatible" >Instrument is incompatible with customer's business.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskInstrumentIncompatible" styleClass="field-value RiskInstrumentIncompatible" value="{!rec.RiskInstrumentIncompatible__c}" />
+                    </td>
+                  </tr>
+<!-- RiskInappropriateSP -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskInappropriateSP" class="field-label RiskInappropriateSP" >Customer orders inappropriate service parts.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskInappropriateSP" styleClass="field-value RiskInappropriateSP" value="{!rec.RiskInappropriateSP__c}" />
+                    </td>
+                  </tr>
+<!-- RiskNoWishUsualService -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskNoWishUsualService" class="field-label RiskNoWishUsualService" >Customer does not wish to ask for usual installation/service.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskNoWishUsualService" styleClass="field-value RiskNoWishUsualService" value="{!rec.RiskNoWishUsualService__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskPOBox -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskPOBox" class="field-label RiskPOBox" >Customer uses P.O Box without fixing delivery conditions.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskPOBox" styleClass="field-value RiskPOBox" value="{!rec.RiskPOBox__c}"/>
+                    </td>
+                  </tr>
+<!-- RiskIllegalExporter -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <label for="RiskIllegalExporter" class="field-label RiskIllegalExporter" >Customer is known or suspected as being an illegal exporter.</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="RiskIllegalExporter" styleClass="field-value RiskIllegalExporter" value="{!rec.RiskIllegalExporter__c}"/>
+                    </td>
+                  </tr>
+                </table>
+<!-- 21.CustomerDeniedPerson -->
+                <table>
+                  <col span="1" style="width:10px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:180px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:100px;"/>
+                  <col span="1" style="width:300px;"/>
+
+                  <tr>
+                    <td>
+                      <label for="No" class="field-label No" >21.</label>
+                    </td>
+                    <td colspan="3">
+                      <label for="CustomerDeniedPerson" class="field-label CustomerDeniedPerson" >Customer is listed in the Denied Persons List :</label>
+                    </td>
+                    <td colspan="2">
+                      <table class="radio-table" >
+                        <tr>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(CustomerDeniedPersonItems[0] == rec.CustomerDeniedPerson__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerDeniedPersonItems[0]}" styleClass="field-label" />
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <img src="{!IF(CustomerDeniedPersonItems[1] == rec.CustomerDeniedPerson__c, '/img/checkbox_checked.gif', '/img/checkbox_unchecked.gif')}" class="field-src"/>
+                            <apex:outputText value="{!CustomerDeniedPersonItems[1]}" styleClass="field-label" />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<!-- Organization (Company) -->
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="OrganizationCompany" class="field-label OrganizationCompany" >Organization(Company) : </label>
+                    </td>
+<!-- OrganizationName -->
+                    <td colspan="3">
+                      <apex:outputLabel value="{!rec.OrganizationName__c}" for="OrganizationName" styleClass="field-label OrganizationName" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                    </td>
+                    <td colspan="3">
+                      <hr/>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="PersoninCharge" class="field-label PersoninCharge" >Signature (Person in Charge)</label>
+                    </td>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <label for="Supervisor" class="field-label Supervisor" >Signature (Supervisor)</label>
+                    </td>
+                  </tr>
+<!-- 署名用スペース -->
+                  <tr><td><br/></td></tr>
+                  <tr><td><br/></td></tr>
+
+                  <tr>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <hr/>
+                    </td>
+                    <td>
+                    </td>
+                    <td colspan="2">
+                      <hr/>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                    </td>
+<!-- ResponsibleUser -->
+                    <td>
+                      <label for="ResponsibleUser" class="field-label ResponsibleUser" >Name :</label>
+                    </td>
+                    <td>
+                      <apex:outputText id="ResponsibleUser" value="{!rec.ResponsibleUser__r.Name}" styleClass="field-label ResponsibleUser"/>
+                    </td>
+                    <td>
+                    </td>
+<!-- ResponsibleUser2 -->
+                    <td>
+                      <label for="ResponsibleUser2" class="field-label ResponsibleUser2" >Name :</label>
+                    </td>
+                    <td>
+                      <apex:outputText id="ResponsibleUser2" value="{!rec.ResponsibleUser2__r.Name}" styleClass="field-label ResponsibleUser2"/>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                    </td>
+<!-- Title1 -->
+                    <td>
+                      <label for="Title1" class="field-label Title1" >Title :</label>
+                    </td>
+                    <td>
+                      <apex:outputText id="ResponsibleUserTitle" value="{!ResponsibleUserTitle}" styleClass="field-label ResponsibleUserTitle" />
+                    </td>
+                    <td>
+                    </td>
+<!-- Title2 -->
+                    <td>
+                      <label for="Title2" class="field-label Title1" >Title :</label>
+                    </td>
+                    <td>
+                      <apex:outputText id="ResponsibleUser2Title" value="{!ResponsibleUser2Title}" styleClass="field-label ResponsibleUser2Title" />
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                    </td>
+<!-- DateResponsibleUser -->
+                    <td>
+                      <label for="DateResponsibleUser" class="field-label DateResponsibleUser" >Date :</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="DateResponsibleUser" styleClass="field-value DateResponsibleUser" value="{!rec.DateResponsibleUser__c}"/>
+                    </td>
+                    <td>
+                    </td>
+<!-- DateResponsibleUser2 -->
+                    <td>
+                      <label for="DateResponsibleUser2" class="field-label DateResponsibleUser2" >Date :</label>
+                    </td>
+                    <td>
+                      <apex:outputField id="DateResponsibleUser2" styleClass="field-value DateResponsibleUser2" value="{!rec.DateResponsibleUser2__c}"/>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </apex:form>
+          </div>
+        </body>
+      </html>
+    </apex:outputPanel>
+  </apex:page>

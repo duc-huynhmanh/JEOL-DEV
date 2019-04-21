@@ -1,0 +1,14 @@
+<apex:page standardController="Support__c" extensions="JEOL_AddSupportLayout_ctrl">
+  <apex:pageBlock mode="maindetail">
+    <apex:pageblocksection columns="2">
+      <apex:pageblocksectionitem >
+        <apex:outputLabel value="保守契約製番"/>
+        <apex:outputText value="{!ProductNumber}"/>
+      </apex:pageblocksectionitem>
+      <apex:pageblocksectionitem >
+        <apex:outputLabel value="保守契約状況"/>
+        <apex:outputText value="{!rec.MaintenanceSituation__c}"/>
+      </apex:pageblocksectionitem>
+    </apex:pageblocksection>
+  </apex:pageBlock>
+</apex:page>

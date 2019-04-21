@@ -1,0 +1,252 @@
+<apex:page controller="JEOL_UriageList_ctrl" docType="html-5.0" readOnly="true">
+  <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+
+  <style>
+    .item { width: 87px;}
+    .item1 { width: 132px;}
+    .item2 { width: 132px;}
+    .item3 { width: 84px;} 
+    .item4 { width: 100px;}
+    .item5 { width: 48px;} 
+    .item6 { width: 58px;} 
+    .item7 { width: 77px;}
+    .item8 { width: 84px;}
+    .item9 { width: 150px;}
+
+    .input {
+        font-size:14px;
+        border: 1px solid #989c9d;
+        border-radius:5px;
+        padding: 3px 5px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        width: 100px;
+    }  
+	.result-row-detail {
+		text-align: right;
+	}
+	.result-row-total {
+		background-color: #e5e5e5;
+		text-align: right;
+	}
+  </style>
+
+  <script type="text/javascript">
+    var $j = jQuery.noConflict();
+
+    function clearSearchCriteria1() {
+        $j("#search_criteria_table1 input").val('');
+        $j("#search_criteria_table2 select").val('');
+    }
+    function clearSearchCriteria2() {
+        $j("#search_criteria_table2 input").val('');
+        $j("#search_criteria_table2 select").val('');
+    }
+
+    function callChangeOrder(key) {
+        var obj = document.getElementById('{!$Component.order.orderBy}');
+        obj.value = key;
+        changeOrder();
+    }
+
+    function hideSearchCriteriaPanel() {
+        $j("#open_icon").show();
+        $j("#close_icon").hide();
+        $j("#search_criteria").slideUp(500);
+    }
+
+    function showSearchCriteriaPanel() {
+        $j("#open_icon").hide();
+        $j("#close_icon").show();
+        $j("#search_criteria").slideDown(500);
+    }
+
+    $j(document).ready(function(){
+        showSearchCriteriaPanel();
+    });
+
+    sfdcPage.onLoadQueue.push(function() {
+      var yearPicker = DatePicker.datePicker.yearPicker,
+          options = yearPicker.options;
+      value = +options[0].value;
+      for (var i = 1, len = 100; i <= len; i++) {
+        var o = document.createElement('option');
+        o.value = value - i;
+        o.text = value - i;
+        yearPicker.insertBefore(o, yearPicker.options[0]);
+      }
+    });
+  </script>
+  <apex:form >
+    <c:JEOL_WaitSearchPanel text="検索中..." isModalMode="false" />
+    <!-- タイトル-->
+    <div class="screenname">
+      <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_SalesResultList.png')}" align="left" width="40px" />
+      <span id="title">売上一覧</span>
+    </div>
+    <!--検索条件表示ボタン-->
+    <div id="searchPanel" >
+      <div>
+        <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+        <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+        <div id="serch_title">検索条件</div>
+      </div>
+      <!--検索条件の項目を以下に作成する -->
+      <div id="search_criteria">
+        <apex:outputPanel layout="block" id="search_criteria_form">
+          <table id="search_criteria_table" class="search_criteria_table">
+            <tr>
+              <td class="label">企業単位</td>
+              <td>
+                <apex:selectList value="{!kigyoTani}" id="kigyoTani" styleClass="input" size="1" style="width:112px; padding: 2px 1px;">
+                  <apex:selectoptions value="{!OrgUnitOptions}" />
+                </apex:selectList>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">販売先取引先</td>
+              <td><apex:inputText html-class="input" value="{!hanbaisakiCode}" /></td>
+              <td class="label">販売先取引先名</td>
+              <td><apex:inputText html-class="input" value="{!hanbaisakiName}" /></td>
+            </tr>
+            <tr>
+              <td class="label">出荷先取引先</td>
+              <td><apex:inputText html-class="input" value="{!shukkasakiCode}" /></td>
+              <td class="label">出荷先取引先名</td>
+              <td><apex:inputText html-class="input" value="{!shukkasakiName}" /></td>
+            </tr>
+            <tr>
+              <td class="label">請求先取引先</td>
+              <td><apex:inputText html-class="input" value="{!seikyusakiCode}" /></td>
+              <td class="label">請求先取引先名</td>
+              <td><apex:inputText html-class="input" value="{!seikyusakiName}" /></td>
+              <td class="label">取引先カテゴリ</td>
+              <td>
+                <apex:selectList value="{!customerCategory}" id="customerCategory" styleClass="input" size="1" style="width:112px; padding: 2px 1px;">
+                  <apex:selectoptions value="{!CCategoryOptions}" />
+                </apex:selectList>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">部門</td>
+              <td>
+                <apex:selectList value="{!bumon}" styleClass="input" size="1" style="width:112px; padding: 2px 1px;">
+                  <apex:selectoptions value="{!DepartmentOptions}" />
+                </apex:selectList>
+              </td>
+              <td class="label">系列</td>
+              <td>
+                <apex:selectList value="{!keiretsu}" styleClass="input" size="1" style="width:112px; padding: 2px 1px;">
+                  <apex:selectoptions value="{!SeriesOptions}" />
+                </apex:selectList>
+              </td>
+              <td class="label">売上年度</td>
+              <td ><apex:inputText html-class="input" value="{!nendoFrom}" maxlength="4" /><apex:outputText style="vertical-align: middle ;" value="〜" /><apex:inputText html-class="input" value="{!nendoTo}" maxlength="4"/></td>
+            </tr>
+          </table>
+
+          <!--ボタン-->
+          <div id="buttons">
+            <apex:commandLink value="クリア" styleClass="button_white" style="text-decoration: none;" action="{!doFormClear}" rerender="search_criteria_form, searchResult, pageMessages" />
+            <apex:commandLink value="検索する" styleClass="button_green" style="text-decoration: none;" action="{!search}" rerender="searchResult, pageMessages" onclick="showWaitPanel();" oncomplete="hideWaitPanel();"/>
+          </div>
+        </apex:outputPanel>
+      </div>
+    </div>
+    <!--検索結果-->
+    <apex:outputPanel layout="block" id="searchResult">
+      <apex:pageMessages id="pageMessages" />
+      <apex:actionRegion >
+      <apex:outputpanel rendered="{!SalesResult.size > 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse">
+          <tr class="contents_title">
+            <td colspan="9"><div class="in_contents_title">検索結果</div></td>
+          </tr>
+          <tr>
+            <td colspan="9"><div style="text-align:right;">単位：千円</div></td>
+          </tr>
+          <tr class="koumoku">
+            <th rowspan="2">企業単位</th>
+            <th rowspan="2">売上年度</th>
+            <th rowspan="2">部門</th>
+            <th rowspan="2">系列</th>
+            <th colspan="5">売上金額</th>
+          </tr>
+          <tr class="koumoku">
+            <th bgcolor="#e5e5e5">自社品</th>
+            <th bgcolor="#e5e5e5">他社品</th>
+            <th bgcolor="#e5e5e5">SVC</th>
+            <th bgcolor="#e5e5e5">EF</th>
+            <th bgcolor="#e5e5e5">口銭</th>
+          </tr>
+        </table>
+      
+        <apex:dataTable styleClass="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse" value="{!SalesResult}" var="detail">
+          <apex:column rendered="{!(!detail.isTotal) && (!detail.isSubtotal)}">
+            <apex:outputLink value="{!detail.EncTaniResultUrl}" >
+              <apex:outputText value="{!detail.tani}" />
+            </apex:outputLink>
+          </apex:column>
+          <apex:column rendered="{!(!detail.isTotal) && (!detail.isSubtotal)}">
+            <apex:outputLink value="{!detail.EncNendoResultUrl}">
+              <apex:outputtext value="{!detail.nendo}"   />
+            </apex:outputLink>
+          </apex:column>
+          <apex:column rendered="{!(!detail.isTotal) && (!detail.isSubtotal)}">
+            <apex:outputLink value="{!detail.EncBumonResultUrl}">
+              <apex:outputText value="{!detail.bumon}"/>
+            </apex:outputLink>
+          </apex:column>
+          <apex:column rendered="{!(!detail.isTotal) && (!detail.isSubtotal)}">
+            <apex:outputLink value="{!detail.EncKeiretsuResultUrl}">
+              <apex:outputText value="{!detail.keiretsu}"/>
+            </apex:outputLink>
+          </apex:column>
+          <apex:column colspan="4" styleClass="result-row-total" rendered="{!detail.isTotal || detail.isSubtotal}">
+            <apex:outputText value="小計" rendered="{!detail.isSubtotal}"/>
+            <apex:outputText value="総計" rendered="{!detail.isTotal}"/>
+          </apex:column>
+
+          <apex:column styleClass="{!IF((!detail.isTotal) && (!detail.isSubtotal),'result-row-detail','result-row-total')}">
+            <apex:outputText value="{0,number,###,###,###,###,##0.##}" >
+              <apex:param value="{!detail.jisha}"/>
+            </apex:outputtext>
+          </apex:column>
+          <apex:column styleClass="{!IF((!detail.isTotal) && (!detail.isSubtotal),'result-row-detail','result-row-total')}">
+            <apex:outputtext value="{0,number,###,###,###,###,##0.##}" >
+              <apex:param value="{!detail.tasha}"/>
+            </apex:outputtext>
+          </apex:column>
+          <apex:column styleClass="{!IF((!detail.isTotal) && (!detail.isSubtotal),'result-row-detail','result-row-total')}">
+            <apex:outputtext value="{0,number,###,###,###,###,##0.##}" >
+              <apex:param value="{!detail.svc}"/>
+            </apex:outputtext>
+          </apex:column>
+          <apex:column styleClass="{!IF((!detail.isTotal) && (!detail.isSubtotal),'result-row-detail','result-row-total')}">
+            <apex:outputtext value="{0,number,###,###,###,###,##0.##}" >
+              <apex:param value="{!detail.ef}"/>
+            </apex:outputtext>
+          </apex:column>
+          <apex:column styleClass="{!IF((!detail.isTotal) && (!detail.isSubtotal),'result-row-detail','result-row-total')}">
+            <apex:outputtext value="{0,number,###,###,###,###,##0.##}" >
+              <apex:param value="{!detail.kosen}"/>
+            </apex:outputtext>
+          </apex:column>
+
+        </apex:dataTable>
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse"></table>
+      </apex:outputpanel>
+      </apex:actionRegion>
+      <apex:outputpanel rendered="{!SalesResult.size <= 0}">
+        <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse">
+          <tr class="contents_title">
+            <td colspan="9">
+              <div class="in_contents_title">登録されたアイテムはありません</div>
+            </td>
+          </tr>
+        </table>
+      </apex:outputpanel>
+    </apex:outputPanel>
+  </apex:form>
+</apex:page>

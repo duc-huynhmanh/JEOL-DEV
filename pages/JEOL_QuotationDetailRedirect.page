@@ -1,0 +1,3 @@
+<apex:page standardcontroller="QuotationDetailInformation__c" extensions="JEOL_QuotationDetailRedirect_ctrl" action="{!redirect}" >
+  <h1>見積書画面を使ってください。</h1>
+</apex:page>

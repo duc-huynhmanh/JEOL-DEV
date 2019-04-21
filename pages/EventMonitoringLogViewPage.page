@@ -1,0 +1,1160 @@
+<apex:page showHeader="true" standardStylesheets="false" applyHtmlTag="true" applyBodyTag="true" docType="html-5.0" controller="EventMonitoringLogViewController">
+
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content=""/>
+        <meta name="author" content="Vaibhav,GW Inc."/>
+        
+        <!--
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap,'bootstrap/css/bootstrap.min.css')}"/>
+        -->
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap_mod,'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.styles,'styles/jquery.dataTables.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.styles,'styles/bootstrap-datetimepicker.min.css')}"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/jquery-1.11.1.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/jquery.dataTables.min.js')}"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/moment-with-locales.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.javascripts,'javascripts/bootstrap-datetimepicker.min.js')}"/>
+        
+        <style type="text/css">
+            .col-max{
+                max-width:450px;}
+            
+            .col-min{
+                min-widht:450px;}
+
+            .bootstrap-datetimepicker-widget table td.disabled,.bootstrap-datetimepicker-widget table td.disabled:hover{
+            background:none;
+            color:#F1F1F1;
+            cursor:not-allowed}
+/*            
+            .sidebarCell, #sidebarDiv {
+            width: 220px;}
+*/           
+            body{
+            font-size: 13px}
+
+        </style>
+    
+    
+        <apex:form >
+            <apex:pageBlock mode="detail" id="pbUserNameIdConvert">
+                <apex:pageMessages > </apex:pageMessages>
+                    <div class="form-group"> 
+                        <div class="row">
+                            <div class="col-sm-2 col-max">
+                            <apex:inputText value="{!searchUserText}" html-placeholder="{!$Label.PH_UserIdOrName}" html-class="form-control input-sm"/>
+                            </div>
+                            <div class="col-sm-1 col-max text-center">
+                                <apex:commandButton action="{!fetchForUserText}" value="{!$Label.BTN_GetUserId}" reRender="pbUserNameIdConvert"/>
+                            </div>
+                            <div class="col-sm-2 col-max">
+                                <apex:inputText value="{!searchedResult}" html-placeholder="{!$Label.PH_SerchedResult}" html-class="form-control input-sm"/>
+                            </div>
+                        </div> 
+                    </div> 
+            </apex:pageBlock>
+        </apex:form>
+     
+        <apex:pageBlock >   
+           <apex:pageBlockSection >
+               <div class = "row">
+                   <div id="div-notificationCenter-alerts">
+                   </div>
+                </div>
+               <div class="row">
+                   <form role="form">
+                        <div class="row">
+                            <div class="col-sm-12 col-min">
+                               <div class="form-group">
+                                   <label id="label-selectEventType" for="sel1">Select event-type:</label>
+                                   <select class="form-control" id="select-eventType">
+                                      <!-- <option>API</option> <option>ApexCallout </option> <option>ApexExecution </option> <option>ApexSoap </option>
+                                       <option>ApexTrigger </option> <option>AsyncReportRun </option> <option>BulkApi </option>
+                                       <option>ChangeSetOperation </option> <option>ContentDistribution </option> <option>ContentDocumentLink </option> <option>ContentTransfer </option>
+                                       <option>Dashboard </option> <option>DocumentAttachmentDownLoads </option> <option>Login </option> <option>LoginAs </option>
+                                       <option>Logout </option> <option>MetadataApiOperation </option> <option>PackageInstall </option> <option>MultiBlockReport </option>
+                                       <option>Report </option> <option>ReportExport  </option> <option>RestApi  </option> <option>Sandbox  </option>
+                                       <option> Sites </option><option> TimeBasedWorkflow </option><option> UITracking </option><option> URI </option>
+                                       <option> VisualforceRequest </option>
+                                       <option> QueuedExecution </option> -->
+                                   </select>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="row">
+                            <div class='col-sm-12'>
+                                <div class="form-group">
+                                    <label id="label-inputFromDate" for="fromDate">Date from (*required):</label>
+                                    <div class='input-group date' id='datetimepicker-from'>
+                                        <input id="InputFromDate" type='text' class="form-control"/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col-sm-12 col-min'>
+                                <div class="form-group">
+                                    <label id="label-inputToDate" for="fromDate">Date to (*required):</label>
+                                    <div class='input-group date' id='datetimepicker-to'>
+                                        <input id="InputToDate" type='text' class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                   </form>
+             </div>
+            <div class="row">
+                <form name="logSearch">
+                    <button id="button-getEventLog" type="button" class="btn btn-primary btn-lg" data-sessionId="{!$Api.Session_ID}" data-partnerURL="{!$Api.Partner_Server_URL_320}" onclick="clickGetEventLog()">Get Event Log</button>
+                    <button id="button-exportEventLog" type="button" onClick = "clickExportEventLog()" class="btn btn-primary btn-lg">Export Event Log</button>
+                    <button id= "button-fetchRemainingRecords" type="button" onclick="clickFetchRemainingRecords()" class="btn btn-primary btn-lg">Fetch Remaining Records</button>
+                </form>
+            </div>
+           </apex:pageBlockSection>
+           <apex:pageBlockSection columns="1">
+                <apex:outputPanel layout="block" style="overflow:auto;width:900px" >
+                    <table id="table-eventLogView" class="display" cellspacing="0" width="100%">
+                    </table>
+                </apex:outputPanel>
+               </apex:pageBlockSection>
+            </apex:pageBlock>
+
+    <script type="text/javascript">
+
+        var $j = jQuery.noConflict();
+        $j(document).ready(function()
+        {      
+            glSmartSelectEventType = new smartSelectList('select-eventType',glEventTypeList);
+            glSmartSelectEventType.displayList();
+            resetPageDOM();
+            localizeComponentNames(); //localises names of buttons and labels
+            initDatePickers(); //init and customize date picker
+        });
+
+        var glPullRequest; //Global var, contains the latest Service Platform 'Pull' query object
+        var glPullResponse; //Global var, Stores the Service Platform 'Pull' response (servicePlatformPullRequest) to be used for clickExportEventLog
+        var glTimeStampHeaderString = 'timestamp';
+        var glTableInstance;
+        var glDateFormatPickers = 'YYYY/MM/DD HH:mm';
+        var glDateFormatServicePlatform = 'YYYYMMDDHHmmss.SSS';
+        var glSmartSelectEventType;
+        var glEventTypeList = ['API', 'ApexCallout', 'ApexExecution', 'ApexSoap',
+                                       'ApexTrigger', 'AsyncReportRun', 'BulkApi',
+                                       'ChangeSetOperation', 'ContentDistribution', 'ContentDocumentLink', 'ContentTransfer',
+                                       'Dashboard', 'DocumentAttachmentDownLoads', 'Login', 'LoginAs','Logout', 'MetadataApiOperation', 'MultiBlockReport', 'PackageInstall','QueuedExecution',
+                                       'Report', 'ReportExport', 'RestApi', 'Sandbox',
+                                       'Sites','TimeBasedWorkflow','UITracking','URI',
+                                       'VisualforceRequest'];
+
+        //Service Platform's pull query object BEGINS
+        var servicePlatformPullRequest = {};
+        servicePlatformPullRequest = function(requestDataVal, headerObjVal,requestURLVal){
+            var requestData = requestDataVal;
+            var headerObj = headerObjVal;
+            var requestURL = requestURLVal;
+
+            this.getRequestData = function(){return requestData;}
+            this.setRequestData = function(requestDataVal){requestData = requestDataVal;}
+            this.updateRequestData = function(nextHashKeyVal, nextRangeKeyVal, maxRecordCountVal){
+                requestData.nexthashkey = nextHashKeyVal;
+                requestData.nextrangekey = nextRangeKeyVal;
+                requestData.maxRecordCount = maxRecordCountVal;
+            }
+            this.setHeaderObj = function(headerObjVal){headerObj = headerObjVal;}
+
+            this.makeAjaxRequest = function(successCallBack, failureCallBack){
+                //ajax begins
+                $j.support.cors = true; //otherwise IE gets angry and throws 'No Transport' error
+                   /*var isIE = false || !!document.documentMode; // At least IE6
+-                    if ( isIE && window.XDomainRequest) {
+-                        var xdr = new XDomainRequest(); 
+-                        xdr.open("POST",getRequestURL());
+-                        xdr.send(JSON.stringify(requestData) + '&ie=1');
+-                        xdr.onerror = function() {
+-                            alert('in error');
+-                        };
+-                        xdr.onload = function() {
+-                            alert(xdr.responseText);
+-                        }
+-                    } else {*/
+                $j.ajax({
+                    type: "POST",
+                    data: JSON.stringify(requestData),
+                    contentType : "application/json;charset=utf-8",
+                    accepts : {"json" : "application/json"},
+                    headers: headerObj,
+                    dataType: "json",                       
+                    url: requestURL,
+                    crossDomain: true,
+                    success: function (data, status) { 
+                        successCallBack(data, status);
+                    },
+                    error: function(xhr,status,error)
+                    {
+                        failureCallBack(xhr, status, error);
+                    }
+                });//ajax ends
+            }
+        } //Service Platform's pull query object ENDS
+
+        //Service platform's pull response object BEGINS
+        var servicePlatformPullResponse = {};
+        servicePlatformPullResponse = function(data){
+            //Private methods and properties
+            var count = data.count;
+            var hasNext = data.hasnext;
+            var logs = data.logs;
+            var nextHashKey = data.nexthashkey;
+            var nextRangeKey = data.nextrangekey;
+
+            //Get CSV file name
+            function getExportLogCSVFileName()
+            {
+                var now = moment().format('YYYYMMDDHHmmss');
+                var eventType = getEventType();
+                var fileName = eventType + '_' + now + '.csv' ;
+                return fileName;
+            }
+
+            //Use to get table headers for ajax response
+             function getHeaders(obj) {
+                 var cols = new Array();
+                 for (var key in obj) {
+                     cols.push(key);
+                 }
+                 return cols;
+             }
+
+            //Public methods and properties
+            this.getLogs = function(){return logs;}
+            this.getCount = function(){return count;}
+            this.getHasNext = function(){return hasNext;}
+            this.getNextHashKey = function(){return nextHashKey;}
+            this.getNextRangeKey = function(){return nextRangeKey;}
+
+            //Appends the newDataLogs to old datalogs and updates rest of the vaues
+            this.updateData = function(newData)
+            {
+                logs = logs.concat(newData.logs);
+                count += newData.count;
+                hasNext = newData.hasnext;
+                nextHashKey = newData.nexthashkey;
+                nextRangeKey = newData.nextrangekey;
+            }
+
+            //Converts JS Object into CSV strings and downloads it
+            this.downloadJSON2CSV = function()
+            {
+                 //var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+                 if(!logs) return;
+                 var array = logs;
+                 var str = '';
+                 //for header row
+                 var headerLine = '';
+                 var columns = getHeaders(array[0]);
+                 var columnsCount = columns.length;
+                 for (var index in columns) {
+                     headerLine += '"' + columns[index] + '",';}
+                 headerLine.slice(0,headerLine.Length-1); 
+                 str += headerLine + '\r\n';
+                 
+                 //for data rows
+                 for(var i=0; i< array.length; i++)
+                 {
+                     var line='';
+                     for(var j=0; j<columnsCount; j++)
+                         {
+                             if(columns[j] == glTimeStampHeaderString)
+                                 line += '"' + getJSTDateFromGMT(array[i][columns[j]]) + '",';
+                             else
+                                line += '"' + array[i][columns[j]] + '",';
+                         }
+                     line.slice(0,line.Length-1); 
+                     str += line + '\r\n';
+                }
+
+                //Download csv file
+                var fileName = getExportLogCSVFileName();
+                var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+                if(isIE)
+                {
+                     var csvBlob = new Blob([str],{type:'text/csv;charset=utf-8;'});
+                     window.navigator.msSaveOrOpenBlob(csvBlob, fileName);
+                }
+                else
+                {
+                    var uri = 'data:application/csv;charset=utf-8,' + encodeURIComponent(str);
+                    var link = document.createElement("a");
+                    link.href = uri;
+                    link.style = "visibility:hidden";
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+             }
+        }
+        //Service platform's pull response object ENDS
+
+        //Adds Alerts below the navigation bar
+        //Custom Notification Centre BEGINS
+        var notificationCenter = (function(){
+            var instance = null;
+
+            //Singelton
+            function init()
+            {
+                //Clear previous alerts
+                function clearPrevAlerts(){
+                    $j('#div-notificationCenter-alerts').empty();}
+
+                //Private methods and properties
+                function alertWarning(alertText)
+                {
+                    clearPrevAlerts();
+                    $j('#div-notificationCenter-alerts').append('<div id="WarningIncorrectInput" class= "alert alert-error bg-warning" role="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Warning} ' + '</strong> ' + alertText +' </div>');
+                }
+
+                function alertError(alertText){
+                    clearPrevAlerts();
+                    $j('#div-notificationCenter-alerts').append('<div id="WarningIncorrectInput" class= "alert alert-error bg-danger" role="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Error} ' + '</strong>' + alertText +'</div>');
+                }
+
+                function alertInfo(alertText){
+                    clearPrevAlerts();
+                    $j('#div-notificationCenter-alerts').append('<div id="WarningIncorrectInput" class= "alert alert-info bg-info" role="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Info} ' + '</strong>' + alertText +'</div>');
+                }
+
+                function alertSuccess(alertText){
+                    clearPrevAlerts();
+                    $j('#div-notificationCenter-alerts').append('<div id="WarningIncorrectInput" class= "alert alert-success bg-success" role="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button><strong>' + '{!$Label.LBL_Success} ' + '</strong>' + alertText +'</div>');
+                }
+
+                return {
+                    //public methods and properties
+                    alertWarning : function(text) {alertWarning(text)},
+                    alertError: function(text) {alertError(text)},
+                    alertInfo: function(text) {alertInfo(text)},
+                    alertSuccess: function(text) {alertSuccess(text)},
+                    clearAlerts : function(){clearPrevAlerts()}
+                };
+             };
+
+             return{
+                getInstance: function(){
+                    if(!instance)
+                        instance = init();
+                    return instance;
+                }
+             };
+        })();
+        //Custom Notification Centre ENDS
+
+        //Smart Select list: Select List that changes the order of options depending upon user's usage
+        var smartSelectList = {};
+        smartSelectList = function(selectElemIdVal,optionListVal)
+        {
+            //Public methods and properties     
+            this.displayList = function(){ display();}
+
+            //Private methods and properties
+            var selectElemId = selectElemIdVal;
+            var optionList = optionListVal;
+            var optionCountList = {};
+            var localStorageItemKey = selectElemIdVal+'_OptionSelectCount';
+            var isInit = false;
+            var mostUsedDisplayCount = 5;
+
+            //Inits the smart select list along with its localStorage 
+            function init(){
+
+                if(!selectElemId)
+                    throw 'SmartSelectList Error: selectElemId Not found';
+                if(!optionList)
+                    throw 'SmartSelectList Error: optionList Not found';
+
+                if(!getOptionSelectCountCache())
+                    setUpOptionSelectCache();
+
+                $j('#' + selectElemId).change(smartSelectChangeCallback);
+                isInit = true;
+            }
+
+            //Sets up the cache for optionsCount
+            function setUpOptionSelectCache(){
+                for(i=0;i< optionList.length;i++)
+                    optionCountList[optionList[i]] = 0;
+
+                customizeInitViewForJEOLClient(optionCountList);
+                setOptionSelectCountCache(optionCountList);
+            }
+
+            //customization for jeol-client
+            function customizeInitViewForJEOLClient(list)
+            {
+                list['Login'] = 5;
+                list['Report'] = 4;
+                list['ReportExport'] = 3;
+                list['URI'] = 2;
+                list['VisualforceRequest'] = 1;
+            }
+
+            //Selection change call back function
+            function smartSelectChangeCallback()
+            {
+                var selection = $j(this).val();
+                var item = getOptionSelectCountCache();
+                if(item[selection] != null)
+                {
+                    item[selection] = item[selection] + 1;
+                    setOptionSelectCountCache(item);
+                //}
+                    //get selection
+                    var elem = document.getElementById(selectElemId);
+                    var selectedVal = elem.options[elem.selectedIndex].value;
+                    
+                    /* //Enable for enabling dynamic change in list ordering
+                    //display
+                    display();
+                    //set selection
+                    for(i=0;i<elem.options.length;i++)
+                    {
+                        if(elem.options[i].value == selectedVal)
+                            elem.options[i].setAttribute('selected','selected');
+                    }
+                    */
+                }
+                else
+                  console.log('SmartSelectErr: Selected key not found in ' +localStorageItemKey);
+            }
+
+            //gets cached item
+            function getOptionSelectCountCache(){
+                var item = JSON.parse(localStorage.getItem(localStorageItemKey));
+                return item;
+            }
+
+            //gets cached item
+            function setOptionSelectCountCache(item){
+                localStorage.setItem(localStorageItemKey, JSON.stringify(item));
+            }
+
+            //smartly resets the cache items to support most frequently used values
+            function smartResetOptionSelectCountCache()
+            {
+                var list = getOptionSelectCountCache();
+                if(list == null){
+                    console.log('SmartSelectErr: Cached object is null!');
+                    return;
+                }
+                //sort
+                var keysSorted = Object.keys(list).sort(function(a,b){return list[b]-list[a]});
+                var numOfVal = Math.min(keysSorted.length,mostUsedDisplayCount);
+
+                for(i=0;i<keysSorted.length;i++)
+                {
+                    if(i<numOfVal)
+                        list[keysSorted[i]] = numOfVal - i;
+                    else
+                        list[keysSorted[i]] = 0;
+                }
+
+                setOptionSelectCountCache(list);
+            }
+
+            //resets cache item to zero values
+            function resetOptionSelectCountCache()
+            {
+                var items = getOptionSelectCountCache();
+                for(var item in items)
+                    items[item] = 0;
+
+                setOptionSelectCountCache(items);
+            }
+
+            //Clears the display elements, not Local Storage
+            function clear(){
+                $j('#' + selectElemId).empty();
+            }
+
+            //Updates the list
+            function display(){
+                if(!isInit)
+                    init();
+                clear();
+                var list = getOptionSelectCountCache();
+                if(list == null){
+                    console.log('SmartSelectErr: Cached object is null!');
+                    return;
+                }
+
+                //sort
+                var keysSorted = Object.keys(list).sort(function(a,b){return list[b]-list[a]});
+                console.log(keysSorted);
+               
+                //reset use counts
+                //if(list[keysSorted[0]] >10)
+                    //console.log('');
+                if(list[keysSorted[0]] > Math.pow(10,2))
+                    smartResetOptionSelectCountCache();
+                //
+                
+                var numOfVal = Math.min(keysSorted.length,mostUsedDisplayCount);
+                $j('#' + selectElemId).append('<option disabled>----------</option>');
+                for(i=0;i<numOfVal; i++)   
+                    $j('#' + selectElemId).append('<option>'+ keysSorted[i] +'</option>');
+                $j('#' + selectElemId).append('<option disabled>----------</option>');
+                
+
+                for(i=0;i<optionList.length;i++)
+                    $j('#' + selectElemId).append('<option>'+ optionList[i] +'</option>');
+            }
+        }
+        //
+
+        //ExportEventLog btn click handler
+        function clickExportEventLog(){
+            //do the conversion from jsObject to CSV string
+            if(glPullResponse == undefined || glPullResponse == null){
+                notificationCenter.getInstance().alertWarning('{!$Label.WRN_ExportDataNotFound}');
+                return false;}
+            
+           glPullResponse.downloadJSON2CSV();
+           return false;
+        }
+
+        //GetEventLog btn click handler
+        function clickGetEventLog()
+        {
+            //Reset page
+            resetPageDOM(); 
+            
+            //Prepare API request data
+            var requestData = getRequestData();
+            var headerObj = getHeaderObjectForAjax();
+            var requestURL = getRequestURL();
+
+            //Construct and init AJAX query object
+            glPullRequest = new servicePlatformPullRequest(requestData, headerObj, requestURL);
+
+            //Change button to Loading...
+            changeGetLogBtnFeatures(true);
+
+            //Make request
+             glPullRequest.makeAjaxRequest(pullRequestSuccessCallBack, pullRequestFailureCallBack);
+        }
+ 
+        //Removes added DOM elements
+        function resetPageDOM()
+        {
+            $j('#table-eventLogView').hide();
+            $j('#button-exportEventLog').prop('disabled', true); //disables the export button
+            $j('#button-fetchRemainingRecords').hide();
+            //Clear previous warnings
+            notificationCenter.getInstance().clearAlerts();
+            //Clear all previous table data
+            initLogViewTable();
+            }
+            
+        //Resets log view table
+        function initLogViewTable()
+        {
+            //Hide table if any
+            $j('#table-eventLogView_wrapper').hide();
+            //Clear additional query stored results
+            glPullResponse = null;}
+
+         //Gets date (in YYYYMMDDHHMMSSdotSSS format) from input date field using moment.js
+         function getToDate()
+         {
+            moment.locale('ja');
+            var dateString = $j('#InputToDate').val();
+            var date = moment(dateString, glDateFormatPickers);
+            var utcDateString = date.utc().format(glDateFormatServicePlatform);
+            //console.log('to return utcDateString: ' + utcDateString);
+            return utcDateString;}
+
+         //Gets date (in YYYYMMDDHHMMSSdotSSS format) from input date field
+         function getFromDate()
+         {
+            moment.locale('ja');
+            var dateString = $j('#InputFromDate').val();
+            var date = moment(dateString, glDateFormatPickers);
+            var utcDateString = date.utc().format(glDateFormatServicePlatform);
+            //console.log('from return utcDateString: ' + utcDateString);
+            return utcDateString;}
+         
+         function getEventType()
+         {
+             var eventType = $j('#select-eventType').val();
+             return eventType; }
+
+        //localize component (labels or buttons etc.) names
+        function localizeComponentNames() {
+            // buttons...
+            $j('#button-getEventLog').html('{!$Label.BTN_GetLog}');
+            $j('#button-exportEventLog').html('{!$Label.BTN_ExportLog}');
+            $j('#button-fetchRemainingRecords').html('{!$Label.BTN_FetchNext1000Rec}');
+            //labels
+            $j('#label-selectEventType').html('{!$Label.LBL_SelectEventType}');
+            $j('#label-inputFromDate').html('{!$Label.LBL_DateFrom}');
+            $j('#label-inputToDate').html('{!$Label.LBL_DateTo}');
+        }
+
+        //Returns midnight date for today/tomorrow from current date using moment.js
+         function getMidnightDate(returnYesterdaysDate)
+         {
+            moment.locale('ja');
+            //var now = moment('2013-01-01T00:00:00.000');
+            var now = moment();
+            //console.log('now: ' + now);
+
+            now.set('hour', 0); now.set('minute',0);
+            now.set('second',0); now.set('millisecond', 0);
+
+             //var dateString = now.format('LLL');
+             var dateString = now.format(glDateFormatPickers);
+
+             //var midnight = new moment(dateString,'LLL');
+            var midnight = new moment(dateString,glDateFormatPickers);
+            if(returnYesterdaysDate)
+            {
+                midnight.set('hour', (midnight.hour() - 24));
+            }
+            return midnight;
+         }
+        
+        //init and customize date pickers
+        function initDatePickers()
+        {
+            $j('#datetimepicker-to').datetimepicker({
+                locale: 'ja', 
+                defaultDate: getMidnightDate(false),
+                sideBySide: false,
+                format: glDateFormatPickers
+                //format: 'LLL'
+            });
+            $j('#datetimepicker-from').datetimepicker({
+                locale: 'ja',
+                defaultDate: getMidnightDate(true),
+                sideBySide: false,
+                format: glDateFormatPickers
+                //format: 'LLL'
+            });
+
+            var now = moment();
+            $j('#datetimepicker-to').data("DateTimePicker").maxDate(now);
+            $j('#datetimepicker-from').data("DateTimePicker").maxDate(now);
+
+            $j("#datetimepicker-to").on("dp.change", function (e) {
+                $j('#datetimepicker-from').data("DateTimePicker").maxDate(e.date);});
+
+            $j("#datetimepicker-from").on("dp.change", function (e) {
+                $j('#datetimepicker-to').data("DateTimePicker").minDate(e.date);});
+        }
+
+        //Change the buttons behaviour&features depending on state of request
+         function changeGetLogBtnFeatures(isProcessing)
+         {
+            if(isProcessing)
+            {
+                $j('#button-getEventLog').html('{!$Label.BTN_Loading}');
+                $j('#button-getEventLog').prop('disabled',true);
+                $j('#button-exportEventLog').prop('disabled', true);
+            }
+            else
+            {
+                $j('#button-getEventLog').html('{!$Label.BTN_GetLog}'); //resets button name to default
+                $j('#button-getEventLog').prop('disabled',false);
+            }
+         }
+
+         //Returns GetEventLog request data for service platform request
+         function getRequestData()
+         {
+            var sessionId =  $j('#button-getEventLog').attr('data-sessionId');
+            var partnerURL = $j('#button-getEventLog').attr('data-partnerURL');
+            var toDate = getToDate();
+            var fromDate = getFromDate();
+            var eventType = getEventType();
+            
+            //Validate request data
+            if(toDate == 'Invalid date' || fromDate == 'Invalid date')
+             {
+                 //addWarningMessages('{!$Label.WRN_RequiredFieldsNotFilled}', false);
+                 notificationCenter.getInstance().alertWarning('{!$Label.WRN_RequiredFieldsNotFilled}');
+                 ResetLogViewTable();
+                 changeGetLogBtnFeatures(false);//Change button back to normal title...
+                 $j('#button-exportEventLog').prop('disabled', true);//Change button back to normal title...
+                 throw new FatalError('Please input the required field!');} 
+
+            var requestData =  {eventType: eventType,
+                              fromDateTime: fromDate,
+                              toDateTime : toDate,
+                              partnerUrl: partnerURL,
+                              sessionId: sessionId };
+                                            
+            return requestData;
+         }
+
+        function getHeaderObjectForAjax()
+        {
+            var authInfo = "Basic " + "{!authInfo}";
+            var connectionType = "{!$Setup.AuthenticationSettings__c.AccessType__c}";
+            var headerObj = {"accept-charset":"utf-8"};
+            if(connectionType != 'public')
+                headerObj["Authorization"] = authInfo;
+            return headerObj;
+            }
+
+         //Returns requestURL for event log fetch service-platform request
+         function getRequestURL()
+         {
+            var url1 = "{!$Setup.AuthenticationSettings__c.ServicePlatformURL__c}";
+            var url2 = "rest/services/vx.sfdc.eventlog.EventLog/list";
+            var connectionType = "{!$Setup.AuthenticationSettings__c.AccessType__c}";
+            var requestURL = (connectionType == 'public')? url1 + "/public/" + url2 : url1 + url2;
+            return requestURL;
+         }
+
+         //enables/disables hide/show fetchMoreRecords button
+        function refreshBtnStateFetchMoreRec()
+        {
+            if((!glPullResponse) || (!glPullResponse.getHasNext()))
+                $j('#button-fetchRemainingRecords').hide();
+            else
+            {
+                $j('#button-fetchRemainingRecords').show();
+                $j('#button-fetchRemainingRecords').prop('disabled',false);
+            }
+        }
+
+        function setLoadingBtnStateFetchMoreRec(isStateLoading)
+        {
+            if(isStateLoading)
+            {
+                $j('#button-fetchRemainingRecords').prop('disabled',true);
+                $j('#button-getEventLog').prop('disabled',true);
+                $j('#button-exportEventLog').prop('disabled',true);
+                $j('#button-fetchRemainingRecords').html('{!$Label.BTN_Loading}');
+            }
+            else{
+                $j('#button-fetchRemainingRecords').prop('disabled',false);
+                $j('#button-fetchRemainingRecords').html('{!$Label.BTN_FetchNext1000Rec}');
+                $j('#button-getEventLog').prop('disabled',false);
+                $j('#button-exportEventLog').prop('disabled',false);
+            }
+        }
+
+        //fetch remaining records button's click event handler
+        function clickFetchRemainingRecords()
+        {
+            notificationCenter.getInstance().clearAlerts();
+            if((glPullResponse.getHasNext() != undefined) && (glPullResponse.getHasNext() == true))
+            {
+                setLoadingBtnStateFetchMoreRec(true);
+                glPullRequest.updateRequestData(glPullResponse.getNextHashKey(), glPullResponse.getNextRangeKey(), 1000);
+                glPullRequest.makeAjaxRequest(pullHasNextRequestSuccessCallBack, pullHasNextRequestFailureCallBack);
+            }
+        }
+
+        //ServicePlatform pull ajax request's success callback 
+        function pullHasNextRequestSuccessCallBack(data, status)
+        {
+            if(isServicePlatformResponseOk(data))
+            {
+                glPullResponse.updateData(data);
+                addDatatToTableInDOM(glPullResponse.getLogs());
+                notificationCenter.getInstance().alertInfo('{!$Label.INFO_TablesUpdatedWithNewRec}');
+                refreshBtnStateFetchMoreRec();
+            }
+            setLoadingBtnStateFetchMoreRec(false);
+        }
+
+        //ServicePlatform pull ajax request's failure callback 
+        function pullHasNextRequestFailureCallBack (xhr, data, success)
+        {
+            notificationCenter.getInstance().alertError('{!$Label.ERR_ServerRequestFailed}');
+            setLoadingBtnStateFetchMoreRec(false);
+        }
+
+        //ServicePlatform pull ajax request's success callback 
+        function pullRequestSuccessCallBack(data, status)
+        {
+            changeGetLogBtnFeatures(false); //Change button back to normal title...
+            if(isServicePlatformResponseOk(data))
+            {
+                //glPullResponse = data.logs; //for csvExport
+                glPullResponse = new servicePlatformPullResponse(data);
+                addDatatToTableInDOM(data.logs); //For adding retrieved data to table for viewing
+                $j('#button-exportEventLog').prop('disabled', false);//enables the export button
+
+                refreshBtnStateFetchMoreRec();
+            }
+        }
+
+        //ServicePlatform pull ajax request's failure callback 
+        function pullRequestFailureCallBack (xhr, data, success)
+        {
+            console.log(xhr.status);
+            //addWarningMessages('{!$Label.ERR_ServerRequestFailed}',true);
+            notificationCenter.getInstance().alertError('{!$Label.ERR_ServerRequestFailed}');
+            changeGetLogBtnFeatures(false);//Change button back to normal title...
+            $j('#button-exportEventLog').prop('disabled', true);//Change button back to normal title...
+        }
+
+        //Validate ServicePlatform response
+        function isServicePlatformResponseOk(data)
+        {
+           if((data.count != undefined) && (data.count == 0))
+            {
+                //addWarningMessages('{!$Label.WRN_NoRecordsFoundForTheQuery}', false );
+                notificationCenter.getInstance().alertWarning('{!$Label.WRN_NoRecordsFoundForTheQuery}');
+                return false;
+            }
+            if(data.logs[0] == undefined)
+            {
+                //addWarningMessages('{!$Label.ERR_ServerRequestFailed}',true);
+                notificationCenter.getInstance().alertError('{!$Label.ERR_ServerRequestFailed}');
+                return false;
+            }
+            return true;
+        }
+
+        //Destroying table-instance, recommended before creation of a new one
+        function destroyLogViewDataTable()
+        {
+           if(glTableInstance != undefined)
+            {    
+                glTableInstance.destroy();
+                $j('#table-eventLogView').empty();        
+                console.log('glTableInstance Destroyed and DOM Cleaned! ' + glTableInstance);
+            }
+        }
+
+        //Inits the data table and assigns to global glTableInstance var
+        function createLogViewDataTable()
+        {
+            $j('#table-eventLogView_wrapper').show();
+            $j('#table-eventLogView').show();
+            glTableInstance = $j('#table-eventLogView').dataTable({
+                        'scrollX' : true,
+                        'lengthMenu' : [10, 25, 50, 100, 200],
+                        'language': {
+                                        'lengthMenu': '{!$Label.DTLBL_Show} _MENU_ {!$Label.DTLBL_Entries}',
+                                        'search': '{!$Label.DTLBL_Search}',
+                                        'info' : '{!$Label.DTLBL_Showing} _START_ {!$Label.DTLBL_To} _END_ {!$Label.DTLBL_Of} _TOTAL_ {!$Label.DTLBL_Entries}',
+                                        'infoFiltered' : '({!$Label.DTLBL_FilteredFrom} _MAX_ {!$Label.DTLBL_Entries})',
+                                        'paginate': {
+                                            'previous' : '{!$Label.DTLBL_Previous}',
+                                            'next' : '{!$Label.DTLBL_Next}',
+                                            'first' : '{!$Label.DTLBL_First}',
+                                            'last' : '{!$Label.DTLBL_Last}'
+                                        },
+                        'zeroRecords' : '{!$Label.DTLBL_NoMatchingEntriesFound}'},
+                        'sPaginationType': 'input'
+                    }).api();
+            console.log('glTableInstance created!');
+        }                
+                    
+         //Adds data to table
+         function addDatatToTableInDOM(logs)
+         {               
+            //Destroying table-instance bef creation of one
+              destroyLogViewDataTable();
+
+            //Insert table header
+             var headers = GetHeaders(logs[0]);
+             var headerHTMLString = '<thead> <tr>';
+             for(var i=0; i< headers.length; i++)
+             {
+                 headerHTMLString = headerHTMLString.concat('<th>'+ headers[i] + '</th>');
+             }
+             headerHTMLString = headerHTMLString.concat('</tr> </thead>');
+             $j('#table-eventLogView').append(headerHTMLString);
+             
+             //Insert table rows
+             var tableBodyHTMLString =  '<tbody>';
+             
+             for (var i = 0; i < logs.length; i++) {
+                 var row = logs[i];
+                 tableBodyHTMLString = tableBodyHTMLString.concat('<tr>');
+                 for(var j=0; j< headers.length; j++)
+                 {
+                     if(headers[j] == glTimeStampHeaderString) //for conversion of time from GMT to JST
+                     {
+                         tableBodyHTMLString = tableBodyHTMLString.concat('<td>'+ getJSTDateFromGMT(row[headers[j]]) + '</td>');
+                     }
+                     else
+                         tableBodyHTMLString = tableBodyHTMLString.concat('<td>'+ row[headers[j]] + '</td>');
+                 }
+                 tableBodyHTMLString = tableBodyHTMLString.concat('</tr>');
+             }
+             tableBodyHTMLString = tableBodyHTMLString.concat('</tbody>');
+             $j('#table-eventLogView').append(tableBodyHTMLString);
+
+             //Creates a new instance and display table-eventLogView
+             createLogViewDataTable();
+
+
+             //API recommended way
+             /*var tableHeader = [];
+             var tableData = [];
+             for(var key in data.logs[0])
+                 {
+                     var columnObj = new Object();
+                     columnObj['data'] = key;
+                     tableData.push(columnObj);
+                     }
+             
+             for(var key in data.logs)
+                 {
+                tableData.push(JSON.stringify(data.logs[key]));
+                     console.log('data.logs[key]: ' + data.logs[key]);
+                     console.log('stringy(data.logs[key]): ' + JSON.stringify(data.logs[key]));
+                     }
+             glTableInstance = $j('#table-eventLogView').DataTable({data: tableData, tableHeader}); */
+                                                            
+             /*$j('#table-eventLogView tbody').on('click', 'tr', function () {
+                                                                    var name = $j('td', this).eq(0).text();
+                                                                    alert( 'You clicked on '+name+'\'s row' );
+                                                                } ); */
+                    }
+         
+         //Use to get table headers for ajax response
+         function GetHeaders(obj) {
+             var cols = new Array();
+             for (var key in obj) {
+                 cols.push(key);
+             }
+             return cols;
+         }
+         
+         //Converts date from GMT to JST
+         function getJSTDateFromGMT(dateString)
+         {
+            moment.locale('ja');
+            var momentUTC = new moment.utc(dateString,glDateFormatServicePlatform);
+            var momentLocal = momentUTC.local();
+            var dateLocalString = momentLocal.format(glDateFormatPickers);
+            return dateLocalString;
+         }
+
+         //jquery.dataTables.pagination.input.js -- MODIFIED --
+          $j.fn.dataTableExt.oPagination.input = {
+            "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
+            {
+                var nFirst = document.createElement( 'span' );
+                var nPrevious = document.createElement( 'span' );
+                var nNext = document.createElement( 'span' );
+                var nLast = document.createElement( 'span' );
+                var nInput = document.createElement( 'input' );
+                var nPage = document.createElement( 'span' );
+                var nOf = document.createElement( 'span' );
+
+                nFirst.innerHTML = oSettings.oLanguage.oPaginate.sFirst;
+                nPrevious.innerHTML = oSettings.oLanguage.oPaginate.sPrevious;
+                nNext.innerHTML = oSettings.oLanguage.oPaginate.sNext;
+                nLast.innerHTML = oSettings.oLanguage.oPaginate.sLast;
+
+                nFirst.className = "paginate_button first disabled";
+                nPrevious.className = "paginate_button previous disabled";
+                nNext.className="paginate_button next";
+                nLast.className = "paginate_button last";
+                nOf.className = "paginate_of";
+                nPage.className = "paginate_page";
+                nInput.className = "paginate_input";
+
+                if ( oSettings.sTableId !== '' )
+                {
+                    nPaging.setAttribute( 'id', oSettings.sTableId+'_paginate' );
+                    nPrevious.setAttribute( 'id', oSettings.sTableId+'_previous' );
+                    nPrevious.setAttribute( 'id', oSettings.sTableId+'_previous' );
+                    nNext.setAttribute( 'id', oSettings.sTableId+'_next' );
+                    nLast.setAttribute( 'id', oSettings.sTableId+'_last' );
+                }
+
+                nInput.type = "text";
+                //nPage.innerHTML = "Page ";
+                nPage.innerHTML = "";
+
+                nPaging.appendChild( nFirst );
+                nPaging.appendChild( nPrevious );
+                nPaging.appendChild( nPage );
+                nPaging.appendChild( nInput );
+                nPaging.appendChild( nOf );
+                nPaging.appendChild( nNext );
+                nPaging.appendChild( nLast );
+
+                $j(nFirst).click( function ()
+                {
+                    var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
+                        if (iCurrentPage != 1)
+                        {
+                        oSettings.oApi._fnPageChange( oSettings, "first" );
+                        fnCallbackDraw( oSettings );
+                        $j(nFirst).addClass('disabled');
+                        $j(nPrevious).addClass('disabled');
+                        $j(nNext).removeClass('disabled');
+                        $j(nLast).removeClass('disabled');
+                        }
+                } );
+
+                $j(nPrevious).click( function()
+                {
+                    var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
+                        if (iCurrentPage != 1)
+                        {
+                        oSettings.oApi._fnPageChange(oSettings, "previous");
+                            fnCallbackDraw(oSettings);
+                            if (iCurrentPage == 2)
+                            {
+                                $j(nFirst).addClass('disabled');
+                                $j(nPrevious).addClass('disabled');
+                            }
+                            $j(nNext).removeClass('disabled');
+                            $j(nLast).removeClass('disabled');
+                    }
+                } );
+
+                $j(nNext).click( function()
+                {
+                    var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
+                    if (iCurrentPage != Math.ceil((oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)))
+                    {
+                        oSettings.oApi._fnPageChange(oSettings, "next");
+                        fnCallbackDraw(oSettings);
+                        if (iCurrentPage == (Math.ceil((oSettings.fnRecordsDisplay() - 1) / oSettings._iDisplayLength) - 1))
+                        {
+                            $j(nNext).addClass('disabled');
+                            $j(nLast).addClass('disabled');
+                        }
+                        $j(nFirst).removeClass('disabled');
+                        $j(nPrevious).removeClass('disabled');
+                    }
+                } );
+
+                $j(nLast).click( function()
+                {
+                    var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
+                        if (iCurrentPage != Math.ceil((oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)))
+                        {
+                            oSettings.oApi._fnPageChange(oSettings, "last");
+                            fnCallbackDraw(oSettings);
+                            $j(nFirst).removeClass('disabled');
+                            $j(nPrevious).removeClass('disabled');
+                            $j(nNext).addClass('disabled');
+                            $j(nLast).addClass('disabled');
+                        }
+                } );
+
+                $j(nInput).keyup( function (e) {
+                    // 38 = up arrow, 39 = right arrow
+                    if ( e.which == 38 || e.which == 39 )
+                    {
+                        this.value++;
+                    }
+                    // 37 = left arrow, 40 = down arrow
+                    else if ( (e.which == 37 || e.which == 40) && this.value > 1 )
+                    {
+                        this.value--;
+                    }
+
+                    if ( this.value === "" || this.value.match(/[^0-9]/) )
+                    {
+                        /* Nothing entered or non-numeric character */
+                        this.value = this.value.replace(/[^\d]/g, ''); // don't even allow anything but digits
+                        return;
+                    }
+
+                    var iNewStart = oSettings._iDisplayLength * (this.value - 1);
+                        if (iNewStart < 0)
+                        {
+                            iNewStart = 0;
+                        }
+                        if (iNewStart > oSettings.fnRecordsDisplay())
+                        {
+                            iNewStart = (Math.ceil((oSettings.fnRecordsDisplay() - 1) / oSettings._iDisplayLength) - 1) * oSettings._iDisplayLength;
+                        }
+
+                        if (iNewStart === 0)
+                        {
+                            $j(nFirst).addClass('disabled');
+                            $j(nPrevious).addClass('disabled');
+                            $j(nNext).removeClass('disabled');
+                            $j(nLast).removeClass('disabled');
+                        }
+                        else if (iNewStart == ((Math.ceil((oSettings.fnRecordsDisplay() - 1) / oSettings._iDisplayLength) - 1) * oSettings._iDisplayLength))
+                        {
+                            $j(nNext).addClass('disabled');
+                            $j(nLast).addClass('disabled');
+                            $j(nFirst).removeClass('disabled');
+                            $j(nPrevious).removeClass('disabled');
+                        }
+                        else
+                        {
+                            $j(nFirst).removeClass('disabled');
+                            $j(nPrevious).removeClass('disabled');
+                            $j(nNext).removeClass('disabled');
+                            $j(nLast).removeClass('disabled');
+                        }
+
+                    oSettings._iDisplayStart = iNewStart;
+                    fnCallbackDraw( oSettings );
+                } );
+
+                /* Take the brutal approach to cancelling text selection */
+                $j('span', nPaging).bind( 'mousedown', function () { return false; } );
+                $j('span', nPaging).bind( 'selectstart', function () { return false; } );
+                
+                // If we can't page anyway, might as well not show it
+                var iPages = Math.ceil((oSettings.fnRecordsDisplay()) / oSettings._iDisplayLength);
+                if(iPages <= 1)
+                {
+                    $j(nPaging).hide();
+                }
+            },
+
+            "fnUpdate": function ( oSettings, fnCallbackDraw )
+            {
+                if ( !oSettings.aanFeatures.p )
+                {
+                    return;
+                }
+                var iPages = Math.ceil((oSettings.fnRecordsDisplay()) / oSettings._iDisplayLength);
+                var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
+
+                var an = oSettings.aanFeatures.p;
+                if (iPages <= 1) // hide paging when we can't page
+                {
+                    $j(an).hide();
+                }
+                else
+                {
+                    /* Loop over each instance of the pager */
+                    for (var i = 0, iLen = an.length ; i < iLen ; i++)
+                    {
+                        var spans = an[i].getElementsByTagName('span');
+                        var inputs = an[i].getElementsByTagName('input');
+                        spans[3].innerHTML = " / " + iPages;
+                        inputs[0].value = iCurrentPage;
+                    }
+                }
+            }
+        };
+         //
+
+     </script>
+</apex:page>

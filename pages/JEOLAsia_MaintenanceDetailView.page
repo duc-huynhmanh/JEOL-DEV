@@ -1,0 +1,242 @@
+<apex:page standardController="AsiaMaintenanceContractManagement__c" extensions="JEOLAsia_MaintenanceDetailCtrl">
+    <head>
+        <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+    </head>
+    <style>
+        .emphasizeButton {
+            font-size: 14px !important;
+            background-color: #FFFDC4 !important;
+            background-image: none !important;
+        }
+        /*.link {
+            text-decoration: none;
+            font-weight: normal;
+        }
+        .pbHeader>table {
+            border-bottom: 0px solid #dbdbdb !important;
+            padding: 0 !important;
+        }
+        .pbBody {
+            margin: 0px 5px 5px !important;
+        }*/
+    </style>
+    <script>
+            /*nothing*/
+    </script>
+    <apex:form >
+        <apex:pageBlock title="{!$Label.JEOLAsia_SVCPipeline}" rendered="{!so != NULL}">
+            <apex:outputPanel id="msgErrorPanel">
+               <apex:pageMessages escape="false"/>
+            </apex:outputPanel>
+            <apex:pageBlockButtons >
+                <apex:commandButton styleclass="emphasizeButton" action="{!edit}" value="{!$Label.JEOLAsia_MaintDetail_Edit}" />
+                <apex:commandButton styleclass="emphasizeButton" action="{!redirectList}" value="{!$Label.JEOLAsia_MaintDetail_ReturnList}" />
+            </apex:pageBlockButtons>
+
+            <!-- Project Master Info section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_ProjectMasterInfo}" columns="2" id="statusheader">
+                <!--Row 1-->
+                <!--PJ No.-->
+                <apex:outputField value="{!so.ProjectMaster__c}" />
+                <!--Company-->
+                <apex:outputField value="{!so.CompanyName__c}" />
+                <!--Row 2-->
+                <!--Model-->
+                <apex:outputField value="{!so.NewOdrFlagshipProduct__c}" />
+                <!--Company Name-->
+                <apex:outputField value="{!so.OrgName__c}" />
+                <!--Row 3-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Series-->
+                <apex:outputField value="{!so.NewOdrSeries__c}" />
+                <!--Row 4-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Sales-->
+                <apex:outputField value="{!so.NewOdrSalesStaff__c}" />
+                <!--Row 5-->
+                <!--Blank-->
+                <apex:pageBlockSectionItem />
+                <!--Sales-->
+                <apex:outputField value="{!so.NewOdrAssistant__c}" />
+            </apex:pageBlockSection>
+
+            <!--Contraction Info section-->
+            <apex:pageBlockSection id="sectionContractPlan" columns="2" title="{!$Label.JEOLAsia_MaintDetail_CustomerInfo}">
+
+                    <apex:outputField value="{!so.NewOdrSalesAccount__c}"/>
+                    <apex:outputField value="{!so.NewOdrShipmentAccount__c}" />
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Office}"/>
+                        <apex:outputField value="{!so.NewOdrSalesAccount__r.Undergraduate__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Office}"/>
+                        <apex:outputField value="{!so.NewOdrShipmentAccount__r.Undergraduate__c}" />
+                    </apex:pageBlockSectionItem>
+
+                    <apex:outputField value="{!so.NewOdrSalesAccount__r.Address__c}" />
+                    <apex:outputField value="{!so.NewOdrShipmentAccount__r.Address__c}" />
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Department}"/>
+                        <apex:outputField value="{!so.NewOdrSalesContactPosition__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Department}"/>
+                        <apex:outputField value="{!so.NewOdrShipmentContactPosition__c}" />
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Title}"/>
+                        <apex:outputField value="{!so.NewOdrSalesContactPost__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Title}"/>
+                        <apex:outputField value="{!so.NewOdrShipmentContactPost__c}" />
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Responsible}"/>
+                        <apex:outputField value="{!so.NewOdrSalesTantoshya__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Responsible}"/>
+                        <apex:outputField value="{!so.NewOdrShipmentTantosha__c}" />
+                    </apex:pageBlockSectionItem>
+
+                    <apex:outputField value="{!so.NewOdrSalesContactTel__c}" />
+                    <apex:outputField value="{!so.NewOdrShipmentContact_Tel__c}" />
+
+                    <apex:outputField value="{!so.NewOdrSalesContactFax__c}" />
+                    <apex:outputField value="{!so.NewOdrShipmentContact_Fax__c}" />
+
+                    <apex:outputField value="{!so.NewOdrSalesContactEmail__c}" />
+                    <apex:outputField value="{!so.NewOdrShipmentContact_Email__c}" />
+            </apex:pageBlockSection>
+            <!-- Previous Year Pipeline Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_PrevYearPLInfo}" columns="2" rendered="{!so.PreviousYearPipeline__c != null}">
+                <!-- Row 1 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_ContractNo}"/>
+                    <apex:outputLink value="{!$Page.JEOLAsia_MaintenanceDetailView}?id={!so.PreviousYearPipeline__r.Id}">
+                        <apex:outputField value="{!so.PreviousYearPipeline__r.Name}" />
+                    </apex:outputLink>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.ContractPrice__c.label}" />
+                    <apex:panelGroup >
+                        <span>{!so.PreviousYearPipeline__r.CurrencyContractPrice__c}&nbsp;</span>
+                        <apex:outputField value="{!so.PreviousYearPipeline__r.ContractPrice__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                <!-- Row 2 -->
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NewContractStartDate__c}" />
+                <apex:outputField value="{!so.PreviousYearPipeline__r.NewContractEndDate__c}" />
+                <!-- Row 3 -->
+                <apex:outputField value="{!so.PreviousYearPipeline__r.CustomerPONumber__c}" />
+                <apex:pageBlockSectionItem />
+                <!-- Row 4 -->
+                <apex:pageBlockSection columns="1">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_PrevYearNotes}"/>
+                        <apex:outputField value="{!so.PreviousYearPipeline__r.NextYearNotes__c}" style="width: 100%;"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:outputField value="{!so.PreviousYearPipeline__r.Memo__c}" style="width: 100%;"/>
+                </apex:pageBlockSection>
+            </apex:pageBlockSection>
+
+            <!-- Renewal Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_RenewalInfo}" columns="2">
+                <!-- Row 1 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_PipeLineNo}"/>
+                    <apex:outputField value="{!so.Name}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!so.NewOdrSalesPipeline__c}" />
+                <!-- Row 2 -->
+                <apex:outputField value="{!so.Status__c}" />
+                <apex:outputField value="{!so.StatusMemo__c}" />
+                <!-- Row 3 -->
+                <apex:outputField value="{!so.QuotationCreated__c}" />
+                <apex:outputField value="{!so.QuotationSentDate__c}" />
+                <!-- Row 4 -->
+                <apex:outputField value="{!so.NewOdrProfitCalculation__c}" />
+                <apex:pageBlockSectionItem />
+                <!-- Row 5 -->
+                <apex:outputField value="{!so.SACreated__c}" />
+                <apex:outputField value="{!so.ContractSentDate__c}" />
+            </apex:pageBlockSection>
+                <!-- Row 6 -->
+                <apex:pageBlockSection columns="1">
+                    <apex:outputField value="{!so.NextYearNotes__c}" style="width: 100%;"/>
+                    <apex:outputField value="{!so.Memo__c}" style="width: 100%;"/>
+                </apex:pageBlockSection>
+
+            <!-- Maintenance Contract Informations section -->
+            <apex:pageBlockSection title="{!$Label.JEOLAsia_MaintDetail_MaintenanceInfo}" columns="2">
+                <!-- Row 1 -->
+                <apex:outputField value="{!so.NewContractStartDate__c}" />
+                <apex:outputField value="{!so.NewContractEndDate__c}" />
+                <!-- Row 2 -->
+                <apex:pageBlockSectionItem />
+                <apex:outputField value="{!so.ContractStopDate__c}" />
+                <!-- Row 3 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.ContractPrice__c.label}" />
+                    <apex:panelGroup style="{!IF(so.ContractPrice__c != so.AccountBookTotalBillingAmount__c,
+                                              'color: red;', '')}">
+                        <span>{!so.CurrencyContractPrice__c}&nbsp;</span>
+                        <apex:outputField value="{!so.ContractPrice__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!so.ContractPrice__c != so.AccountBookTotalBillingAmount__c}" >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.AccountBookTotalBillingAmount__c.label}" />
+                    <apex:panelGroup style="color: red;">
+                        <span>{!so.CurrencyContractPrice__c}&nbsp;</span>
+                        <apex:outputField value="{!so.AccountBookTotalBillingAmount__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!so.ContractPrice__c != so.AccountBookTotalBillingAmount__c}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.AsiaMaintenanceContractManagement__c.fields.AccountBookRemainingAmount__c.label}" />
+                    <apex:panelGroup >
+                        <span>{!so.CurrencyContractPrice__c}&nbsp;</span>
+                        <apex:outputField value="{!so.AccountBookRemainingAmount__c}" />
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+
+
+                <!-- Row 4 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!inspectionDoneOfInspectionLabel}"/>
+                    <apex:outputText value="{!inspectionDoneOfInspection}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.JEOLAsia_MaintDetail_Percentage}"/>
+                    <apex:outputField value="{!so.Percentage__c}" />
+                </apex:pageBlockSectionItem>
+                <!-- Row 5 -->
+                <apex:outputField value="{!so.CustomerPONumber__c}" />
+                <apex:pageBlockSectionItem />
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+
+
+    </apex:form>
+    <apex:relatedList id="accounBookId" list="MaintenanceAccountBook__r" title="{!$Label.JEOLAsia_MaintAccBook_Label_AccountBook}" pagesize="150"/>
+    <apex:outputPanel id="attachmentList" layout="block">
+        <apex:relatedList list="CombinedAttachments" />
+    </apex:outputPanel>
+
+    <apex:relatedList list="OpenActivities"/>
+
+    <apex:relatedList list="ActivityHistories" />
+
+    <div id="c_History" >
+        <c:JEOL_GenericHistoryComponent object="{!AsiaMaintenanceContractManagement__c}" recordsLimit="50"/>
+    </div>
+</apex:page>

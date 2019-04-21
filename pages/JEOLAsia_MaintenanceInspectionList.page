@@ -1,0 +1,510 @@
+<apex:page controller="JEOLAsia_MaintenanceInspectionList_ctrl" docType="html-5.0" >
+    <apex:stylesheet value="{!URLFOR($Resource.SearchBaseCss)}" />
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQueryUI, 'JQueryUI/jquery-ui.min.js')}" />
+    <style>
+        .input{
+            font-size:14px;
+            font-family:;
+            border: 1px solid #989c9d;
+            border-radius:5px;
+            padding: 3px 5px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+            width: 120px;
+        }
+
+        .jeol_wait_panel {
+            left: auto !important;
+        }
+        .record-list {
+            margin-left: 0px;
+        }
+        #searchPanel {
+          margin-left: 0px;
+        }
+        .screenname {
+          margin-left: 0px;
+        }
+        .fakeContainer {
+            width:1013px;
+        }
+
+        .clm00 { width: 26px;}
+        .clm01 { width: 55px;}
+        .clm02 { width: 50px;}
+        .clm03 { width: 45px;}
+        .clm04 { width: 80px;}
+        .clm05 { width: 105px;}
+        .clm06 { width: 80px;}
+        .clm07 { width: 85px;}
+        .clm08 { width: 70px;}
+
+        .searchresulttable {
+          width: 100%;
+          border: 0;
+          margin: 0;
+          padding: 0;
+        }
+
+        .searchresulttable td{
+          border: 0;
+          margin: 0;
+          padding: 0 !important;
+        }
+
+        .seriesSelect {
+            display: none;
+        }
+
+        .seriesItem {
+            display: inline-block;
+            width: 120px;
+            float: left;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            margin: 4px;
+            height: 1.3em;
+        }
+        .seriesSelect-header {
+            background-color: #9ccada;
+            margin: 8px 0 0 0;
+            padding: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .selectButtons {
+            text-align: right;
+        }
+        .selectButtons .button {
+            float: right;
+        }
+    </style>
+    <script type="text/javascript">
+        var $j = jQuery.noConflict();
+        var viewFunction;
+
+        function mode() {
+            if ((typeof viewFunction).toLowerCase() === 'function') {
+                viewFunction();
+            }
+        }
+
+        function callChangeOrder(key) {
+            var obj = $j('.orderInput');
+            obj.val(key);
+            changeOrder();
+        }
+
+        function hideSearchCriteriaPanel() {
+            $j("#open_icon").show();
+            $j("#close_icon").hide();
+            $j("#search_criteria").slideUp(500);
+            $j(".fakeContainer").animate({height: $j("#search_criteria").height() + 250 + 'px'},500);
+            viewFunction = hideSearchCriteriaPanel;
+        }
+
+        function showSearchCriteriaPanel() {
+            $j("#open_icon").hide();
+            $j("#close_icon").show();
+            $j("#search_criteria").slideDown(500);
+            $j(".fakeContainer").animate({height: '250px'},500);
+            viewFunction = showSearchCriteriaPanel;
+        }
+
+        function allViewMode() {
+            $j("#open_icon").show();
+            $j("#close_icon").hide();
+            $j("#search_criteria").slideUp(500);
+            $j(".fakeContainer").animate({height: $j('#viewTable').height() + 'px'},500);
+            viewFunction = allViewMode;
+        }
+
+        function showSeriesSelect() {
+            var target = $j('.seriesSelect');
+            if (target) {
+                target.dialog({
+                    appendTo: '.search_criteria_form',
+                    autoOpen: false,
+                    closeOnEscape: false,
+                    closeText: 'hide',
+                    draggable: true,
+                    modal: true,
+                    resizable: true,
+                    title: 'Selection of Series',
+                    width: 840,
+                    open: function(){$j(".ui-dialog-titlebar-close").hide();}
+                });
+                target.dialog('open');
+            } else {
+                // alert('予期しないエラーが発生しました。画面を更新して再度、お試しください');
+                alert('An unexpected error has occurred. Please refresh your browser and try again.');
+            }
+        }
+
+        $j(document).ready(function(){
+            showSearchCriteriaPanel();
+        });
+    </script>
+    <apex:form style="width: 994px; margin-left: auto; margin-right: auto;">
+        <c:JEOL_WaitSearchPanel text="{!$Label.JEOLAsia_MaintInspList_Label_Searching}"/>
+        <apex:variable value="{!$ObjectType.AsiaMaintenanceAccountBook__c.Fields}" var="fields" />
+        <apex:outputPanel id="order">
+          <apex:inputText id="orderBy" styleClass="orderInput" value="{!orderBy}" style="display: none;" />
+          <apex:actionFunction name="changeOrder" action="{!changeOrder}" oncomplete="mode();" rerender="searchResult, pageMessages" />
+        </apex:outputPanel>
+        <div class="screenname">
+          <img src="{!URLFOR($Resource.Images, 'images/icons/title_icon_orderplan.png')}" align="left" width="40px" />
+          <span id="title">{!$Label.JEOLAsia_MaintInspList_Label_InspectionList}</span>
+        </div>
+        <div id="searchPanel">
+            <div>
+                <img id="close_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_close.png')}" align="left" valign="top" width="36px" onclick="hideSearchCriteriaPanel()"/>
+                <img id="open_icon" src="{!URLFOR($Resource.Images, 'images/searchPageImage/btn_open.png')}" align="left" valign="top" width="36px" onclick="showSearchCriteriaPanel()"/>
+                <div id="serch_title">{!$Label.JEOLAsia_MaintInspList_Label_SearchFilters}</div>
+            </div>
+            <div id="search_criteria">
+                <apex:outputPanel layout="block" id="search_criteria_form" styleClass="search_criteria_form">
+                    <table id="search_criteria_table" class="search_criteria_table">
+                        <!-- FILTERS - ROW 1 -->
+                        <tr>
+                          <td class="label">
+                            <apex:outputText value="Inspect Month"/>
+                          </td>
+                          <td>
+                            <apex:inputText value="{!month}" id="month" styleClass="input" html-placeholder="yyyymm" maxlength="6"/>
+                          </td>
+
+                          <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_CustomerCode}"/>
+                          </td>
+                          <td>
+                            <apex:inputText value="{!customerCode}" id="customrCode" styleClass="input" maxlength="9"/>
+                          </td>
+
+                          <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_CustomerName}"/>
+                          </td>
+                          <td>
+                            <apex:inputText value="{!customerName}" id="customrName" styleClass="input" maxlength="255"/>
+                          </td>
+
+                        </tr>
+                        <!-- FILTERS - ROW 2 -->
+                        <tr>
+                          <td class="label">
+                                <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_Status}"/>
+                          </td>
+                          <td colspan="5">
+                            <apex:selectList styleClass="input" value="{!status}" id="status" style="width: 132px;" size="1">
+                              <apex:selectOptions value="{!StatusOptions}" />
+                            </apex:selectList>
+                          </td>
+                        </tr>
+
+                        <!-- FILTERS - ROW 3 -->
+                        <tr>
+                          <td class="label">
+                            <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_ProductCode}" />
+                          </td>
+                          <td>
+                            <apex:actionFunction name="seriesSelect" oncomplete="showSeriesSelect();" rerender="seriesSelectPanel" />
+                            <input id="seriesSelectButton" onclick="seriesSelect();" type="button" class="btn input" value="SELECTED" style="height: 22px; width:132px; padding: 2px 1px;" />
+                          </td>
+
+                          <td class="label">
+                            <apex:outputText value="Selected Series" />
+                          </td>
+                          <td colspan="3" style="max-width: 300px;">
+                            <div style="width: 100%; overflow: hidden; vertical-align: middle; text-overflow: ellipsis; white-space: nowrap; line-height: 29px;">
+                              <apex:outputText value="{!SelectedSeries}" id="SelectedSeries"/>
+                            </div>
+                          </td>
+                        </tr>
+
+                    </table>
+                    <div id="buttons" >
+                        <apex:commandLink value="{!$Label.JEOLAsia_MaintInspList_Label_Clear}" styleClass="button_white" action="{!doFormClear}" rerender="search_criteria_form, searchResult" style="text-decoration: none;" />
+                        <apex:commandLink value="{!$Label.JEOLAsia_MaintInspList_Label_Search}" styleClass="button_green" action="{!doSearch}" rerender="searchResult" style="text-decoration: none;" onclick="showWaitPanel();" oncomplete="hideWaitPanel();" />
+                    </div>
+
+                    <apex:outputPanel styleClass="seriesSelect" layout="block">
+                        <apex:outputPanel layout="block" styleClass="seriesSelect-header">
+                          <h2>Please check the series you want to search.</h2>
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" styleClass="clearfix" style="margin: 8px 0 8px 0; padding: 8px; border-bottom: 1px solid #ccc;">
+                          <apex:commandButton value="Check All" action="{!seriesSelectAllSelect}" rerender="seriesSelectPanel" />
+                          <apex:commandButton value="Uncheck All" action="{!seriesSelectAllDeselect}" rerender="seriesSelectPanel" />
+                          <apex:outputPanel styleClass="processNow" layout="block" style="display: inline-block; maring: 0 8px 0 0; float: right; display: none;">
+                            <apex:image value="/img/loading32.gif" height="16px" style="display: inline-block; margin: 0 8px 0 0;" />
+                            <apex:outputText value="Connecting..." />
+                          </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="seriesSelectPanel" layout="block" styleClass="selectSeries clearfix">
+                          <apex:repeat value="{!SeriesOptions}" var="seriesComp">
+                            <div class="seriesItem">
+                              <apex:inputCheckBox id="selectTarget" value="{!seriesComp.isSelected}" />
+                              <apex:outputLabel for="selectTarget" value="{!seriesComp.option.Label}" />
+                            </div>
+                          </apex:repeat>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleClass="selectButtons clearfix" layout="block" style="margin: 12px 0 0 0; border-top: 1px solid #ccc;">
+                          <apex:commandlink styleClass="button_white" value="Cancel" action="{!seriesSelectCancel}" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel" />
+                          <apex:commandlink styleClass="button_green" value="Apply" action="{!seriesSelectApply}" style="color: white;" onclick="$j('.processNow').fadeIn();" oncomplete="$j('.seriesSelect').dialog('close');$j('.processNow').hide();$j('#seriesSelectButton').blur();" rerender="seriesSelectPanel, SelectedSeries" />
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </div>
+        </div>
+        <!-- 一覧 -->
+        <apex:outputPanel layout="block" id="searchResult" >
+            <apex:pageMessages id="pageMessages" />
+            <apex:outputPanel rendered="{!SalesPipelines.size > 0}">
+                <table class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-bottom:0px;">
+                    <col class="clm00" />
+                    <col class="clm01" />
+                    <col class="clm02" />
+                    <col class="clm03" />
+                    <col class="clm04" />
+                    <col class="clm05" />
+                    <col class="clm06" />
+                    <col class="clm07" />
+                    <col class="clm08" />
+                    <tr class="contents_title">
+                        <td colspan="9" style="padding: 0;">
+                            <table class="searchresulttable" width="100%">
+                                <tr>
+                                    <td width="100%">
+                                        <div class="in_contents_title">{!$Label.JEOLAsia_MaintInspList_Label_SearchResults}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="koumoku">
+                        <!-- COLUMN 1 -->
+                        <th>
+                            <span>No</span>
+                        </th>
+                        <!-- COLUMN 2 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('name');">
+                            <apex:outputText value="{!$ObjectType.AsiaMaintenanceAccountBook__c.Fields.name.label}" />
+                            <apex:outputText rendered="{!orderBy=='name' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='name' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 3 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('InspectionDone__c');">
+                            <!-- <apex:outputText value="{!$ObjectType.AsiaMaintenanceAccountBook__c.Fields.InspectionDone__c.label}" /> -->
+                            <apex:outputText value="Inspection"/><br/>
+                            <apex:outputText value="Done"/>
+                            <apex:outputText rendered="{!orderBy=='InspectionDone__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='InspectionDone__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 4 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.NewOdrSeries__c');">
+                            <apex:outputText value="{!$ObjectType.AsiaMaintenanceContractManagement__c.Fields.NewOdrSeries__c.label}" />
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrSeries__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrSeries__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 5 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.Name');">
+                            <!-- <apex:outputText value="{!$ObjectType.AsiaMaintenanceAccountBook__c.Fields.MaintenanceContractManagement__c.label}" /> -->
+                            <apex:outputText value="Contract"/><br/>
+                            <apex:outputText value="Management"/>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.Name' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.Name' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 6 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Name');">
+                            <apex:outputText value="{!$ObjectType.AsiaMaintenanceContractManagement__c.Fields.NewOdrShipmentAccount__c.label}" />
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Name' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Name' && orderDesc}">▽</apex:outputText>
+                          </a>
+                          <br/>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Undergraduate__c');">
+                            <apex:outputText value="{!$ObjectType.Account.Fields.Undergraduate__c.label}" />
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Undergraduate__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Undergraduate__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 7 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.NewOdrFlagshipProduct__c');">
+                            <apex:outputText value="{!$ObjectType.AsiaMaintenanceContractManagement__c.Fields.NewOdrFlagshipProduct__c.label}" />
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrFlagshipProduct__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.NewOdrFlagshipProduct__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 8 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('BillingAmount__c');">
+                            <!-- <apex:outputText value="{!$ObjectType.AsiaMaintenanceAccountBook__c.Fields.BillingAmount__c.label}" /> -->
+                            <apex:outputText value="Billing Amount"/>
+                            <apex:outputText rendered="{!orderBy=='BillingAmount__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='BillingAmount__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                        <!-- COLUMN 9 -->
+                        <th>
+                          <a href="javascript:void(0);" onclick="callChangeOrder('MaintenanceContractManagement__r.ContractPrice__c');">
+                            <apex:outputText value="{!$ObjectType.AsiaMaintenanceContractManagement__c.Fields.ContractPrice__c.label}" />
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.ContractPrice__c' && (!orderDesc)}">△</apex:outputText>
+                            <apex:outputText rendered="{!orderBy=='MaintenanceContractManagement__r.ContractPrice__c' && orderDesc}">▽</apex:outputText>
+                          </a>
+                        </th>
+                    </tr>
+                </table>
+                <!-- 一覧 -->
+                <div class="fakeContainer" style="margin-top:0px; margin-bottom:0px;">
+                    <apex:variable value="{!(ssc.PageNumber-1)*ssc.PageSize+1}" var="baseRowNumber"/>
+                    <table id="viewTable" class="record-list" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+                        <col class="clm00" />
+                        <col class="clm01" />
+                        <col class="clm02" />
+                        <col class="clm03" />
+                        <col class="clm04" />
+                        <col class="clm05" />
+                        <col class="clm06" />
+                        <col class="clm07" />
+                        <col class="clm08" />
+                        <apex:repeat value="{!SalesPipelines}" var="salesPipeline" >
+                            <tr class="contents">
+                                <!-- COLUMN 1 -->
+                                <td>
+                                   <apex:outputText value="{!baseRowNumber+salesPipeline.rowNumber}"/>
+                                </td>
+                                <!-- COLUMN 2 -->
+                                <td >
+                                  <apex:outputLink value="{!'/' + salesPipeline.rec.id}" >
+                                    <apex:outputText value="{!salesPipeline.rec.name}" />
+                                  </apex:outputLink>
+                                </td>
+                                <!-- COLUMN 3 -->
+                                <td style="text-align: center;">
+                                    <apex:inputField value="{!salesPipeline.rec.InspectionDone__c}" rendered="{!salesPipeline.rec.Inspection__c}" >
+                                        <apex:actionSupport event="onchange" action="{!saveFlags}" rerender="dummy">
+                                            <apex:param name="dataId" assignto="{!dataId}" value="{!salesPipeline.rec.Id}"/>
+                                        </apex:actionSupport>
+                                    </apex:inputField>
+                                </td>
+                                <!-- COLUMN 4 -->
+                                <td >
+                                    <apex:outputText value="{!salesPipeline.rec.MaintenanceContractManagement__r.NewOdrSeries__c}" />
+                                </td>
+                                <!-- COLUMN 5 -->
+                                <td >
+                                    <apex:outputField value="{!salesPipeline.rec.MaintenanceContractManagement__c}" />
+                                </td>
+                                <!-- COLUMN 6 -->
+                                <td >
+                                    <apex:outputField value="{!salesPipeline.rec.MaintenanceContractManagement__r.NewOdrShipmentAccount__c}" />
+                                    <br/>
+                                    <apex:outputField value="{!salesPipeline.rec.MaintenanceContractManagement__r.NewOdrShipmentAccount__r.Undergraduate__c}" />
+                                </td>
+                                <!-- COLUMN 7 -->
+                                <td >
+                                    <apex:outputText value="{!salesPipeline.rec.MaintenanceContractManagement__r.NewOdrFlagshipProduct__c}" />
+                                </td>
+                                <!-- COLUMN 8 -->
+                                <td style="text-align: right;">
+                                    <apex:outputField value="{!salesPipeline.rec.BillingAmountFormula__c}" />
+                                </td>
+                                <!-- COLUMN 9 -->
+                                <td style="text-align: right;">
+                                    <apex:outputText rendered="{!salesPipeline.rec.MaintenanceContractManagement__r.ContractPrice__c <> NULL}" value="{!salesPipeline.rec.MaintenanceContractManagement__r.CurrencyContractPrice__c}" />&nbsp;
+                                    <apex:outputField value="{!salesPipeline.rec.MaintenanceContractManagement__r.ContractPrice__c}" />
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </div>
+                <!-- ページ遷移欄-->
+                <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top:0px; margin-bottom:0px;">
+                    <col class="clm00" />
+                    <col class="clm01" />
+                    <col class="clm02" />
+                    <col class="clm03" />
+                    <col class="clm04" />
+                    <col class="clm05" />
+                    <col class="clm06" />
+                    <col class="clm07" />
+                    <col class="clm08" />
+                    <apex:variable value="{!SalesPipelines.size}" var="size" />
+                    <tr class="menu">
+                        <td colspan="9" style="padding: 0;">
+                            <table id="each_menu">
+                                <tr>
+                                    <td align="left" width="33%" style="border: 0px; vertical-align: middle;" >
+                                    <apex:outputPanel rendered="{!ssc.PageSize != null}">
+                                      <apex:outputText value="{!(ssc.PageNumber - 1) * ssc.PageSize + 1} - {!(ssc.PageNumber - 1) * ssc.PageSize + size}/{!ssc.ResultSize}" />
+                                    </apex:outputPanel>
+                                    <apex:outputText value="     {!$Label.JEOLAsia_MaintInspList_Label_ShowBefore}" />
+                                    <apex:selectList id="pageSize" value="{!pageSize}" size="1" disabled="{!ssc.ResultSize < 9}">
+                                      <apex:actionSupport event="onchange" action="{!setSizeSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                                      <apex:selectOption itemValue="10" itemLabel="10"/>
+                                      <apex:selectOption itemValue="20" itemLabel="20"/>
+                                      <apex:selectOption itemValue="50" itemLabel="50"/>
+                                    </apex:selectList>
+                                    <apex:outputLink value="javascript:void(0);" onclick="allViewMode();">{!$Label.JEOLAsia_MaintInspList_Label_ShowAfter}</apex:outputLink>
+                                  </td>
+                                  <td align="center" width="33%" style="border: 0px; vertical-align: middle ;">
+                                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}">
+                                      <apex:actionSupport event="onclick" action="{!firstAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                      <apex:outputText value="｜◀" />
+                                    </apex:outputLink>
+                                    <apex:outputText value="｜◀" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                                    <apex:outputText value=" " />
+                                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 != 1}" >
+                                      <apex:actionSupport event="onclick" action="{!previousAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                      <apex:outputText value="◀ {!$Label.JEOLAsia_MaintInspList_Label_Previous}" />
+                                    </apex:outputLink>
+                                    <apex:outputText value="◀ {!$Label.JEOLAsia_MaintInspList_Label_Previous}" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + 1 == 1}"/>
+                                    <apex:outputText value=" " />
+                                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                                      <apex:actionSupport event="onclick" action="{!nextAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                      <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_Next} ▶" />
+                                    </apex:outputLink>
+                                    <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_Next} ▶" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                                    <apex:outputText value=" " />
+                                    <apex:outputLink value="javascript:void(0)" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size != ssc.ResultSize}">
+                                      <apex:actionSupport event="onclick" action="{!lastAndSaveCurrentPageNumber}" rerender="searchResult" onsubmit="showWaitPanel();" oncomplete="mode();hideWaitPanel();" />
+                                      <apex:outputText value="▶｜" />
+                                    </apex:outputLink>
+                                    <apex:outputText value="▶｜" rendered="{!(ssc.PageNumber - 1) * ssc.PageSize + size == ssc.ResultSize}"/>
+                                  </td>
+                                  <td align="right" width="33%" style="border: 0px; vertical-align: middle ;">
+                                    <apex:outputText value="{!$Label.JEOLAsia_MaintInspList_Label_Page}　" />
+                                    <apex:input type="number" value="{!ssc.PageNumber}" size="2" style="width: 40px;" disabled="{!ssc.PageSize == 0}">
+                                      <apex:actionSupport event="onchange" action="{!setJumpSaveCurrentPageSize}" rerender="searchResult" oncomplete="mode();"/>
+                                    </apex:input>
+                                  </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <apex:outputpanel rendered="{!SalesPipelines.size == null || SalesPipelines.size <= 0}" >
+                <table class="record-list" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; margin-top: 0; margin-bottom: 0;">
+                  <tr class="contents_title">
+                    <td >
+                      <div class="in_contents_title">{!$Label.JEOLAsia_MaintInspList_Message_NoData}</div>
+                    </td>
+                  </tr>
+                </table>
+            </apex:outputpanel>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,1636 @@
+<apex:page standardStylesheets="false" controller="JEOLAsia_QuotationPrintPageCtrl" >
+    <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Salesforce - {!$ObjectType.AsiaProfitCalculation__c.Label}</title>
+            <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+            <style>
+                    html, body {
+                        margin: 0pt;
+                        padding: 0pt;
+                        font-size: 10pt;
+                        /*line-height: 15px;*/
+                        line-height: 4mm;
+                        /*font-family: 'Arial Unicode MS';*/
+                        height: 100%;
+                        /*counter-reset: page;*/
+                    }
+                    .discountFont {
+                        font-family: 'Arial Unicode MS';
+                    }
+                    .coverPage {
+                        page-break-after:always;
+                        padding: 1pt;
+                    }
+                    .pageBreak{
+                        page-break-after:always;
+                    }
+                    .lastPage {
+                        page-break-before:always;
+                        page-break-after:avoid;
+                    }
+                    .marginSpace {
+                        margin: 2mm auto;
+                    }
+                    .userSignUnderLine {
+                        border-bottom: 1px solid black;
+                        /*background-image: {!quotation.Approver__r.UserSign__c};*/
+                    }
+                    .lineH {
+                        /*line-height: 15px;*/
+                        line-height: 4mm;
+                    }
+                    .footerlineH {
+                        /*line-height: 10px;*/
+                        line-height: 2.5mm;
+                    }
+                    .firstPage {
+                        min-height: 100%;
+                        height: auto !important;/*IE6対応===min-height*/
+                        height: 100%;
+                    }
+                    .textFontFamily {
+                        font-family: 'Arial Unicode MS';
+                    }
+                    .contents {
+                        display: none;
+                        width: 100%;
+                        margin: 0 auto;
+                    }
+                    .boldStr{
+                        font-size: 12pt;
+                        font-weight: bold;
+                    }
+                    .boldStr1{
+                        font-weight: bold;
+                    }
+                    .largeFont {
+                        font-weight: bold;
+                        font-size: 20pt;
+                    }
+                    .strFont{
+                        font-size: 12pt;
+                    }
+                    .strFont1{
+                        font-size: 22pt;
+                        font-weight: 900;  
+                    }
+                    td.textL {
+                        text-align: left !important;
+                    }
+                    .disLeft {
+                        text-align: left !important;
+                    }
+                    .disRight {
+                        text-align: right !important;
+                    }
+                    td.textR {
+                        text-align: right !important;
+                    }
+                    td.textT {
+                        vertical-align: text-top !important;
+                    }
+                    .modelTypeFont {
+                        font-size: 22pt;
+                        font-weight: 900!important;
+                        color: #0B0B61;
+                    }
+                    .sections3L {
+                        width: 60%;
+                        height: 5mm;
+                        text-align: left;
+                        font-size: 12pt;
+                        padding-bottom: 6px;
+                        font-weight: bold;
+                        vertical-align: middle;
+                    }
+                    .sections3R {
+                        width: 40%;
+                        height: 5mm;
+                        text-align: right;
+                        font-size: 12pt;
+                        padding-bottom: 6px;
+                        font-weight: bold;
+                        vertical-align: middle;
+                    }
+                    .subtotal {
+                        height: 8mm;
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .quotation-img {
+                        position: absolute;
+                        top: 50px;
+                        left: 65%;
+                    }
+                    .quotation-info {
+                        position: absolute;
+                        top:40%;
+                        text-align: left;
+                        width: 100%;
+                        margin: 50px 0 0 0;
+                    }
+                    .quotation-info td {
+                        width: 50%;
+                        padding-right: 20px;
+                    }
+                    .coverpage-bottom {
+                        position:absolute;
+                        bottom:0;   
+                    }
+                    .coverpage-bottom td{
+                        width: 50%;
+                    }
+                    .greCor {
+                        color: #808080;
+                        font-size: 12pt;
+                    }
+                    .imgLogo {
+                        background-position: center center;
+                        width: 300px;
+                        height: 120px;
+                    }
+                    .imgLogo1 {
+                        background-position: left center;
+                        width: 140px;
+                        height: 70px;
+                    }
+                    .headerTable {
+                        width: 100%;
+                    }
+                    .customInfo {
+                        width: 100%;
+                        margin: -5px auto 5px;
+                        padding-top:0;
+                    }
+                    .customInfo td{
+                        width: 50% !important;
+                    }
+                    .quotationDescription-header {
+                        width: 100%;
+                        border-radius: 2px;
+                        background-color: #becde0;
+                        margin: 0;
+                    }
+                    .quotationDescription-headerBreak {
+                        width: 100%;
+                        border-radius: 2px;
+                        background-color: #becde0;
+                        margin: 0;
+                        page-break-before:always;
+                    }
+                    .quotationDescription-headerNotBreak {
+                        width: 100%;
+                        border-radius: 2px;
+                        background-color: #becde0;
+                        margin: 0;
+                        page-break-after:avoid;
+                        page-break-before:avoid;
+                    }
+                    .quotationDescription-header-title {
+                        display: block;
+                        padding: 0;
+                        page-break-inside:auto
+                    }
+                    .quotationDescription-header-title0 {
+                        padding: 0;
+                    }
+                    .quotationDescription-detail {
+                        width: 100%;
+                        background-color: #ffffff;
+                        page-break-inside:auto;
+                    }
+                    .quotationDescription-detail td, th {
+                        page-break-inside:auto;
+                        text-align: center;
+                    }
+                    .quotationDescription-detail td{
+                        padding: 0;
+                    }
+                    .tableHeight {
+                        height: 10mm;
+                    }
+                    .section5W {
+                        width: 100%;
+                    }
+                    .section5W_td1 {
+                        width: 18%;
+                    }
+                    .right_justified{
+                        text-align: right !important;
+                    }
+                    .headerTdCenter{
+                        text-align: center;
+                        height: 13mm;
+                    }
+                    }
+                    .Hid{
+                        display: none;   
+                    }
+                    div.header {
+                        width: 100%;
+                    }
+                    div.footer {
+                        /*display: block;*/
+                        padding: 5px;
+                        width: 100%;
+                        bottom: 0;
+                        position: absolute;
+                        position: running(footer);
+                    }
+            </style>
+        </head>
+
+        <apex:outputPanel rendered="{!isError}">
+            <apex:outputtext value="{!errorMsg}" style="color:red;size: x-large;"/>
+        </apex:outputPanel>
+        <body>
+        <apex:form id="formId1">
+            <div class="contents">
+                <!-- Cover Page -->
+                <apex:outputPanel layout="none" rendered="{!quotation.PrintQuotationFirstPage__c}" >
+                    <div class="coverPage">
+                        <!-- Product Image -->
+                        <apex:outputPanel layout="none">
+                            <img src="{!URLFOR($Resource.JEOL_AsiaImg, 'image/productImg.JPG')}" width="100%" height="40%" style="position: fixed; z-index:-1;"/>
+                        </apex:outputPanel>
+                        <!-- Information on Product Image -->
+                        <table class="quotation-img" cellspacing="5">
+                            <tr>
+                                <td class="boldStr">
+                                    <apex:outputText value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo & ' : '}"/>
+                                    <apex:outputText value="{!quotation.ProfitCalculationNo__c}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="boldStr">
+                                    <span>
+                                        <apex:outputLabel value="Date: "/>
+                                        <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                            <apex:param value="{!quotation.IssueDate__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <apex:outputtext value="Quotation is valid {!QuotationValidityLabel}"/>
+                                </td>
+                            </tr>
+                            <tr><td>&nbsp;</td></tr>
+                            <tr><td>&nbsp;</td></tr>
+                            <tr><td>&nbsp;</td></tr>
+                            <tr>
+                                <td>
+                                    <apex:outputText value="{!productName}" escape="false"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="modelTypeFont">
+                                    <apex:outputText value="{!modelType}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <!-- Blank Table when sales people mobile is none output it -->
+                        <table class="quotation-info">
+                            <apex:outputPanel layout="none" rendered="{!IF(quotation.PrintNotPhoneSalespeople__c, true, false)}">
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            </apex:outputPanel>
+                        </table>
+                        <!-- Information on product image below -->
+                        <table class="quotation-info">
+                            <tr class="greCor">
+                                <td>
+                                    <apex:outputtext value="Instrument:"/>
+                                </td>
+                                <td>
+                                    <apex:outputtext value="Prepared for:"/>
+                                </td>
+                            </tr>
+                            <tr class="boldStr">
+                                <td>
+                                    <apex:outputText value="{!modelType}"/>
+                                </td>
+                                <td>
+                                    <apex:outputLabel value="{!quotation.ContractPersonInCharge__c}"/>
+                                </td>
+                            </tr>
+                            <tr class="boldStr">
+                                <td rowspan="2" valign="top">
+                                    <apex:outputText value="{!productName}" styleClass="boldStr" escape="false"/>
+                                </td>
+                                <td>
+                                    <apex:outputLabel value="{!IF(quotation.ContractName__c != null, quotation.ContractName__c, '')}"/>
+                                </td>
+                            </tr>
+                            <tr class="strFont">
+                                <td colspan="2">
+                                    <apex:outputText value="{!IF(quotation.ContractAddress__c != null, quotation.ContractAddress__c, '')}" escape="false"/>
+                                </td>
+                            </tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr>
+                                <td align="right" rowspan="7" valign="top">
+                                    <span>
+                                        <font class="greCor"><apex:outputtext value="JEOL Contact:"/></font>
+                                    </span>
+                                </td>
+                                <td class="boldStr">
+                                    <apex:outputLabel value="{!quotation.SalesPerson__r.Name}"/>
+                                </td>
+                            </tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <!-- <apex:outputText value="{!quotation.ContractEmail__c}"/> -->
+                                    <apex:outputText value="{!quotation.SalesPerson__r.Email}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <apex:outputPanel layout="none" rendered="{!IF(quotation.PrintNotPhoneSalespeople__c, false, true)}">
+                                        <apex:outputLabel value="{!quotation.SalesPerson__r.Phone}"/>
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="strFont">
+                                    <apex:outputText value="{!IF((quotation.SalesAssistant__r.Email == null ||
+                                                                    quotation.SalesAssistant__r.Email == '' )&&
+                                                                    (quotation.SalesAssistant__r.Phone == null || 
+                                                                    quotation.SalesAssistant__r.Phone == ''),'', 'Sales Administration Support:')}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <apex:outputLabel value="{!quotation.SalesAssistant__r.Email}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <apex:outputLabel value="{!quotation.SalesAssistant__r.Phone}"/>
+                                </td>
+                            </tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                            <tr><td colspan="2">&nbsp;</td></tr>
+                        </table>
+                        <table class="coverpage-bottom">
+                            <tr>
+                                <td rowspan="3">
+                                    <div align="left">
+                                        <img class="imgLogo" src="{!URLFOR($Resource.JEOL_AsiaImg, 'image/jeol-logo1.jpg')}"/>
+                                    </div>
+                                </td>
+                                <td>
+                                    <font style="color: #a9a9a9;">
+                                        <apex:outputLabel value="{!IF(quotation.OrgName__c != null, quotation.OrgName__c, '')}"/>
+                                    </font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <apex:outputText value="{!IF(quotation.OrgAddress__c != null, quotation.OrgAddress__c, '')}" escape="false"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="greCor">
+                                    <apex:outputLabel value="Site and URL ect."/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </apex:outputPanel>
+                
+                <!-- first page info -->
+                <div class="firstPage">
+                    <apex:variable value="{!0}" var="LineNo"/>
+                    <apex:variable value="{!0}" var="reLineNo"/>
+                    <apex:variable value="{!0}" var="othersNo"/>
+                    
+                    <apex:repeat value="{!pageBlockList}" var="pageDetail">
+
+                        <div class="{!IF(pageDetail.pageBreak && pageDetail.pageNo != 1, 'pageBreak', '')}" />
+
+                        <!-- page break section1 -->
+                        <table class="header {!IF(pageDetail.section1AppearTime == 1, '', 'Hid')}"
+                               align="center"
+                               width="100%">
+                            <tr class="tableHeight">
+                                <td rowspan="2" width="30%">
+                                    <div align="left">
+                                        <img class="imgLogo1" src="{!URLFOR($Resource.JEOL_AsiaImg, 'image/jeol-logo3.jpg')}"/>
+                                    </div>
+                                </td>
+                                <td align="left" class="strFont1">
+                                    <apex:outputText value="{!modelType}" rendered="{!quotation.RecordType.DeveloperName != 'SVC'}"/>
+                                </td>
+                            </tr>
+                            <tr class="tableHeight">
+                                <td colspan="2" align="right" class="strFont1">
+                                    <apex:outputText value="Quotation"/>
+                                </td>
+                            </tr>
+                            <tr class="tableHeight">
+                                <td>
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.OrgAddress__c != null, pageDetail.pageQuotation.OrgAddress__c, '')}" escape="false"/>
+                                </td>
+                                <td align="right">
+                                    <span>
+                                        <apex:outputLabel value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo}"/>
+                                        <apex:outputText value=": " />
+                                        <apex:outputLabel value="{!pageDetail.pageQuotation.ProfitCalculationNo__c}" />
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="tableHeight">
+                                <td align="left">
+                                    <apex:outputField value="{!pageDetail.pageQuotation.ContractPersonInCharge__c}"/>
+                                </td>
+                                <td align="right">
+                                    <span>
+                                        <apex:outputLabel value="Quotation Date: "/>
+                                        <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                            <apex:param value="{!pageDetail.pageQuotation.IssueDate__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.ContractContact_dummyField__r.Email == null ||
+                                            pageDetail.pageQuotation.ContractContact_dummyField__r.Email == '', 'Hid', 'tableHeight')}">
+                                <td colspan="2">
+                                    <apex:outputLabel value="{!pageDetail.pageQuotation.ContractContact_dummyField__r.Email}"/>
+                                </td>
+                            </tr>
+                            <tr class="tableHeight">
+                                <td align="left">
+                                    <apex:outputField value="{!pageDetail.pageQuotation.ContractName__c}"/>
+                                </td>
+                                <td colspan="2" align="right">
+                                    <span>
+                                        <apex:outputtext value="Quotation is valid {!QuotationValidityLabel}"/>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.ContractAddress__c == null ||
+                                            pageDetail.pageQuotation.PrintQuotationFirstPage__c, 'Hid', 'tableHeight')}">
+                                <td valign="top">
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.ContractAddress__c != null, pageDetail.pageQuotation.ContractAddress__c, '')}" escape="false"/>
+                                </td>
+                                <td>
+                                    <table class="{!IF(!pageDetail.pageQuotation.PrintQuotationFirstPage__c &&
+                                                        (pageDetail.pageQuotation.SalesPerson__r.Name == null ||
+                                                        pageDetail.pageQuotation.SalesPerson__r.Name == '') &&
+                                                        (pageDetail.pageQuotation.ContractEmail__c == null ||
+                                                        pageDetail.pageQuotation.ContractEmail__c == '') &&
+                                                        (pageDetail.pageQuotation.SalesPerson__r.Phone == null ||
+                                                        pageDetail.pageQuotation.SalesPerson__r.Phone == '') &&
+                                                        (pageDetail.pageQuotation.SalesAssistant__r.Email == null ||
+                                                        pageDetail.pageQuotation.SalesAssistant__r.Email == '') &&
+                                                        (pageDetail.pageQuotation.SalesAssistant__r.Phone == null ||
+                                                        pageDetail.pageQuotation.SalesAssistant__r.Phone == '') &&
+                                                        (pageDetail.pageQuotation.SalesAssistant__r.Email == null ||
+                                                        pageDetail.pageQuotation.SalesAssistant__r.Email == '') &&
+                                                        (pageDetail.pageQuotation.SalesAssistant__r.Phone == null ||
+                                                        pageDetail.pageQuotation.SalesAssistant__r.Phone == ''), 'Hid', '')}">
+                                        <tr>
+                                            <td align="left" style="width: 40% !important;"></td>
+                                            <td align="right" valign="top" style="font-weight: bold;width: 20% !important;">
+                                                <div class="{!IF(pageDetail.pageQuotation.PrintQuotationFirstPage__c, 'Hid', '')}">
+                                                    <apex:outputLabel value="JEOL Contact:"/>
+                                                </div>
+                                            </td>
+                                            <td align="left" style="width: 40% !important;">
+                                                <div class="{!IF(pageDetail.pageQuotation.PrintQuotationFirstPage__c, 'Hid', '')}">
+                                                    <div><apex:outputField value="{!pageDetail.pageQuotation.SalesPerson__r.Name}"/></div>
+                                                    <div><apex:outputText value="{!pageDetail.pageQuotation.ContractEmail__c}"/></div>
+                                                    <div>
+                                                        <apex:outputLabel value="{!IF(pageDetail.pageQuotation.PrintNotPhoneSalespeople__c, '', pageDetail.pageQuotation.SalesPerson__r.Phone)}"/>
+                                                    </div>
+                                                    <div style="font-weight: bold;">
+                                                        <apex:outputtext value="{!IF((pageDetail.pageQuotation.SalesAssistant__r.Email != null &&
+                                                                                    pageDetail.pageQuotation.SalesAssistant__r.Email != '') ||
+                                                                                    (pageDetail.pageQuotation.SalesAssistant__r.Phone != null && 
+                                                                                    pageDetail.pageQuotation.SalesAssistant__r.Phone != ''),'Sales Administration Support:', '')}"/>
+                                                    </div>
+                                                    <div class="{!IF(pageDetail.pageQuotation.SalesAssistant__r.Email != null &&
+                                                                    pageDetail.pageQuotation.SalesAssistant__r.Email != '', '', 'Hid')}">
+                                                        <apex:outputText value="{!pageDetail.pageQuotation.SalesAssistant__r.Email}"/>
+                                                    </div>
+                                                    <div class="{!IF(pageDetail.pageQuotation.SalesAssistant__r.Phone != null &&
+                                                                    pageDetail.pageQuotation.SalesAssistant__r.Phone != '', '', 'Hid')}">
+                                                        <apex:outputField value="{!pageDetail.pageQuotation.SalesAssistant__r.Phone}"/>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- page break section2 -->
+                        <table class="quotationDescription-detail {!IF(pageDetail.noRecommendList.size > 0 , '', 'Hid')}"
+                               align="center" 
+                               cellspacing="0" 
+                               cellpadding="0"
+                               style="margin-bottom: {!section2_margin}mm;margin-top:{!section2_margin}mm;">
+                            <tr class="quotationDescription-header boldStr">
+                                <td width="5%" class="headerTdCenter">
+                                    <div class="quotationDescription-header-title">Line</div>
+                                </td>
+                                <td width="15%" class="headerTdCenter">
+                                    <div class="quotationDescription-header-title">Model Type</div>
+                                </td>
+                                <td width="40%" class="headerTdCenter">
+                                    <div class="quotationDescription-header-title">Description</div>
+                                </td>
+                                <td width="5%" class="headerTdCenter {!IF(!pageDetail.pageQuotation.PrintQuantityUnit__c &&
+                                                                          !pageDetail.pageQuotation.PrintUnitPrice__c , 'right_justified', '')}">
+                                    <div class="quotationDescription-header-title">Qty</div>
+                                </td>
+                                <td width="5%" class="{!IF(pageDetail.pageQuotation.PrintQuantityUnit__c,'headerTdCenter', 'Hid')}">
+                                    <div class="quotationDescription-header-title"></div>
+                                </td>
+                                <td width="15%" class="{!IF(pageDetail.pageQuotation.PrintUnitPrice__c,'headerTdCenter', 'Hid')}">
+                                    <div class="quotationDescription-header-title">Unit Price</div>
+                                </td>
+                                <td width="15%" align="center" class="headerTdCenter">
+                                    <apex:outputPanel rendered="{!IF(pageDetail.pageQuotation.PrintNotDetailAmounts__c, false, true)}">
+                                        <div class="quotationDescription-header-title">Ext. Price</div>
+                                        <div class="quotationDescription-header-title">( {!pageDetail.pageQuotation.SalesCurrency__c} )</div>
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                            <!-- Type A -->
+                            <apex:repeat value="{!pageDetail.noRecommendList}" var="qd">
+                                <apex:variable value="{!if(qd.Depth__c == 0, LineNo + 1, LineNo)}" var="LineNo"/>
+                                <tr style="height: 4mm;" class="{!IF(qd.Type__c == '1', '', 'Hid')}">
+                                    <td width="5%">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!if(qd.Depth__c == 0, LineNo, '')}"/>
+                                        </div>
+                                    </td>
+                                    <td width="15%" class="textL">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!qd.ModelType__c}"/>
+                                        </div>
+                                    </td>
+                                    <td width="40%" class="textL">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!qd.Body__c}"/>
+                                        </div>
+                                    </td>
+                                    <td width="5%" class="right_justified">
+                                        <div class="{!IF(qd.Quantity__c != null && qd.Quantity__c != 0, '', 'Hid')}">
+                                        <span class="quotationDescription-header-title">
+                                            <apex:outputText value="{0, number, #.#}">
+                                                <apex:param value="{!qd.Quantity__c}"></apex:param>
+                                            </apex:outputText>
+                                        </span>
+                                        </div>
+                                    </td>
+                                    <td width="5%" class="{!IF(pageDetail.pageQuotation.PrintQuantityUnit__c,'textL', 'Hid')}">
+                                        <span class="quotationDescription-header-title">
+                                            <apex:outputText value="{!IF(qd.Quantity__c != 0 &&
+                                                                         qd.Quantity__c != null, qd.QuantityUnit__c, '')}"/>
+                                        </span>
+                                    </td>
+                                    <td width="15%" class="{!IF(pageDetail.pageQuotation.PrintUnitPrice__c, 'textR', 'Hid')}">
+                                        <div class="{!IF(qd.SalesUnitPrice__c != 0 && qd.SalesUnitPrice__c != null, '', 'Hid')}">
+                                            <apex:outputField value="{!qd.SalesUnitPrice__c}"/>
+                                        </div>
+                                    </td>
+                                    <td width="15%" class="textR" >
+                                        <apex:outputPanel rendered="{!IF(pageDetail.pageQuotation.PrintNotDetailAmounts__c, false, true)}">
+                                            <div class="quotationDescription-header-title" >
+                                                <div class="{!IF(qd.IsShowDetailAmount__c &&
+                                                                qd.SalesPriceFormula__c != 0 &&
+                                                                qd.SalesPriceFormula__c != null, '','Hid')}">
+                                                    <apex:outputField value="{!qd.SalesPriceFormula__c}" />
+                                                </div>
+                                            </div>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                <!-- child sum detail &&pageDetail.pageQuotation.Print2SPDetail__c-->
+                                <!-- <tr style="height: 4mm;" class="{!IF(qd.Type__c == '1' &&
+                                                                    LineNo == (pageDetail.noRecommendList.size - countBtype) &&
+                                                                    !pageDetail.pageQuotation.PrintNotDetailAmounts__c , '', 'Hid')}">
+                                    <apex:variable value="{!IF(LineNo == (pageDetail.noRecommendList.size - countBtype) &&
+                                                            !pageDetail.pageQuotation.PrintNotDetailAmounts__c, (LineNo + 1), LineNo)}" var="LineNo"/>
+                                    <td width="5%">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!LineNo}"/>
+                                        </div>
+                                    </td>
+                                    <td width="15%" ></td>
+                                    <td style="text-align: left;">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="Spare Parts for {!qd.ModelType__c}"/>
+                                        </div>
+                                    </td>
+                                    <td colspan="{!CospanCol4}" class="textR">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!qd.SalesPriceSalesCur2SP__c}"/>
+                                        </div>
+                                    </td>
+                                </tr> -->
+                                <!-- Type B -->
+                                <tr style="height: 4mm;" class="{!IF(qd.Type__c == '2', '', 'Hid')}">
+                                    <td width="5%">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!if(qd.Depth__c == 0,LineNo, '')}"/>
+                                        </div>
+                                    </td>
+                                    <td width="95%" colspan="{!CospanCol1}" class="textL">
+                                        <apex:outputText value="{!qd.Body__c}"/>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                                <tr class="subtotal {!IF(pageDetail.pageQuotation.OutputSubtitle__c = true, 
+                                                          IF(( pageDetail.pageQuotation.SubtitleLabel__c != null &&
+                                                                pageDetail.pageQuotation.SubtitleLabel__c != '') ||
+                                                                ( pageDetail.pageQuotation.Subtitle__c != null && 
+                                                                pageDetail.pageQuotation.Subtitle__c != 0 ), '', 'Hid'), 'Hid')} {!IF(section2row == LineNo, '', 'Hid')}">
+                                    <td class="sections3L textL" colspan="3">
+                                        <apex:outputLabel value="{!pageDetail.pageQuotation.SubtitleLabel__c}" />
+                                    </td>
+                                    <td class="sections3R textR {!IF(pageDetail.pageQuotation.Subtitle__c != 0 &&
+                                                                         pageDetail.pageQuotation.Subtitle__c != null, '', 'Hid')}" colspan="{!CospanCol3}">
+                                        <apex:outputText value="{0, number, ###,###.00}">
+                                            <apex:param value="{!pageDetail.pageQuotation.Subtitle__c}"></apex:param>
+                                        </apex:outputText>
+                                    </td>
+                                </tr>
+                        </table>
+                        <!-- section3 -->
+                        <table border="1"
+                               cellspacing="0"
+                               bordercolor="#000000"
+                               width="100%"
+                               class="{!IF(section2row == LineNo && pageDetail.section3AppearTime == 1, '', 'Hid')}">
+                            <tr class="{!IF((pageDetail.pageQuotation.CustomReductionName1__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionName1__c != '') ||
+                                            (pageDetail.pageQuotation.CustomReductionAmount1__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionAmount1__c != 0), '', 'Hid')}">
+                                <td class="sections3L">
+                                    <apex:outputLabel value="{!pageDetail.pageQuotation.CustomReductionName1__c}"/>
+                                </td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.CustomReductionAmount1__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionAmount1__c != 0, '', 'Hid')}">
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction1PlusMinus__c = '-', '( ', '')}"/>
+                                    <apex:outputText value="{0, number, ###,###.00}">
+                                        <apex:param value="{!pageDetail.pageQuotation.CustomReductionAmount1__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction1PlusMinus__c = '-', ' )', '')}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.OutputSubtotalReduction1__c = true,
+                                            IF((pageDetail.pageQuotation.SubtotalReductionName1__c != null && 
+                                                pageDetail.pageQuotation.SubtotalReductionName1__c != '') ||
+                                                (pageDetail.pageQuotation.SubtotalReductionAmount1__c != null && 
+                                                pageDetail.pageQuotation.SubtotalReductionAmount1__c != 0), '', 'Hid'),'Hid')}">
+                                <td class="sections3L"><apex:outputLabel value="{!pageDetail.pageQuotation.SubtotalReductionName1__c}" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.SubtotalReductionAmount1__c != null &&
+                                            pageDetail.pageQuotation.SubtotalReductionAmount1__c != 0, '', 'Hid')}">
+                                    <apex:outputText value="{0, number, ###,###.00}">
+                                        <apex:param value="{!pageDetail.pageQuotation.SubtotalReductionAmount1__c}"></apex:param>
+                                    </apex:outputText>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF((pageDetail.pageQuotation.CustomReductionName2__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionName2__c != '') ||
+                                            (pageDetail.pageQuotation.CustomReductionAmount2__c != null && 
+                                            pageDetail.pageQuotation.CustomReductionAmount2__c != 0), '', 'Hid')}">
+                                <td class="sections3L"><apex:outputLabel value="{!pageDetail.pageQuotation.CustomReductionName2__c}" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.CustomReductionAmount2__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionAmount2__c != 0, '', 'Hid')}">
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction2PlusMinus__c = '-', '( ', '')}"/>
+                                    <apex:outputText value="{0, number, ###,###.00}">
+                                        <apex:param value="{!pageDetail.pageQuotation.CustomReductionAmount2__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction2PlusMinus__c = '-', ' )', '')}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.OutputSubtotalReduction2__c, 
+                                            IF((pageDetail.pageQuotation.SubtotalReductionName2__c != null && 
+                                                pageDetail.pageQuotation.SubtotalReductionName2__c != '') || 
+                                                (pageDetail.pageQuotation.SubtotalReductionAmount2__c != null && 
+                                                pageDetail.pageQuotation.SubtotalReductionAmount2__c != 0), '', 'Hid'), 'Hid')}">
+                                <td class="sections3L"><apex:outputLabel value="{!pageDetail.pageQuotation.SubtotalReductionName2__c}" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.SubtotalReductionAmount2__c != 0 &&
+                                                                     pageDetail.pageQuotation.SubtotalReductionAmount2__c != null, '', 'Hid')}">
+                                        <apex:outputText value="{0, number, ###,###.00}">
+                                            <apex:param value="{!pageDetail.pageQuotation.SubtotalReductionAmount2__c}"></apex:param>
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF((pageDetail.pageQuotation.CustomReductionName3__c != null &&
+                                            pageDetail.pageQuotation.CustomReductionName3__c != '') ||
+                                            (pageDetail.pageQuotation.CustomReductionAmount3__c != null && 
+                                            pageDetail.pageQuotation.CustomReductionAmount3__c != 0), '', 'Hid')}">
+                                <td class="sections3L"><apex:outputLabel value="{!pageDetail.pageQuotation.CustomReductionName3__c}" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.CustomReductionAmount3__c != 0 &&
+                                                                     pageDetail.pageQuotation.CustomReductionAmount3__c != null, '', 'Hid')}">
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction3PlusMinus__c = '-', '( ', '')}"/>
+                                    <apex:outputText value="{0, number, ###,###.00}">
+                                        <apex:param value="{!pageDetail.pageQuotation.CustomReductionAmount3__c}"></apex:param>
+                                    </apex:outputText>
+                                    <apex:outputText value="{!IF(pageDetail.pageQuotation.SubtotalReduction3PlusMinus__c = '-', ' )', '')}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.OutputTotalAmount__c = true && 
+                                            pageDetail.pageQuotation.TotalAmount__c != null && 
+                                            pageDetail.pageQuotation.TotalAmount__c != 0, '', 'Hid')}">
+                                <td class="sections3L"><apex:outputLabel value="{!pageDetail.pageQuotation.TotalAmountName__c}" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.TotalAmount__c != 0 &&
+                                                                     pageDetail.pageQuotation.TotalAmount__c != null, '', 'Hid')}">
+                                        <apex:outputText value="{0, number, ###,###.00}">
+                                            <apex:param value="{!pageDetail.pageQuotation.TotalAmount__c}"></apex:param>
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.OutputConsumptionTaxAmount__c = true && 
+                                            pageDetail.pageQuotation.ConsumptionTaxAmount__c != null &&
+                                            pageDetail.pageQuotation.ConsumptionTaxAmount__c != 0, '', 'Hid')}">
+                                <td class="sections3L"><apex:outputText value="Tax( {!pageDetail.pageQuotation.TaxRate__c} %)" /></td>
+                                <td class="sections3R">
+                                    <div class="{!IF(pageDetail.pageQuotation.ConsumptionTaxAmount__c != 0 &&
+                                                                     pageDetail.pageQuotation.ConsumptionTaxAmount__c != null, '', 'Hid')}">
+                                        <apex:outputText value="{0, number, ###,###.00}">
+                                            <apex:param value="{!pageDetail.pageQuotation.ConsumptionTaxAmount__c}"></apex:param>
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.pageQuotation.OutputTotalTaxAmount__c = true && 
+                                            pageDetail.pageQuotation.TotalTaxAmount__c != null && 
+                                            pageDetail.pageQuotation.TotalTaxAmount__c != 0, '', 'Hid')}">
+                                <td class="sections3L" style="font-size: 22pt !important;height: 10mm !important;">
+                                    <apex:outputText value="{!pageDetail.pageQuotation.TotalTaxAmountName__c}"/></td>
+                                <td class="sections3R" style="font-size: 22pt !important;height: 10mm !important;">
+                                    <div class="{!IF(pageDetail.pageQuotation.TotalTaxAmount__c != 0 &&
+                                                                     pageDetail.pageQuotation.TotalTaxAmount__c != null, '', 'Hid')}">
+                                        <apex:outputText value="{0, number, ###,###.00}">
+                                            <apex:param value="{!pageDetail.pageQuotation.TotalTaxAmount__c}"></apex:param>
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                            </tr>
+                            <div class="marginSpace {!IF(section2row == LineNo && pageDetail.section3AppearTime == 1, '', 'Hid')}" align="right">
+                                All Prices are in {!pageDetail.pageQuotation.SalesCurrencyLabel__c}
+                            </div>
+                        </table>
+                        <!-- section4 -->
+                        <div class="textL boldStr marginSpace {!IF(section2row == LineNo &&
+                                                               pageDetail.section4TitleAppearTime == 1, 
+                                                                    IF(pageDetail.recommendList.size > 0, '', 'Hid'), 'Hid')}" style="height: 5mm;">
+                            Optionally Available (May replace above item(s) or be added to system):
+                        </div>
+                        <table class="quotationDescription-detail {!IF(section2row == LineNo, IF(pageDetail.recommendList.size > 0, '', 'Hid'), 'Hid')}"
+                                align="center"
+                                cellspacing="0"
+                                cellpadding="0"
+                                style="margin-bottom: 2mm;">
+                            <tr class="quotationDescription-header boldStr">
+                                <td width="5%" class="headerTdCenter">
+                                    <div class="quotationDescription-header-title">Line</div>
+                                </td>
+                                <td width="55%" class="headerTdCenter">
+                                    <div class="quotationDescription-header-title">Description</div>
+                                </td>
+                                <td width="5%" class="headerTdCenter {!IF(!pageDetail.pageQuotation.PrintQuantityUnit__c &&
+                                                                           !pageDetail.pageQuotation.PrintUnitPrice__c, 'right_justified', '')}">
+                                    <div class="quotationDescription-header-title">Qty</div>
+                                </td>
+                                <td width="5%" class="{!IF(pageDetail.pageQuotation.PrintQuantityUnit__c,'headerTdCenter', 'Hid')}">
+                                    <div class="quotationDescription-header-title"></div>
+                                </td>
+                                <td width="15%" class="{!IF(pageDetail.pageQuotation.PrintUnitPrice__c,'headerTdCenter', 'Hid')}">
+                                    <div class="quotationDescription-header-title">Unit Price</div>
+                                </td>
+                                <td width="15%" align="center" class="headerTdCenter">
+                                    <apex:outputPanel rendered="{!IF(pageDetail.pageQuotation.PrintNotDetailAmounts__c, false, true)}">
+                                        <div class="quotationDescription-header-title">Ext. Price</div>
+                                        <div class="quotationDescription-header-title">( {!pageDetail.pageQuotation.SalesCurrency__c} )</div>
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                            <apex:repeat value="{!pageDetail.recommendList}" var="reco">
+                                <apex:variable value="{!if(reco.Depth__c == 0,reLineNo + 1, reLineNo)}" var="reLineNo"/>
+                                <tr style="height: 4mm;" class="{!IF(reco.Type__c == '2', '', 'Hid')}">
+                                    <td width="5%">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!if(reco.Depth__c == 0, reLineNo, '')}"/>
+                                        </div>
+                                    </td>
+                                    <td width="95%" colspan="{!CospanCol2}" class="textL">
+                                        <apex:outputText value="{!reco.Body__c}"/>
+                                    </td>
+                                </tr>
+                                <tr style="height: 4mm;" class="{!IF(reco.Type__c == '1', '', 'Hid')}">
+                                    <td width="5%">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!if(reco.Depth__c == 0, reLineNo, '')}"/>
+                                        </div>
+                                    </td>
+                                    <td width="55%" class="textL">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{!reco.Body__c}"/>
+                                        </div>
+                                    </td>
+                                    <td width="5%" class="right_justified">
+                                        <div class="{!IF(reco.Quantity__c != null && reco.Quantity__c!= 0, '', 'Hid')}">
+                                        <div class="quotationDescription-header-title">
+                                            <apex:outputText value="{0, number, #}">
+                                                <apex:param value="{!reco.Quantity__c}"></apex:param>
+                                            </apex:outputText>
+                                        </div>
+                                        </div>
+                                    </td>
+                                    <td width="5%" class="{!IF(pageDetail.pageQuotation.PrintQuantityUnit__c,'textL', 'Hid')}">
+                                        <span class="quotationDescription-header-title">
+                                            <apex:outputText value="{!IF(reco.Quantity__c != 0 &&
+                                                                         reco.Quantity__c != null, reco.QuantityUnit__c, '')}"/>
+                                        </span>
+                                    </td>
+                                    <td width="15%" class="{!IF(pageDetail.pageQuotation.PrintUnitPrice__c, 'textR', 'Hid')}">
+                                        <div class="{!IF(reco.UnitPrice__c != 0 && reco.UnitPrice__c != null, '', 'Hid')}">
+                                            <apex:outputField value="{!reco.SalesUnitPrice__c}"/>
+                                        </div>
+                                    </td>
+                                    <td width="15%" class="extR" >
+                                        <apex:outputPanel rendered="{!IF(pageDetail.pageQuotation.PrintNotDetailAmounts__c, false, true)}">
+                                            <div class="quotationDescription-header-title" >
+                                                <div class="{!IF(reco.IsShowDetailAmount__c, '', 'Hid')}">
+                                                    <div class="{!IF(reco.SalesPriceFormula__c != 0 && reco.SalesPriceFormula__c != null, '', 'Hid')}">
+                                                        <apex:outputField value="{!reco.SalesPriceFormula__c}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                        <!-- section5 -->
+                        <table class="{!IF(pageDetail.section5_Freight_AppearTime != 0 ||
+                                            pageDetail.section5_Estimated_AppearTime != 0 ||
+                                            pageDetail.section5_Payment_AppearTime != 0 ||
+                                            pageDetail.section5_Others_AppearTime != 0, 'section5W', 'Hid')}">
+                            <tr style="height: 4mm;" class="{!IF(pageDetail.section5_Freight_AppearTime != 0, '', 'Hid')}" border="1">
+                                <td class="textL boldStr1 section5W_td1">
+                                    <apex:outputText value="Freight Terms:"/>
+                                </td>
+                                <td>
+                                    <span>
+                                        <apex:outputText value="{!pageDetail.pageQuotation.DeliveryCondition3__c}"/>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr style="height: 4mm;" class="{!IF(pageDetail.section5_Estimated_AppearTime != 0, '', 'Hid')}">
+                                <td class="textL boldStr1 section5W_td1">
+                                    <apex:outputText value="Estimated Shipment:" rendered="{!pageDetail.pageQuotation.DeliveryDeadline__c != NULL}"/>
+                                    <apex:outputText value="{!pageDetail.pageQuotation.DeliveryDate_ArbitrarilyTitle__c}" rendered="{!pageDetail.pageQuotation.DeliveryDeadline__c == NULL}"/>
+                                </td>
+                                <td>
+
+                                    <apex:outputtext value="{0, date, dd/MMM/yyyy}" rendered="{!pageDetail.pageQuotation.DeliveryDeadline__c != NULL}">
+                                        <apex:param value="{!pageDetail.pageQuotation.DeliveryDeadline__c}"></apex:param>
+                                    </apex:outputtext>
+
+                                    <apex:outputtext value="{!pageDetail.pageQuotation.DeliveryDate_Arbitrarily__c}" rendered="{!pageDetail.pageQuotation.DeliveryDeadline__c == NULL}" />
+
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.section5_Payment_AppearTime != 0, '', 'Hid')}">
+                                <td class="textL textT boldStr1 section5W_td1">
+                                    <apex:outputText value="Payment Terms:"/>
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!PaymentTermsLabel}" escape="false"/>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(pageDetail.section5_Others_AppearTime != 0, '', 'Hid')}">
+                                <td class="textL textT boldStr1 section5W_td1">
+                                    <apex:outputText value="Others:"
+                                                     styleClass="{!IF(pageDetail.section5_Others_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table>
+                                        <apex:repeat value="{!pageDetail.otherList}" var="other">
+                                        <tr>
+                                            <td style="padding:0;height: 4mm;">
+                                                <apex:outputtext value="{!other}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- section6 -->
+                        <apex:outputPanel rendered="{!quotation.RecordType.DeveloperName != 'SVC'}">
+                        <table style="margin-top: 10mm;" class="{!IF(pageDetail.section6_Warranty_AppearTime != 0 ||
+                                                                    pageDetail.section6_Installation_AppearTime != 0 ||
+                                                                    pageDetail.section6_Packing_AppearTime != 0 ||
+                                                                    pageDetail.section6_Training_AppearTime != 0 ||
+                                                                    pageDetail.section6_Export_AppearTime != 0 ||
+                                                                    pageDetail.section6_Validity_AppearTime != 0, '', 'Hid')}" width="100%">
+                            <tr class="{!IF(pageDetail.section6_Title_AppearTime != 0, '', 'Hid')}">
+                                <td colspan="2" class="textL boldStr1" >
+                                    <apex:outputText value="Basic Terms & Conditions:" />
+                                </td>
+                            </tr>
+                            <!-- Warranty -->
+                            <tr class="{!IF(pageDetail.section6_Warranty_AppearTime != 0, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Warranty__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Warranty_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table>
+                                        <apex:repeat value="{!pageDetail.warrantyList}" var="war">
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <apex:outputtext value="{!war}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Installation -->
+                            <tr class="{!IF(pageDetail.section6_Installation_AppearTime != 0, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Installation__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Installation_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table>
+                                        <apex:repeat value="{!pageDetail.installationList}" var="ins">
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <apex:outputtext value="{!ins}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Packing -->
+                            <tr class="{!IF(pageDetail.section6_Packing_AppearTime != 0, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Packing__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Packing_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table>
+                                        <apex:repeat value="{!pageDetail.packingList}" var="pack">
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <apex:outputtext value="{!pack}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Training -->
+                            <tr class="{!IF(pageDetail.section6_Training_AppearTime != 0, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Training__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Training_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table>
+                                        <apex:repeat value="{!pageDetail.trainingList}" var="train">
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <apex:outputtext value="{!train}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Export -->
+                            <tr class="{!IF(pageDetail.section6_Export_AppearTime != 0, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Export__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Export_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <table width="100%">
+                                        <apex:repeat value="{!pageDetail.exportList}" var="exp">
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <apex:outputtext value="{!exp}"/>
+                                            </td>
+                                        </tr>
+                                        </apex:repeat>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Validity -->
+                            <tr class="{!IF(pageDetail.section6_Validity_AppearTime != 0 &&
+                                            QuotationValidityLabel != null, '', 'Hid')}">
+                                <td valign="top" class="section5W_td1" align="right">
+                                    <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Validity__c.Label & ' : '}"
+                                                      styleClass="{!IF(pageDetail.section6_Validity_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                                <td>
+                                    <apex:outputText value="This quotation stands valid {!QuotationValidityLabel}."
+                                                     styleClass="{!IF(pageDetail.section6_Validity_Title_AppearTime != 0, '', 'Hid')}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        </apex:outputPanel>
+                        
+                        <apex:outputPanel rendered="{!quotation.RecordType.DeveloperName == 'SVC'}">
+                            <table style="margin-top: 10mm;" class="{!IF(pageDetail.section6_Price_AppearTime != 0 ||
+                                                                        pageDetail.section6_Remarks_AppearTime != 0 ||
+                                                                        pageDetail.section6_Validity_AppearTime != 0, '', 'Hid')}" width="100%">
+                                <tr class="{!IF(pageDetail.section6_Title_AppearTime != 0, '', 'Hid')}">
+                                    <td colspan="2" class="textL boldStr1" >
+                                        <apex:outputText value="Basic Terms & Conditions:" />
+                                    </td>
+                                </tr>
+                                <!-- Price -->
+                                <tr class="{!IF(pageDetail.section6_Training_AppearTime != 0, '', 'Hid')}">
+                                    <td valign="top" class="section5W_td1" align="right">
+                                        <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Price__c.Label & ' : '}"
+                                                          styleClass="{!IF(pageDetail.section6_Price_Title_AppearTime != 0, '', 'Hid')}"/>
+                                    </td>
+                                    <td>
+                                        <table>
+                                            <apex:repeat value="{!pageDetail.priceList}" var="price">
+                                            <tr>
+                                                <td style="padding:0;">
+                                                    <apex:outputtext value="{!price}"/>
+                                                </td>
+                                            </tr>
+                                            </apex:repeat>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- Remarks -->
+                                <tr class="{!IF(pageDetail.section6_Remarks_AppearTime != 0, '', 'Hid')}">
+                                    <td valign="top" class="section5W_td1" align="right">
+                                        <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Remarks__c.Label & ' : '}"
+                                                          styleClass="{!IF(pageDetail.section6_Remarks_Title_AppearTime != 0, '', 'Hid')}"/>
+                                    </td>
+                                    <td>
+                                        <table width="100%">
+                                            <apex:repeat value="{!pageDetail.remarksList}" var="remarks">
+                                            <tr>
+                                                <td style="padding:0;">
+                                                    <apex:outputtext value="{!remarks}"/>
+                                                </td>
+                                            </tr>
+                                            </apex:repeat>
+                                        </table>
+                                    </td>
+                                </tr>
+                            
+                                <!-- Validity -->
+                                <tr class="{!IF(pageDetail.section6_Validity_AppearTime != 0 &&
+                                                QuotationValidityLabel != null, '', 'Hid')}">
+                                    <td valign="top" class="section5W_td1" align="right">
+                                        <apex:outputLabel value="{!$ObjectType.AsiaQuotationTermsConditions__c.Fields.Validity__c.Label & ' : '}"
+                                                          styleClass="{!IF(pageDetail.section6_Validity_Title_AppearTime != 0, '', 'Hid')}"/>
+                                    </td>
+                                    <td>
+                                        <apex:outputText value="This quotation stands valid {!QuotationValidityLabel}."
+                                                         styleClass="{!IF(pageDetail.section6_Validity_Title_AppearTime != 0, '', 'Hid')}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </apex:outputPanel>
+                        <!-- section7 -->
+                        <table align="center" width="100%" style="margin-top: 20mm;" class="{!IF(pageDetail.pageNo == pageBlockList.size, '', 'Hid')}">
+                            <tr class="{!IF(quotation.PrintQuotationBudgetPurpose__c, '', 'Hid')}">
+                                <td class="boldStr" colspan="2" align="right" valign="center">
+                                    <apex:outputText value="This quotation is for budgetary purposes only."/>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(userSignURL != null && userSignURL != '', '', 'Hid')}">
+                                <td width="60%"></td>
+                                <td align="center" width="40%">
+                                    <apex:image url="{!userSignURL}"/>
+                                </td>
+                            </tr>
+                            <tr class="{!IF(userSignURL != null && userSignURL != '', 'Hid', '')}" style="height: {!userSignHeight}mm;">
+                                <td width="60%"></td>
+                                <td align="center" width="40%"></td>
+                            </tr>
+                            <tr>
+                                <td width="60%"></td>
+                                <td align="center" class="userSignUnderLine"></td>
+                            </tr>
+                            <tr>
+                                <td width="60%"></td>
+                                <td align="center">
+                                    <apex:outputText value="{!userName}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="60%"></td>
+                                <td align="center">
+                                    <apex:outputText value="{!usertTitle}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="footer">
+                            <table align="center" width="100%" class="footerlineH">
+                                <tr>
+                                    <td>
+                                        <apex:outputLabel value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo & ' : '}"/>
+                                        <apex:outputField value="{!quotation.ProfitCalculationNo__c}" />
+                                    </td>
+                                    <td align="right">
+                                        <span>
+                                            Page&nbsp;{!pageDetail.pageNo}&nbsp;
+                                            of&nbsp;&nbsp;
+                                            {!noRecommendedPageBlockList.Size + recommendedPageBlockList.Size + pageBlockList.size + spPageBlockList.size}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <apex:outputLabel value="Quotation Date: "/>
+                                        <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                            <apex:param value="{!quotation.IssueDate__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </apex:repeat>
+                    
+                </div>
+
+                <apex:outputPanel layout="none" rendered="{!quotation.PrintQuotationSpecificationsPage__c}" >
+                    <!-- noRecommended LineNo init -->
+                    <apex:variable value="{!0}" var="LineNo"/>
+                    <apex:repeat value="{!noRecommendedPageBlockList}" var="pageBlock">
+                        <div>
+                            <!-- Header -->
+                            <apex:outputPanel rendered="{!IF(pageBlock.isBreak = true, true, false)}">
+                            <table id="noRecommendedHeaderId" class="{!IF(pageBlock.isBreak = true, 'quotationDescription-headerBreak', 'quotationDescription-headerNotBreak')}" align="center">
+                                <tr class="boldStr">
+                                    <td width="5%" class="headerTdCenter">
+                                        <div class="quotationDescription-header-title">Line</div>
+                                    </td>
+                                    <td width="15%" class="headerTdCenter">
+                                        <div class="quotationDescription-header-title">Model Type</div>
+                                    </td>
+                                    <td width="40%" class="headerTdCenter">
+                                        <div class="quotationDescription-header-title">Detailed Description</div>
+                                    </td>
+                                    <td width="5%" class="headerTdCenter">
+                                        <div class="quotationDescription-header-title">Qty</div>
+                                    </td>
+                                    <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'headerTdCenter', 'Hid')}">
+                                        <div class="quotationDescription-header-title"></div>
+                                    </td>
+                                    <td width="15%" class="{!IF(quotation.PrintUnitPrice__c,'headerTdCenter', 'Hid')}">
+                                        <div class="quotationDescription-header-title">Unit Price</div>
+                                    </td>
+                                    <td width="15%" align="center" class="headerTdCenter">
+                                        <apex:outputPanel rendered="{!IF(quotation.PrintNotDetailAmounts__c, false, true)}">
+                                            <div class="quotationDescription-header-title">Ext. Price</div>
+                                            <div class="quotationDescription-header-title">( {!quotation.SalesCurrency__c} )</div>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                            </table>
+                            </apex:outputPanel>
+                            <!-- Detail -->
+                            <apex:variable value="{!0}" var="LineCount"/>
+                            <apex:repeat value="{!pageBlock.splitResultList}" var="description">
+                                <table id="noRecommendedDetailId" class="quotationDescription-detail lineH" align="center" cellspacing="0" cellpadding="0" >
+                                    <apex:variable value="{!0}" var="boolean"/>
+                                    <apex:variable value="" var="getKey"/>
+                                    <apex:repeat value="{!pageBlock.recordRowMap}" var="key">
+                                        <apex:variable value="{!IF(description == key, 1, boolean)}" var="boolean"/>
+                                        <apex:variable value="{!IF(description == key, key, getKey)}" var="getKey"/>
+                                        <apex:variable value="{!IF(description == key, if(pageBlock.recordRowMap[key].ProfitCalculationDetail__r.Depth__c == 0, (LineNo + 1), LineNo), LineNo)}" var="LineNo"/>
+                                        <apex:variable value="{!IF(description == key, LineCount + 1, LineCount)}" var="LineCount"/>
+                                    </apex:repeat>
+                                    
+                                    <apex:outputPanel rendered="{!IF(boolean == 1, if(LineCount > 1, true, false), false)}" layout="none">
+                                    <tr style="height:2mm;">
+                                        <td width="5%"/>
+                                        <td width="15%"/>
+                                        <td width="40%"/>
+                                        <td width="5%"/>
+                                        <td width="5%"/>
+                                        <td width="15%"/>
+                                        <td width="15%"/>
+                                    </tr>
+                                    </apex:outputPanel>
+                                    
+                                    <apex:outputPanel rendered="{!IF(boolean == 1, true, false)}" layout="none">
+                                    <tr class="boldStr1">
+                                        <td width="5%">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{!if(pageBlock.recordRowMap[getKey].ProfitCalculationDetail__r.Depth__c == 0,LineNo,'')}"/>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="textL">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputField value="{!pageBlock.recordRowMap[getKey].PCDModelType__c}"/>
+                                            </div>
+                                        </td>
+                                        <td width="40%" class="textL">
+                                            <apex:repeat value="{!pageBlock.recordRowMapBody}" var="key">
+                                                <apex:repeat value="{!IF(key == getKey,pageBlock.recordRowMapBody[getKey], null)}" var="body">
+                                                    <apex:outputText value="{!body}"/><br/>
+                                                </apex:repeat>
+                                            </apex:repeat>
+                                        </td>
+                                        <td width="5%" class="right_justified">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{0, number, #}">
+                                                    <apex:param value="{!IF(pageBlock.recordRowMap[getKey].PCDQuantity__c != 0 &&
+                                                                            pageBlock.recordRowMap[getKey].PCDQuantity__c != null
+                                                                            ,pageBlock.recordRowMap[getKey].PCDQuantity__c, '')}">
+                                                    </apex:param>
+                                                </apex:outputText>
+                                            </div>
+                                        </td>
+                                        <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'textL', 'Hid')}">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{!IF(pageBlock.recordRowMap[getKey].PCDQuantity__c != 0 &&
+                                                                            pageBlock.recordRowMap[getKey].PCDQuantity__c != null, pageBlock.recordRowMap[getKey].PCDQuantityUnit__c, '')}"/>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="{!IF(quotation.PrintUnitPrice__c, 'textR', 'Hid')}">
+                                            <div class="quotationDescription-header-title" >
+                                                <apex:outputText value="{0, number, ###,###.00}">
+                                                    <apex:param value="{!IF(pageBlock.recordRowMap[getKey].PCDUnitPrice__c != 0 && 
+                                                                                pageBlock.recordRowMap[getKey].PCDUnitPrice__c != null,
+                                                                                pageBlock.recordRowMap[getKey].PCDUnitPrice__c, '')}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="textR" >
+                                            <apex:outputPanel rendered="{!IF(quotation.PrintNotDetailAmounts__c, false, true)}">
+                                                <div class="quotationDescription-header-title" >
+                                                    <apex:outputText value="{0, number, ###,###.00}">
+                                                        <apex:param value="{!IF(pageBlock.recordRowMap[getKey].IsShowDetailAmount__c,
+                                                                                IF(pageBlock.recordRowMap[getKey].PCDAmount__c != 0 && 
+                                                                                    pageBlock.recordRowMap[getKey].PCDAmount__c != null,
+                                                                                    pageBlock.recordRowMap[getKey].PCDAmount__c, ''),
+                                                                            '')}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                    <!-- <tr class="{!IF(pageBlock.recordRowMap[getKey].ProfitCalculationDetail__c != null, '', 'Hid')}">
+                                        <td style="height: 2mm !important;"></td>
+                                    </tr> -->
+                                    </apex:outputPanel>
+                                    
+                                    <apex:outputPanel rendered="{!IF(boolean != 1, true, false)}" layout="none">
+                                    <tr>
+                                        <td width="5%"/>
+                                        <td width="15%"/>
+                                        <td width="40%" class="textL">
+                                            <apex:outputText value="{!description}" escape="false" />
+                                        </td>
+                                        <td width="5%"/>
+                                        <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'textL', 'Hid')}"/>
+                                        <td width="15%" class="{!IF(quotation.PrintUnitPrice__c, 'textR', 'Hid')}"/>
+                                        <td width="15%" class="textR}"/>
+                                    </tr>
+                                    </apex:outputPanel>
+                                </table>
+                            </apex:repeat>
+                            <div class="footer">
+                                <table align="center" width="100%" class="footerlineH">
+                                    <tr>
+                                        <td>
+                                            <apex:outputLabel value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo & ' : '}"/>
+                                            <apex:outputLabel value="{!quotation.ProfitCalculationNo__c}" />
+                                        </td>
+                                        <td align="right">
+                                            <span>
+                                                Page&nbsp;{!pageBlock.pageNo + pageBlockList.size}&nbsp;
+                                                of&nbsp;&nbsp;
+                                                {!noRecommendedPageBlockList.Size + recommendedPageBlockList.Size  + pageBlockList.size + spPageBlockList.size}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <apex:outputLabel value="Quotation Date: "/>
+                                            <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                                <apex:param value="{!quotation.IssueDate__c}"></apex:param>
+                                            </apex:outputtext>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </apex:repeat>
+                    <!-- recommended LineNo init -->
+                    <apex:variable value="{!0}" var="LineNo"/>
+                    <apex:repeat value="{!recommendedPageBlockList}" var="pageBlock">
+                        <div>
+                            <!-- Header -->
+                            <apex:outputPanel rendered="{!IF(pageBlock.isBreak = true, true, false)}">
+                                <table class="{!IF(pageBlock.isBreak = true, 'quotationDescription-headerBreak', 'quotationDescription-headerNotBreak')}" align="center">
+                                    <tr class="boldStr">
+                                        <td width="5%" class="headerTdCenter">
+                                            <div class="quotationDescription-header-title">Line</div>
+                                        </td>
+                                        <td width="15%" class="headerTdCenter">
+                                            <div class="quotationDescription-header-title">Model Type</div>
+                                        </td>
+                                        <td width="40%" class="headerTdCenter">
+                                            <div class="quotationDescription-header-title">
+                                                Optionally Available Detailed Description<br/>
+                                                (May replace above item(s) or be added to system)
+                                            </div>
+                                        </td>
+                                        <td width="5%" class="headerTdCenter">
+                                            <div class="quotationDescription-header-title">Qty</div>
+                                        </td>
+                                        <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'headerTdCenter', 'Hid')}">
+                                            <div class="quotationDescription-header-title"></div>
+                                        </td>
+                                        <td width="15%" class="{!IF(quotation.PrintUnitPrice__c,'headerTdCenter', 'Hid')}">
+                                            <div class="quotationDescription-header-title">Unit Price</div>
+                                        </td>
+                                        <td width="15%" align="center" class="headerTdCenter">
+                                            <apex:outputPanel rendered="{!IF(quotation.PrintNotDetailAmounts__c, false, true)}">
+                                                <div class="quotationDescription-header-title">Ext. Price</div>
+                                                <div class="quotationDescription-header-title">( {!quotation.SalesCurrency__c} )</div>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                            <!-- Detail -->
+                            <apex:repeat value="{!pageBlock.splitResultList}" var="description">
+                                <table class="quotationDescription-detail lineH" align="center" cellspacing="0" cellpadding="0">
+                                    <apex:variable value="{!0}" var="boolean"/>
+                                    <apex:variable value="" var="getKey"/>
+                                    <apex:repeat value="{!pageBlock.recordRowMap}" var="key">
+                                        <apex:variable value="{!IF(description == key, 1, boolean)}" var="boolean"/>
+                                        <apex:variable value="{!IF(description == key, key, getKey)}" var="getKey"/>
+                                        <apex:variable value="{!IF(description == key, if(pageBlock.recordRowMap[key].ProfitCalculationDetail__r.Depth__c == 0, (LineNo + 1), LineNo), LineNo)}" var="LineNo"/>
+                                    </apex:repeat>
+                                    <apex:outputPanel rendered="{!IF(boolean == 1, true, false)}" layout="none">
+                                    <tr class="boldStr1">
+                                        <td width="5%">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{!if(pageBlock.recordRowMap[getKey].ProfitCalculationDetail__r.Depth__c == 0, LineNo, '')}"/>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="textL">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputField value="{!pageBlock.recordRowMap[getKey].PCDModelType__c}"/>
+                                            </div>
+                                        </td>
+                                        <td width="40%" class="textL">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{!pageBlock.recordRowMap[getKey].ProfitCalculationDetail__r.Body__c}"/>
+                                            </div>
+                                        </td>
+                                        <td width="5%" class="right_justified">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{0, number, #}">
+                                                    <apex:param value="{!IF(pageBlock.recordRowMap[getKey].PCDQuantity__c != 0 &&
+                                                                            pageBlock.recordRowMap[getKey].PCDQuantity__c != null
+                                                                            ,pageBlock.recordRowMap[getKey].PCDQuantity__c, '')}">
+                                                    </apex:param>
+                                                </apex:outputText>
+                                            </div>
+                                        </td>
+                                        <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'textL', 'Hid')}">
+                                            <div class="quotationDescription-header-title">
+                                                <apex:outputText value="{!IF(pageBlock.recordRowMap[getKey].PCDQuantity__c != 0 &&
+                                                                              pageBlock.recordRowMap[getKey].PCDQuantity__c != null
+                                                                              , pageBlock.recordRowMap[getKey].PCDQuantityUnit__c, '')}"/>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="{!IF(quotation.PrintUnitPrice__c, 'textR', 'Hid')}">
+                                            <div class="quotationDescription-header-title" >
+                                                <apex:outputText value="{0, number, ###,###.00}">
+                                                    <apex:param value="{!IF(pageBlock.recordRowMap[getKey].PCDUnitPrice__c != 0 && 
+                                                                            pageBlock.recordRowMap[getKey].PCDUnitPrice__c != null,
+                                                                            pageBlock.recordRowMap[getKey].PCDUnitPrice__c, '')}"/>
+                                                </apex:outputText>
+                                            </div>
+                                        </td>
+                                        <td width="15%" class="textR" >
+                                            <apex:outputPanel rendered="{!IF(quotation.PrintNotDetailAmounts__c, false, true)}">
+                                                <div class="quotationDescription-header-title" >
+                                                    <apex:outputText value="{0, number, ###,###.00}">
+                                                        <apex:param value="{!IF(pageBlock.recordRowMap[getKey].IsShowDetailAmount__c,
+                                                                                IF(pageBlock.recordRowMap[getKey].PCDAmount__c != 0 && 
+                                                                                    pageBlock.recordRowMap[getKey].PCDAmount__c != null,
+                                                                                    pageBlock.recordRowMap[getKey].PCDAmount__c, ''),
+                                                                            '')}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!IF(boolean != 1, true, false)}" layout="none">
+                                    <tr>
+                                        <td width="5%"/>
+                                        <td width="15%"/>
+                                        <td width="40%" class="textL">
+                                            <apex:outputText value="{!description}" escape="false"/>
+                                        </td>
+                                        <td width="5%"/>
+                                        <td width="5%" class="{!IF(quotation.PrintQuantityUnit__c,'textL', 'Hid')}"/>
+                                        <td width="15%" class="textR"/>
+                                    </tr>
+                                    </apex:outputPanel>
+                                </table>
+                            </apex:repeat>
+                            <div class="footer">
+                                <table align="center" width="100%" class="footerlineH">
+                                    <tr>
+                                        <td>
+                                            <apex:outputLabel value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo & ' : '}"/>
+                                            <apex:outputLabel value="{!quotation.ProfitCalculationNo__c}" />
+                                        </td>
+                                        <td align="right">
+                                            <span>
+                                                Page&nbsp;{!pageBlock.pageNo + pageBlockList.size + noRecommendedPageBlockList.Size}&nbsp;
+                                                of&nbsp;&nbsp;
+                                                {!noRecommendedPageBlockList.Size + recommendedPageBlockList.Size  + pageBlockList.size + spPageBlockList.size}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <apex:outputLabel value="Quotation Date: "/>
+                                            <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                                <apex:param value="{!quotation.IssueDate__c}"></apex:param>
+                                            </apex:outputtext>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </apex:repeat>
+                </apex:outputPanel>
+
+
+                <!-- Spare Parts detail -->
+                <apex:variable value="{!0}" var="LineNo"/>
+                <apex:variable value=" " var="modelName"/>
+                <apex:outputPanel layout="block" id="spParts" rendered="{!quotation.Print2SPDetail__c && spPageBlockList.size > 0}">
+                    <apex:repeat value="{!spPageBlockList}" var="spPage" >
+
+                        <div class="{!IF(spPage.pageBreak, 'pageBreak', '')}"></div>
+
+                        <apex:variable value="{!IF(modelName == spPage.parent.ModelType__c, LineNo, 0)}" var="LineNo"/>
+                        <apex:variable value="{!spPage.parent.ModelType__c}" var="modelName"/>
+                        <table class="headerTable marginSpace">
+                            <tr>
+                                <th colspan="6" class="disLeft boldStr">
+                                    <apex:outputText value="Spare Parts for {!spPage.parent.ModelType__c}" />
+                                </th>
+                            </tr>
+                        </table>
+                        <table class="headerTable" cellspacing="0">
+                            <tr class="headerTdCenter boldStr quotationDescription-header">
+                                <th width="5%">
+                                    <apex:outputText value="Line" />
+                                </th>
+                                <th width="2%">
+                                    <apex:outputText value="" />
+                                </th>
+                                <th width="5%">
+                                    <apex:outputText value="Qty" />
+                                </th>
+                                <th width="2%">
+                                    <apex:outputText value="" />
+                                </th>
+                                <th class="disLeft" width="43%">
+                                    <apex:outputText value="Part Number" />
+                                </th>
+                                <th class="disLeft" width="43%">
+                                    <apex:outputText value="Description" />
+                                </th>
+                            </tr>
+                        </table>
+                    
+                        <apex:repeat value="{!spPage.spMap[spPage.parent.Id]}" var="sp" >
+                            <table class="headerTable" cellspacing="0">
+                                <apex:variable value="{!if(spPage.parent.Depth__c == 0, LineNo + 1, LineNo)}" var="LineNo"/>
+                                    <tr>
+                                        <th width="5%">
+                                            <apex:outputText value="{!if(spPage.parent.Depth__c == 0, LineNo, '')}" />
+                                        </th>
+                                        <th width="2%">
+                                            <apex:outputText value="" />
+                                        </th>
+                                        <th class="disRight" width="5%">
+                                            <apex:outputText value="{0, number, #.0}">
+                                                <apex:param value="{!sp.Quantity__c}" />
+                                            </apex:outputText>
+                                        </th>
+                                        <th width="2%">
+                                            <apex:outputText value="" />
+                                        </th>
+                                        <th class="disLeft" width="43%">
+                                            <apex:outputText value="{!sp.PartNumber__c}" />
+                                        </th>
+                                        <th class="disLeft" width="43%">
+                                            <apex:outputText value="{!sp.Description__c}" />
+                                        </th>
+                                    </tr>
+                            </table>
+                        </apex:repeat>
+                        <div class="footer">
+                            <table align="center" width="100%" class="footerlineH">
+                                <tr>
+                                    <td>
+                                        <apex:outputLabel value="{!$Label.JEOLAsia_Quotation_Label_QuotationNo & ' : '}"/>
+                                        <apex:outputLabel value="{!quotation.ProfitCalculationNo__c}" />
+                                    </td>
+                                    <td align="right">
+                                        <span>
+                                            Page&nbsp;{!spPage.pageNo + noRecommendedPageBlockList.Size + recommendedPageBlockList.Size  + pageBlockList.size}&nbsp;
+                                            of&nbsp;&nbsp;
+                                            {!noRecommendedPageBlockList.Size + recommendedPageBlockList.Size  + pageBlockList.size + spPageBlockList.size}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <apex:outputLabel value="Quotation Date: "/>
+                                        <apex:outputtext value="{0, date, dd/MMM/yyyy}">
+                                            <apex:param value="{!quotation.IssueDate__c}"></apex:param>
+                                        </apex:outputtext>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                
+                    </apex:repeat>
+                        
+                    
+                </apex:outputPanel>
+
+                <!-- from here, the footer is overwrite with blank data -->
+                <apex:outputPanel layout="none" rendered="true">
+                    <div class="footer">
+                        <table align="center" width="100%" class="footerlineH" >
+                            <tr>
+                                <td></td>
+                                <td align="right">
+                                    <span>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </apex:outputPanel>
+
+                <apex:repeat value="{!lsTermsAndConditions}" var="varTerms" >
+                    <apex:outputPanel layout="none" rendered="true" >
+                        <div class="lastPage" >
+                            <apex:outputLabel value="{!varTerms.TermsAndConditions__c}" escape="false" />
+                        </div>
+                    </apex:outputPanel>
+                </apex:repeat>
+
+            </div>
+        </apex:form>
+        </body>
+    </html>
+</apex:page>
