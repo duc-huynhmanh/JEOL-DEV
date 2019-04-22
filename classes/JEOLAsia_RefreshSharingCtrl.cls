@@ -16,7 +16,7 @@ public with sharing class JEOLAsia_RefreshSharingCtrl {
 		//TODO: check if jobs are running then prevent users to continue running batch
 		List<ApexClass> apList = [Select Id from ApexClass where Name = 'JEOLAsia_SharingRecordsToUser'];
 		List<AsyncApexJob> jobs = [SELECT Status FROM AsyncApexJob 
-                                    WHERE JobType = 'BatchApex' //AND Status NOT IN ('Aborted', 'Completed', 'Failed')
+                                    WHERE JobType = 'BatchApex' AND Status NOT IN ('Aborted', 'Completed')
                                     AND ApexClassID =: apList[0].Id];
         for (AsyncApexJob job : jobs) {
         	system.abortJob(job.Id);

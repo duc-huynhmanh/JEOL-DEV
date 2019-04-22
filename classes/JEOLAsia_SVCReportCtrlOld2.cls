@@ -642,6 +642,10 @@ system.debug(' SELECT id, Name, Kikaku__c, ModelType__c, EnglishName__c, Supplie
 
         }
 
+        /**
+         * コピーボタン押下時action
+         * 親レコードに紐づく2SPパーツを取得し、値をコピーしてQDItem作成
+         */
         public void copyLSInfoFromQuotation() {
 
             for (AsiaProfitCalculationDetail__c det : [SELECT Id, Body__c, Supplier__c, Quantity__c
@@ -678,9 +682,8 @@ system.debug(' SELECT id, Name, Kikaku__c, ModelType__c, EnglishName__c, Supplie
         private List<AsiaProjectMasterDetail__c> getDetailRecs(String parentId) {
             List<AsiaProjectMasterDetail__c> recs = [
                     SELECT 
-                        id, name, Depth__c, SortNo__c, SortNoLookUp__c, Type__c, Category__c, Parent__c, Quantity__c,
-                        Body__c, BodyLookUp__c, ModelType__c, ModelTypeLookUp__c, SerialNumber__c, SerialNumberLookUp__c, 
-                        ShippingDate__c,ShippingDateLookUp__c, PartNumber__c, Specification__c, QuantityUpdatedDate__c,
+                        id, name, Depth__c, SortNo__c, Type__c, Category__c, Parent__c, Quantity__c,
+                        Body__c, ModelType__c, SerialNumber__c, ShippingDate__c, PartNumber__c, Specification__c, QuantityUpdatedDate__c,
                         Description__c, Supplier__c
                     FROM 
                         AsiaProjectMasterDetail__c 
@@ -921,7 +924,7 @@ system.debug(' SELECT id, Name, Kikaku__c, ModelType__c, EnglishName__c, Supplie
         public AsiaProjectMasterDetail__c createInitalizedRecord(String sCategory) {
             AsiaProjectMasterDetail__c detail = new AsiaProjectMasterDetail__c();
             if (sCategory == 'A') {
-                detail.SortNo__c = detail.SortNoLookUp__c;
+                detail.SortNo__c = getItemsA().size();
             } else if (sCategory == 'B') {
                 detail.SortNo__c = getItemsB().size();
             } else if (sCategory == 'C') {
@@ -1006,6 +1009,7 @@ system.debug(' SELECT id, Name, Kikaku__c, ModelType__c, EnglishName__c, Supplie
             //JSONデータをMapにデシリアライズ
             Map<String, Object> infoData = (Map<String, Object>)JSON.deserializeUntyped(this.createdItemInfos);
             this.createdItemInfos = null;
+            System.debug( infoData );
             
             //ソートNoと選択された部品リスト取得
             String targetSortNo = (String)infoData.get('sortNo');

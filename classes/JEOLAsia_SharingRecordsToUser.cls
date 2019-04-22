@@ -5,7 +5,7 @@ global class JEOLAsia_SharingRecordsToUser implements Database.Batchable<sObject
     global JEOLAsia_SharingRecordsToUser(Id uId) {
     	userId = uId;
     	system.debug('userId: ' + userId);
-        query = 'SELECT Country_Name__c, Country_Group__c, Country_Group__r.Is_All__c, Series_Name__c, Series_Group__c, Series_Group__r.Is_All__c FROM Sharing_Rule__c WHERE User__c = \'' + userId + '\'';
+        query = 'SELECT Country_Group__c, Series_Group__c, Select_All_Countries__c, Select_All_Series__c, (SELECT Name__c FROM Country_List__r), (SELECT Name__c FROM Series_List__r) FROM Sharing_Rule__c WHERE User__c = \'' + userId + '\'';
     }
     
     global Database.QueryLocator start(Database.BatchableContext BC) {
@@ -27,13 +27,10 @@ global class JEOLAsia_SharingRecordsToUser implements Database.Batchable<sObject
             groupIds.add(rule.Country_Group__c);
             groupIds.add(rule.Series_Group__c);
         }
-        List<Group_Data__c> groups = [SELECT Group_Type__c, Is_All__c, (SELECT Name__c FROM Country_Members__r), (SELECT Name__c FROM Series_Members__r) FROM Group_Data__c WHERE Id IN :groupIds];
+        List<Group_Data__c> groups = [SELECT Group_Type__c, (SELECT Name__c FROM Country_Members__r), (SELECT Name__c FROM Series_Members__r) FROM Group_Data__c WHERE Id IN :groupIds];
         Map<Id, String> groupMap = new Map<Id, String>();
 
         for(Group_Data__c g : groups){
-            if(g.Is_All__c){
-                continue;
-            }
             if(g.Group_Type__c == 'Country' && g.Country_Members__r != null && g.Country_Members__r.size() > 0){
                 String countries = '';
                 for(Integer i = 0; i < g.Country_Members__r.size(); i++){
@@ -51,43 +48,51 @@ global class JEOLAsia_SharingRecordsToUser implements Database.Batchable<sObject
         }
 
         for (Sharing_Rule__c rule : rules) {
-            String countries, series;
+            String countries = '';
+            String series = '';
 
+            //add country from member data which are under Group
             if(rule.Country_Group__c != null){
                 if(groupMap.containsKey(rule.Country_Group__c)){
                     countries = groupMap.get(rule.Country_Group__c);
                 }
             }
+            //add series from member data which are under Group
             if(rule.Series_Group__c != null){
                 if(groupMap.containsKey(rule.Series_Group__c)){
                     series = groupMap.get(rule.Series_Group__c);
                 }
             }
-
-        	if(!String.isBlank(rule.Country_Name__c)){
-                countries = String.isBlank(countries) ? rule.Country_Name__c : (countries + rule.Country_Name__c);
-                countries = countries.removeEnd(',');
+            //add country from member data which are under Rule
+        	if(rule.Country_List__r != null && rule.Country_List__r.size() > 0){
+                for(Integer i = 0; i < rule.Country_List__r.size(); i++){
+                    countries = countries + rule.Country_List__r[i].Name__c + ',';
+                }
             }
+            countries = countries.removeEnd(',');
 
-            if(!String.isBlank(rule.Series_Name__c)){
-                series = String.isBlank(series) ? rule.Series_Name__c : (series + rule.Series_Name__c);
-                series = series.removeEnd(',');
+            //add series from member data which are under Rule
+            if(rule.Series_List__r != null && rule.Series_List__r.size() > 0){
+                for(Integer i = 0; i < rule.Series_List__r.size(); i++){
+                    series = series + rule.Series_List__r[i].Name__c + ',';
+                }
             }
+            series = series.removeEnd(',');
 
         	String condition;
 
         	//build condition
-        	if(rule.Country_Group__c != null && rule.Country_Group__r.Is_All__c){
-        		if(rule.Series_Group__c != null && rule.Series_Group__r.Is_All__c) {
-        			condition = '';
+        	if(rule.Select_All_Countries__c){
+        		if(rule.Select_All_Series__c) {
+        			condition = '(ShipmentCountry__c <> \'\' AND Series__c <> \'\')'; //if select all series and all countries
         		} else {
-        			series = series.replace(',', '\',\'');
-        			condition = '(Series__c IN (\'' + series + '\'))';
+        			series = series.replace(',', '\',\''); //if select all country
+        			condition = '(ShipmentCountry__c <> \'\' AND Series__c IN (\'' + series + '\'))';
         		}
         	} else {
         		countries = countries.replace(',', '\',\'');
-        		if(rule.Series_Group__c != null && rule.Series_Group__r.Is_All__c) {
-        			condition = '(ShipmentCountry__c IN (\'' + countries + '\'))';
+        		if(rule.Select_All_Series__c) {
+        			condition = '(ShipmentCountry__c IN (\'' + countries + '\') AND Series__c <> \'\')'; //if select all series
         		} else {
         			series = series.replace(',', '\',\'');
         			condition = '(ShipmentCountry__c IN (\'' + countries + '\')' +

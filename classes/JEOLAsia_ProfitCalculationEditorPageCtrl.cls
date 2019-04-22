@@ -266,7 +266,7 @@ system.debug('PriceBookCode:' + pbm.PriceBookCode__c);
     public static final String URL_PARAM_NAME_ISCOPY = 'isCopy';
 
     private Boolean checkPermissionViewAll(){
-        List<PermissionSetAssignment> lstcurrentUserPerSet =    [   SELECT Id, PermissionSet.Name,AssigneeId
+        List<PermissionSetAssignment> lstcurrentUserPerSet =    [   SELECT PermissionSet.Name
                                                                 FROM PermissionSetAssignment
                                                                 WHERE AssigneeId = :Userinfo.getUserId() ];
         for ( PermissionSetAssignment psa : lstcurrentUserPerSet ) {
@@ -541,20 +541,20 @@ System.debug('@@@:' + e.getStackTraceString());
     private Map<String, Set<String>> getMapSeriesCountry(){
         Map<String, Set<String>> mapResult = new Map<String, Set<String>>();
 
-        List<Sharing_Rule__c> rules = [SELECT Series_Name__c, Series_Group__c, Series_Group__r.Is_All__c, Country_Name__c, Country_Group__c, Country_Group__r.Is_All__c FROM Sharing_Rule__c WHERE User__c = :UserInfo.getUserId()];
+        List<Sharing_Rule__c> rules = [SELECT Country_Group__c, Series_Group__c, Select_All_Countries__c, Select_All_Series__c, 
+                                            (SELECT Name__c FROM Country_List__r), 
+                                            (SELECT Name__c FROM Series_List__r) 
+                                        FROM Sharing_Rule__c WHERE User__c = :UserInfo.getUserId()];
 
         List<Id> groupIds = new List<Id>();
         for (Sharing_Rule__c rule : rules){
             groupIds.add(rule.Country_Group__c);
             groupIds.add(rule.Series_Group__c);
         }
-        List<Group_Data__c> groups = [SELECT Group_Type__c, Is_All__c, (SELECT Name__c FROM Country_Members__r), (SELECT Name__c FROM Series_Members__r) FROM Group_Data__c WHERE Id IN :groupIds];
+        List<Group_Data__c> groups = [SELECT Group_Type__c, (SELECT Name__c FROM Country_Members__r), (SELECT Name__c FROM Series_Members__r) FROM Group_Data__c WHERE Id IN :groupIds];
         Map<Id, String> groupMap = new Map<Id, String>();
 
         for(Group_Data__c g : groups){
-            if(g.Is_All__c){
-                continue;
-            }
             if(g.Group_Type__c == 'Country' && g.Country_Members__r != null && g.Country_Members__r.size() > 0){
                 String countries = '';
                 for(Integer i = 0; i < g.Country_Members__r.size(); i++){
@@ -573,34 +573,42 @@ System.debug('@@@:' + e.getStackTraceString());
 
         if(rules != null && rules.size() > 0){
             for (Sharing_Rule__c rule : rules) {
-                String countries, series;
-                if(rule.Series_Group__c != null && rule.Series_Group__r.Is_All__c){
+                String countries = '';
+                String series = '';
+                if(rule.Select_All_Series__c){
                     series = 'ALL';
                 } else {
+                    //add series from member data which are under Group
                     if(rule.Series_Group__c != null){
                         if(groupMap.containsKey(rule.Series_Group__c)){
                             series = groupMap.get(rule.Series_Group__c);
                         }
                     }
-                    if(!String.isBlank(rule.Series_Name__c)){
-                        series = String.isBlank(series) ? rule.Series_Name__c : (series + rule.Series_Name__c);
-                        series = series.removeEnd(',');
+                    //add series from member data which are under Rule
+                    if(rule.Series_List__r != null && rule.Series_List__r.size() > 0){
+                        for(Integer i = 0; i < rule.Series_List__r.size(); i++){
+                            series = series + rule.Series_List__r[i].Name__c + ',';
+                        }
                     }
+                    series = series.removeEnd(',');
                 }
 
-                if(rule.Country_Group__c != null && rule.Country_Group__r.Is_All__c){
+                if(rule.Select_All_Countries__c){
                     countries = 'ALL';
                 } else {
+                    //add country from member data which are under Group
                     if(rule.Country_Group__c != null){
                         if(groupMap.containsKey(rule.Country_Group__c)){
                             countries = groupMap.get(rule.Country_Group__c);
                         }
                     }
-                    
-                    if(!String.isBlank(rule.Country_Name__c)){
-                        countries = String.isBlank(countries) ? rule.Country_Name__c : (countries + rule.Country_Name__c);
-                        countries = countries.removeEnd(',');
+                    //add country from member data which are under Rule
+                    if(rule.Country_List__r != null && rule.Country_List__r.size() > 0){
+                        for(Integer i = 0; i < rule.Country_List__r.size(); i++){
+                            countries = countries + rule.Country_List__r[i].Name__c + ',';
+                        }
                     }
+                    countries = countries.removeEnd(',');
                 }
 
                 List<String> seriesList = series.split(',');
@@ -3873,11 +3881,18 @@ system.debug('2.Quantity__c:'+rec.Quantity__c + '|' + curRow2SP.qty);
     
     public List<SelectOption> getTargetMarketOptions(){
         list<SelectOption> options = new list<SelectOption>();
+        Map<String, String> marketMap = new Map<String, String>();
         for (Schema.PicklistEntry f : AsiaProfitCalculation__c.TargetMarket__c.getDescribe().getPicklistValues()) {
+            marketMap.put(f.getValue(), f.getLabel());
             if(!String.isBlank(currentUser.AvailableMarket__c) && currentUser.AvailableMarket__c.indexOf(f.getValue()) >= 0){
                 options.add(new SelectOption(f.getValue(), f.getLabel()));
             }
-        }       
+        }
+        //if user's market not cover quotation's market
+        if(options.size() == 0 || (options.size() == 1 && options[0].getValue() != qdm.parentRec.TargetMarket__c)){
+            SelectOption defaultOption = new SelectOption(qdm.parentRec.TargetMarket__c, marketMap.get(qdm.parentRec.TargetMarket__c), true);
+            options = new List<SelectOption>{defaultOption};
+        }
         return options;
     }
 

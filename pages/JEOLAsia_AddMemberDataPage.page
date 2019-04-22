@@ -1,0 +1,27 @@
+<apex:page showHeader="true" sidebar="true" standardController="Member_Data__c" extensions="JEOLAsia_AddMemberDataCtrl">
+	<apex:pageMessages />
+	<apex:form >
+        <apex:pageBlock title="Add {!objectType}" mode="add">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!Save}" value="Save"/>
+                <apex:commandButton action="{!Cancel}" value="Cancel"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Information" columns="2">
+                <apex:inputField rendered="{!objectType=='Country'}" value="{!data.Master_Country__c}">
+                	<apex:actionSupport event="onchange" action="{!refreshName}" reRender="name"  />
+            	</apex:inputField>
+                <apex:inputField rendered="{!objectType=='Series'}" value="{!data.Master_Series__c}">
+                	<apex:actionSupport event="onchange" action="{!refreshName}" reRender="name"  />
+            	</apex:inputField>
+                <apex:outputField rendered="{!addType=='1'}" value="{!data.Country_For_Sharing_Rule__c}"/>
+                <apex:outputField rendered="{!addType=='2'}" value="{!data.Country_Group__c}"/>
+                <apex:outputField rendered="{!addType=='3'}" value="{!data.Series_For_Sharing_Rule__c}"/>
+                <apex:outputField rendered="{!addType=='4'}" value="{!data.Series_Group__c}"/>
+                <apex:pageBlockSectionItem >
+                	<apex:outputLabel value="{!objectType} Name" for="name"/>
+					<apex:outputText id="name" value="{!name}"/>
+            	</apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

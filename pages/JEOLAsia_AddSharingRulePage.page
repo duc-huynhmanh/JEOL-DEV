@@ -1,0 +1,68 @@
+<apex:page showHeader="true" sidebar="true" standardController="Sharing_Rule__c" extensions="JEOLAsia_AddSharingRuleCtrl">
+	<apex:pageMessages />
+	<apex:form >
+        <apex:pageBlock title="Create New Sharing Rule" mode="add">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!Save}" value="Save"/>
+                <apex:commandButton action="{!SaveNew}" value="Save & New"/>
+                <apex:commandButton action="{!Cancel}" value="Cancel"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Information" columns="2" id="blockSection">
+
+                	<apex:inputField value="{!data.User__c}"/>
+                	<apex:pageBlockSectionItem />
+
+                	<apex:inputField id="countryGroup" value="{!data.Country_Group__c}"/>
+
+                	<apex:inputField id="seriesGroup" value="{!data.Series_Group__c}"/>
+
+                	<apex:inputField value="{!data.Select_All_Countries__c}">
+                		<apex:actionSupport event="onchange" action="{!selectAllCountry}" reRender="countryGroup"  />
+                	</apex:inputField>
+                	<apex:inputField value="{!data.Select_All_Series__c}">
+                		<apex:actionSupport event="onchange" action="{!selectAllSeries}" reRender="seriesGroup"  />
+                	</apex:inputField>
+
+                	<apex:inputField value="{!data.Country_Technique__c}" id="country">
+                		<apex:actionSupport event="onchange" action="{!addCountry}" reRender="countryList, country"  />
+                	</apex:inputField>
+                	<apex:inputField value="{!data.Series_Technique__c}" id="series">
+                		<apex:actionSupport event="onchange" action="{!addSeries}" reRender="seriesList, series"  />
+                	</apex:inputField>
+                
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Country List" columns="1" id="countryList">
+            	<apex:pageBlockSectionItem >
+                		<apex:pageBlockTable value="{!countryList}" var="country" style="width:100%" rendered="{!countryList.size > 0}">
+            				<apex:column headerValue="Action" style="width: 50px">
+            					<apex:commandLink value="Del" action="{!removeCountry}" reRender="countryList">
+            						<apex:param name="countryId" value="{!country.Id}" assignTo="{!removeCountryId}"/>
+            					</apex:commandLink>
+        					</apex:column> 
+            				<apex:column headerValue="Name">
+            					<apex:outputText value="{!country.label}"/>
+        					</apex:column> 
+        				</apex:pageBlockTable>
+                	</apex:pageBlockSectionItem>
+        	</apex:pageBlockSection>
+
+        	<apex:pageBlockSection title="Series List" columns="1" id="seriesList">
+            	<apex:pageBlockSectionItem >
+                		<apex:pageBlockTable value="{!seriesList}" var="series"  style="width:100%" rendered="{!seriesList.size > 0}">
+        					<apex:column headerValue="Action" style="width: 50px;">
+            					<apex:commandLink value="Del" action="{!removeSeries}" reRender="seriesList">
+            						<apex:param name="seriesId" value="{!series.Id}" assignTo="{!removeSeriesId}"/>
+            					</apex:commandLink>
+        					</apex:column> 
+        					<apex:column headerValue="Name">
+            					<apex:outputText value="{!series.label}"/>
+        					</apex:column>
+        				</apex:pageBlockTable>
+                	</apex:pageBlockSectionItem>
+        	</apex:pageBlockSection>
+
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
